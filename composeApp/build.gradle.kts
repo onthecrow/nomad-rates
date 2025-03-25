@@ -34,6 +34,13 @@ kotlin {
             isStatic = true
         }
 
+        pod("FirebaseCore")
+        pod("FirebaseAnalytics")
+        pod("FirebaseCrashlytics") {
+            extraOpts += listOf("-compiler-option", "-fmodules")
+        }
+        pod("FirebaseRemoteConfig")
+
         // Maps custom Xcode configuration to NativeBuildType
         xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE

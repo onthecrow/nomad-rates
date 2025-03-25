@@ -18,3 +18,4 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 /.fleet/
 /iosApp/Pods/
+/iosApp/iosApp/GoogleService-Info.plist
