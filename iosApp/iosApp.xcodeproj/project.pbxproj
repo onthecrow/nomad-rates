@@ -1,0 +1,522 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0616FD922F0CAAD9005415A4 /* FBLPromises.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD412F0CA43B005415A4 /* FBLPromises.xcframework */; };
+		0616FD932F0CAAD9005415A4 /* FBLPromises.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD412F0CA43B005415A4 /* FBLPromises.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD942F0CAAD9005415A4 /* FirebaseABTesting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD612F0CA487005415A4 /* FirebaseABTesting.xcframework */; };
+		0616FD952F0CAAD9005415A4 /* FirebaseABTesting.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD612F0CA487005415A4 /* FirebaseABTesting.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD962F0CAAD9005415A4 /* FirebaseAnalytics.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD432F0CA448005415A4 /* FirebaseAnalytics.xcframework */; };
+		0616FD972F0CAAD9005415A4 /* FirebaseAnalytics.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD432F0CA448005415A4 /* FirebaseAnalytics.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD982F0CAAD9005415A4 /* FirebaseCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD452F0CA455005415A4 /* FirebaseCore.xcframework */; };
+		0616FD992F0CAAD9005415A4 /* FirebaseCore.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD452F0CA455005415A4 /* FirebaseCore.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD9A2F0CAAD9005415A4 /* FirebaseCoreExtension.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD552F0CA47B005415A4 /* FirebaseCoreExtension.xcframework */; };
+		0616FD9B2F0CAAD9005415A4 /* FirebaseCoreExtension.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD552F0CA47B005415A4 /* FirebaseCoreExtension.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD9C2F0CAAD9005415A4 /* FirebaseCoreInternal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD472F0CA460005415A4 /* FirebaseCoreInternal.xcframework */; };
+		0616FD9D2F0CAAD9005415A4 /* FirebaseCoreInternal.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD472F0CA460005415A4 /* FirebaseCoreInternal.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FD9E2F0CAAD9005415A4 /* FirebaseCrashlytics.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD562F0CA47B005415A4 /* FirebaseCrashlytics.xcframework */; };
+		0616FD9F2F0CAAD9005415A4 /* FirebaseCrashlytics.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD562F0CA47B005415A4 /* FirebaseCrashlytics.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDA02F0CAAD9005415A4 /* FirebaseInstallations.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD492F0CA46A005415A4 /* FirebaseInstallations.xcframework */; };
+		0616FDA12F0CAAD9005415A4 /* FirebaseInstallations.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD492F0CA46A005415A4 /* FirebaseInstallations.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDA22F0CAAD9005415A4 /* FirebaseRemoteConfig.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD622F0CA487005415A4 /* FirebaseRemoteConfig.xcframework */; };
+		0616FDA32F0CAAD9005415A4 /* FirebaseRemoteConfig.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD622F0CA487005415A4 /* FirebaseRemoteConfig.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDA42F0CAAD9005415A4 /* FirebaseRemoteConfigInterop.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD572F0CA47B005415A4 /* FirebaseRemoteConfigInterop.xcframework */; };
+		0616FDA52F0CAAD9005415A4 /* FirebaseRemoteConfigInterop.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD572F0CA47B005415A4 /* FirebaseRemoteConfigInterop.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDA62F0CAAD9005415A4 /* FirebaseSessions.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD582F0CA47B005415A4 /* FirebaseSessions.xcframework */; };
+		0616FDA72F0CAAD9005415A4 /* FirebaseSessions.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD582F0CA47B005415A4 /* FirebaseSessions.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDA82F0CAAD9005415A4 /* FirebaseSharedSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD642F0CA487005415A4 /* FirebaseSharedSwift.xcframework */; };
+		0616FDA92F0CAAD9005415A4 /* FirebaseSharedSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD642F0CA487005415A4 /* FirebaseSharedSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDAA2F0CAAD9005415A4 /* GoogleAdsOnDeviceConversion.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4A2F0CA46A005415A4 /* GoogleAdsOnDeviceConversion.xcframework */; };
+		0616FDAB2F0CAAD9005415A4 /* GoogleAdsOnDeviceConversion.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4A2F0CA46A005415A4 /* GoogleAdsOnDeviceConversion.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDAC2F0CAAD9005415A4 /* GoogleAppMeasurement.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4B2F0CA46A005415A4 /* GoogleAppMeasurement.xcframework */; };
+		0616FDAD2F0CAAD9005415A4 /* GoogleAppMeasurement.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4B2F0CA46A005415A4 /* GoogleAppMeasurement.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDAE2F0CAAD9005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4C2F0CA46A005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework */; };
+		0616FDAF2F0CAAD9005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4C2F0CA46A005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDB02F0CAAD9005415A4 /* GoogleDataTransport.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD592F0CA47B005415A4 /* GoogleDataTransport.xcframework */; };
+		0616FDB12F0CAAD9005415A4 /* GoogleDataTransport.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD592F0CA47B005415A4 /* GoogleDataTransport.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDB22F0CAAD9005415A4 /* GoogleUtilities.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4D2F0CA46A005415A4 /* GoogleUtilities.xcframework */; };
+		0616FDB32F0CAAD9005415A4 /* GoogleUtilities.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4D2F0CA46A005415A4 /* GoogleUtilities.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDB42F0CAAD9005415A4 /* nanopb.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4E2F0CA46A005415A4 /* nanopb.xcframework */; };
+		0616FDB52F0CAAD9005415A4 /* nanopb.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD4E2F0CA46A005415A4 /* nanopb.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0616FDB62F0CAAD9005415A4 /* Promises.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD5A2F0CA47B005415A4 /* Promises.xcframework */; };
+		0616FDB72F0CAAD9005415A4 /* Promises.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0616FD5A2F0CA47B005415A4 /* Promises.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0616FDB82F0CAAD9005415A4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				0616FDAD2F0CAAD9005415A4 /* GoogleAppMeasurement.xcframework in Embed Frameworks */,
+				0616FDAF2F0CAAD9005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework in Embed Frameworks */,
+				0616FD9B2F0CAAD9005415A4 /* FirebaseCoreExtension.xcframework in Embed Frameworks */,
+				0616FDA72F0CAAD9005415A4 /* FirebaseSessions.xcframework in Embed Frameworks */,
+				0616FDA32F0CAAD9005415A4 /* FirebaseRemoteConfig.xcframework in Embed Frameworks */,
+				0616FDA92F0CAAD9005415A4 /* FirebaseSharedSwift.xcframework in Embed Frameworks */,
+				0616FDB32F0CAAD9005415A4 /* GoogleUtilities.xcframework in Embed Frameworks */,
+				0616FD952F0CAAD9005415A4 /* FirebaseABTesting.xcframework in Embed Frameworks */,
+				0616FDA12F0CAAD9005415A4 /* FirebaseInstallations.xcframework in Embed Frameworks */,
+				0616FD9D2F0CAAD9005415A4 /* FirebaseCoreInternal.xcframework in Embed Frameworks */,
+				0616FD9F2F0CAAD9005415A4 /* FirebaseCrashlytics.xcframework in Embed Frameworks */,
+				0616FDB72F0CAAD9005415A4 /* Promises.xcframework in Embed Frameworks */,
+				0616FDB12F0CAAD9005415A4 /* GoogleDataTransport.xcframework in Embed Frameworks */,
+				0616FDAB2F0CAAD9005415A4 /* GoogleAdsOnDeviceConversion.xcframework in Embed Frameworks */,
+				0616FDA52F0CAAD9005415A4 /* FirebaseRemoteConfigInterop.xcframework in Embed Frameworks */,
+				0616FD992F0CAAD9005415A4 /* FirebaseCore.xcframework in Embed Frameworks */,
+				0616FDB52F0CAAD9005415A4 /* nanopb.xcframework in Embed Frameworks */,
+				0616FD932F0CAAD9005415A4 /* FBLPromises.xcframework in Embed Frameworks */,
+				0616FD972F0CAAD9005415A4 /* FirebaseAnalytics.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0616FD412F0CA43B005415A4 /* FBLPromises.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FBLPromises.xcframework; path = ../libs/FirebaseAnalytics/FBLPromises.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD432F0CA448005415A4 /* FirebaseAnalytics.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseAnalytics.xcframework; path = ../libs/FirebaseAnalytics/FirebaseAnalytics.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD452F0CA455005415A4 /* FirebaseCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseCore.xcframework; path = ../libs/FirebaseAnalytics/FirebaseCore.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD472F0CA460005415A4 /* FirebaseCoreInternal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseCoreInternal.xcframework; path = ../libs/FirebaseAnalytics/FirebaseCoreInternal.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD492F0CA46A005415A4 /* FirebaseInstallations.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseInstallations.xcframework; path = ../libs/FirebaseAnalytics/FirebaseInstallations.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD4A2F0CA46A005415A4 /* GoogleAdsOnDeviceConversion.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleAdsOnDeviceConversion.xcframework; path = ../libs/FirebaseAnalytics/GoogleAdsOnDeviceConversion.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD4B2F0CA46A005415A4 /* GoogleAppMeasurement.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleAppMeasurement.xcframework; path = ../libs/FirebaseAnalytics/GoogleAppMeasurement.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD4C2F0CA46A005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleAppMeasurementIdentitySupport.xcframework; path = ../libs/FirebaseAnalytics/GoogleAppMeasurementIdentitySupport.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD4D2F0CA46A005415A4 /* GoogleUtilities.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleUtilities.xcframework; path = ../libs/FirebaseAnalytics/GoogleUtilities.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD4E2F0CA46A005415A4 /* nanopb.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = nanopb.xcframework; path = ../libs/FirebaseAnalytics/nanopb.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD552F0CA47B005415A4 /* FirebaseCoreExtension.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseCoreExtension.xcframework; path = ../libs/FirebaseCrashlytics/FirebaseCoreExtension.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD562F0CA47B005415A4 /* FirebaseCrashlytics.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseCrashlytics.xcframework; path = ../libs/FirebaseCrashlytics/FirebaseCrashlytics.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD572F0CA47B005415A4 /* FirebaseRemoteConfigInterop.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseRemoteConfigInterop.xcframework; path = ../libs/FirebaseCrashlytics/FirebaseRemoteConfigInterop.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD582F0CA47B005415A4 /* FirebaseSessions.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseSessions.xcframework; path = ../libs/FirebaseCrashlytics/FirebaseSessions.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD592F0CA47B005415A4 /* GoogleDataTransport.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleDataTransport.xcframework; path = ../libs/FirebaseCrashlytics/GoogleDataTransport.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD5A2F0CA47B005415A4 /* Promises.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Promises.xcframework; path = ../libs/FirebaseCrashlytics/Promises.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD612F0CA487005415A4 /* FirebaseABTesting.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseABTesting.xcframework; path = ../libs/FirebaseRemoteConfig/FirebaseABTesting.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD622F0CA487005415A4 /* FirebaseRemoteConfig.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseRemoteConfig.xcframework; path = ../libs/FirebaseRemoteConfig/FirebaseRemoteConfig.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD632F0CA487005415A4 /* FirebaseRemoteConfigInterop.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:EQHXZ8M8AV:Google LLC"; lastKnownFileType = wrapper.xcframework; name = FirebaseRemoteConfigInterop.xcframework; path = ../libs/FirebaseRemoteConfig/FirebaseRemoteConfigInterop.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD642F0CA487005415A4 /* FirebaseSharedSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FirebaseSharedSwift.xcframework; path = ../libs/FirebaseRemoteConfig/FirebaseSharedSwift.xcframework; sourceTree = SOURCE_ROOT; };
+		0616FD902F0CA6DF005415A4 /* Firebase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Firebase.h; path = ../libs/Firebase.h; sourceTree = SOURCE_ROOT; };
+		0616FD912F0CA6ED005415A4 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = module.modulemap; path = ../libs/module.modulemap; sourceTree = SOURCE_ROOT; };
+		0777933F1269F7871BB1E68D /* NomadRates.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NomadRates.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		39DA7596F70D3E713C1CE430 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 577B2D10949C97A79CAE3328 /* iosApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A9FFEC9E666671694FD7B7D4 /* iosApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				39DA7596F70D3E713C1CE430 /* Exceptions for "iosApp" folder in "iosApp" target */,
+			);
+			path = iosApp;
+			sourceTree = "<group>";
+		};
+		E51D1985AA82CFA5165461CC /* Configuration */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		01CC2F5A27CCD678B054B2CB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0616FDAC2F0CAAD9005415A4 /* GoogleAppMeasurement.xcframework in Frameworks */,
+				0616FDB42F0CAAD9005415A4 /* nanopb.xcframework in Frameworks */,
+				0616FDA42F0CAAD9005415A4 /* FirebaseRemoteConfigInterop.xcframework in Frameworks */,
+				0616FDA02F0CAAD9005415A4 /* FirebaseInstallations.xcframework in Frameworks */,
+				0616FDAE2F0CAAD9005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework in Frameworks */,
+				0616FDAA2F0CAAD9005415A4 /* GoogleAdsOnDeviceConversion.xcframework in Frameworks */,
+				0616FDA62F0CAAD9005415A4 /* FirebaseSessions.xcframework in Frameworks */,
+				0616FDB22F0CAAD9005415A4 /* GoogleUtilities.xcframework in Frameworks */,
+				0616FD962F0CAAD9005415A4 /* FirebaseAnalytics.xcframework in Frameworks */,
+				0616FD9A2F0CAAD9005415A4 /* FirebaseCoreExtension.xcframework in Frameworks */,
+				0616FD982F0CAAD9005415A4 /* FirebaseCore.xcframework in Frameworks */,
+				0616FDB62F0CAAD9005415A4 /* Promises.xcframework in Frameworks */,
+				0616FD9E2F0CAAD9005415A4 /* FirebaseCrashlytics.xcframework in Frameworks */,
+				0616FD942F0CAAD9005415A4 /* FirebaseABTesting.xcframework in Frameworks */,
+				0616FDA22F0CAAD9005415A4 /* FirebaseRemoteConfig.xcframework in Frameworks */,
+				0616FDA82F0CAAD9005415A4 /* FirebaseSharedSwift.xcframework in Frameworks */,
+				0616FD9C2F0CAAD9005415A4 /* FirebaseCoreInternal.xcframework in Frameworks */,
+				0616FD922F0CAAD9005415A4 /* FBLPromises.xcframework in Frameworks */,
+				0616FDB02F0CAAD9005415A4 /* GoogleDataTransport.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E8B697BE95FBD37A7EE47313 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0777933F1269F7871BB1E68D /* NomadRates.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FE183E4C55C98BDFEBF2481D = {
+			isa = PBXGroup;
+			children = (
+				E51D1985AA82CFA5165461CC /* Configuration */,
+				A9FFEC9E666671694FD7B7D4 /* iosApp */,
+				E8B697BE95FBD37A7EE47313 /* Products */,
+				0616FD412F0CA43B005415A4 /* FBLPromises.xcframework */,
+				0616FD432F0CA448005415A4 /* FirebaseAnalytics.xcframework */,
+				0616FD452F0CA455005415A4 /* FirebaseCore.xcframework */,
+				0616FD472F0CA460005415A4 /* FirebaseCoreInternal.xcframework */,
+				0616FD492F0CA46A005415A4 /* FirebaseInstallations.xcframework */,
+				0616FD4A2F0CA46A005415A4 /* GoogleAdsOnDeviceConversion.xcframework */,
+				0616FD4B2F0CA46A005415A4 /* GoogleAppMeasurement.xcframework */,
+				0616FD4C2F0CA46A005415A4 /* GoogleAppMeasurementIdentitySupport.xcframework */,
+				0616FD4D2F0CA46A005415A4 /* GoogleUtilities.xcframework */,
+				0616FD4E2F0CA46A005415A4 /* nanopb.xcframework */,
+				0616FD552F0CA47B005415A4 /* FirebaseCoreExtension.xcframework */,
+				0616FD562F0CA47B005415A4 /* FirebaseCrashlytics.xcframework */,
+				0616FD572F0CA47B005415A4 /* FirebaseRemoteConfigInterop.xcframework */,
+				0616FD582F0CA47B005415A4 /* FirebaseSessions.xcframework */,
+				0616FD592F0CA47B005415A4 /* GoogleDataTransport.xcframework */,
+				0616FD5A2F0CA47B005415A4 /* Promises.xcframework */,
+				0616FD612F0CA487005415A4 /* FirebaseABTesting.xcframework */,
+				0616FD622F0CA487005415A4 /* FirebaseRemoteConfig.xcframework */,
+				0616FD632F0CA487005415A4 /* FirebaseRemoteConfigInterop.xcframework */,
+				0616FD642F0CA487005415A4 /* FirebaseSharedSwift.xcframework */,
+				0616FD902F0CA6DF005415A4 /* Firebase.h */,
+				0616FD912F0CA6ED005415A4 /* module.modulemap */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		577B2D10949C97A79CAE3328 /* iosApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1EB591077D0B4C9C6E7F4105 /* Build configuration list for PBXNativeTarget "iosApp" */;
+			buildPhases = (
+				61A96BCF7796DC2E2B29B9BF /* Compile Kotlin Framework */,
+				46C0EF73C33FCFAC8C3C5BF0 /* Sources */,
+				01CC2F5A27CCD678B054B2CB /* Frameworks */,
+				1A56CAA92A5DD8C2BF99231D /* Resources */,
+				0616FDB82F0CAAD9005415A4 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A9FFEC9E666671694FD7B7D4 /* iosApp */,
+			);
+			name = iosApp;
+			packageProductDependencies = (
+			);
+			productName = iosApp;
+			productReference = 0777933F1269F7871BB1E68D /* NomadRates.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5CE8E940390DC69BFE1B54CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					577B2D10949C97A79CAE3328 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+				};
+			};
+			buildConfigurationList = E7AC35BC3E8C2197FBC4A7BE /* Build configuration list for PBXProject "iosApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FE183E4C55C98BDFEBF2481D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E8B697BE95FBD37A7EE47313 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				577B2D10949C97A79CAE3328 /* iosApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A56CAA92A5DD8C2BF99231D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		61A96BCF7796DC2E2B29B9BF /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		46C0EF73C33FCFAC8C3C5BF0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8DA2D83B3E6916E683C8F14E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E51D1985AA82CFA5165461CC /* Configuration */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "\"$(OTHER_LDFLAGS) -ObjC\"";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A751200D76025EFA5C82DBD0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E51D1985AA82CFA5165461CC /* Configuration */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "\"$(OTHER_LDFLAGS) -ObjC\"";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B29CF8AB27392698B29576E3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+				);
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+			};
+			name = Debug;
+		};
+		CCF968AF417FE6E055D4AF1C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+				);
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1EB591077D0B4C9C6E7F4105 /* Build configuration list for PBXNativeTarget "iosApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B29CF8AB27392698B29576E3 /* Debug */,
+				CCF968AF417FE6E055D4AF1C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E7AC35BC3E8C2197FBC4A7BE /* Build configuration list for PBXProject "iosApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DA2D83B3E6916E683C8F14E /* Debug */,
+				A751200D76025EFA5C82DBD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5CE8E940390DC69BFE1B54CE /* Project object */;
+}
