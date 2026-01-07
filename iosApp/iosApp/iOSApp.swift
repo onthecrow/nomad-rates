@@ -5,7 +5,7 @@ import ComposeApp
 struct iOSApp: App {
     
     init() {
-        Platform_iosKt.doInitFirebase()
+        Platform_iosKt.getPlatform().initialize()
     }
     
     var body: some Scene {

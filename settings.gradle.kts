@@ -29,3 +29,6 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":feature:currency:api")
+include(":feature:currency:impl")
+include(":core:navigation")
