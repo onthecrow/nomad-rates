@@ -17,7 +17,7 @@ google-services = "4.4.4"
 navigation3 = "1.0.0-alpha06"
 kotlinx-serialization = "1.6.3"
 firebase-crashlytics = "3.0.6"
-koin = "4.1.1"
+koin-bom = "4.1.1"
 
 [libraries]
 firebase-config = { module = "com.google.firebase:firebase-config" }
