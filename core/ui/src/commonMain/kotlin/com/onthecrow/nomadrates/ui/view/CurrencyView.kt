@@ -1,9 +1,7 @@
 package com.onthecrow.nomadrates.ui.view
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,11 +19,7 @@ fun CurrencyView(
     currencyName: String,
 ) {
     Row(
-        modifier = modifier.clickable(
-            enabled = true,
-            onClick = {},
-        )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -5,4 +5,6 @@ import com.onthecrow.nomadrates.uicore.State
 
 data class CurrencyListState(
     val currencies: List<CurrencyUI> = emptyList(),
+    val currenciesFiltered: List<CurrencyUI> = emptyList(),
+    val searchValue: String = "",
 ) : State
