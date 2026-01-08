@@ -34,6 +34,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 internal fun CurrencyListScreen(
     state: CurrencyListState,
     modifier: Modifier = Modifier,
+    onEvent: (CurrencyListEvent) -> Unit = {},
 ) {
     Box(
         modifier = modifier.imePadding(),
@@ -77,6 +78,7 @@ internal fun CurrencyListScreen(
             modifier = Modifier.systemBarsPadding()
                 .padding(top = 16.dp)
                 .onGloballyPositioned { searchBarHeight = it.positionOnScreen().y + it.size.height },
+            value = "",
         )
     }
 }

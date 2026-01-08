@@ -22,6 +22,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:navigation"))
             implementation(project(":core:ui"))
+            implementation(project(":core:ui-core"))
             implementation(project(":core:util"))
             implementation(project(":feature:currency:api"))
             implementation(project(":feature:currency:logic-api"))

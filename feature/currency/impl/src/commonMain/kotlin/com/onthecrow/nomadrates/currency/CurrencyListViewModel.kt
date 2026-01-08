@@ -1,30 +1,22 @@
 package com.onthecrow.nomadrates.currency
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.onthecrow.nomadrates.currency.mapper.toUi
-import com.onthecrow.nomadrates.currency.model.Currency
-import com.onthecrow.nomadrates.currency.model.CurrencyUI
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 
 internal class CurrencyListViewModel(
-    getCurrencyListUseCase: GetCurrencyListUseCase
-): ViewModel() {
-
-    private val _state = MutableStateFlow(CurrencyListState())
-    val state = _state.asStateFlow()
+    getCurrencyListUseCase: GetCurrencyListUseCase,
+    reducer: CurrencyListReducer,
+): BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
 
     init {
         getCurrencyListUseCase()
-            .map { currencies -> currencies?.map(Currency::toUi) ?: emptyList<CurrencyUI>() }
             .filterNotNull()
-            .onEach { currencies -> _state.update { it.copy(currencies = currencies) } }
+            .onEach { currencies -> onEvent(CurrencyListEvent.CurrencyListUpdate(currencies)) }
             .launchIn(viewModelScope)
     }
+
+    override fun getInitialState(): CurrencyListState = CurrencyListState()
 }
