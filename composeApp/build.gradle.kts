@@ -46,13 +46,10 @@ kotlin {
             firebaseGroups.forEach { groupName ->
                 val groupDir = File(libsDir, groupName)
                 if (groupDir.exists()) {
-                    // Ищем все папки, заканчивающиеся на .xcframework
                     groupDir.listFiles { file -> file.isDirectory && file.name.endsWith(".xcframework") }
                         ?.forEach { xcFramework ->
-                            // Формируем путь внутрь: libs/Group/Name.xcframework/ios-arm64/
                             val sliceDir = File(xcFramework, archSlice)
                             if (sliceDir.exists()) {
-                                // Имя фреймворка = имя файла без расширения (FirebaseAnalytics.xcframework -> FirebaseAnalytics)
                                 val frameworkName = xcFramework.name.removeSuffix(".xcframework")
                                 frameworks.add(frameworkName to sliceDir.absolutePath)
                             } else {
@@ -61,39 +58,31 @@ kotlin {
                         }
                 }
             }
-            // Убираем дубликаты, если один и тот же фреймворк (например FirebaseCore) лежит в разных папках
             return frameworks.distinctBy { it.first }
         }
 
         val allFrameworks = getFrameworks()
 
-        // Настройка Cinterop
         iosTarget.compilations.getByName("main") {
+            @Suppress("unused")
             val firebase by cinterops.creating {
                 defFile(project.file("src/nativeInterop/cinterop/firebase.def"))
 
-                // Твой список allFrameworks уже содержит правильные пути к ios-arm64 слайсам
                 allFrameworks.forEach { (_, path) ->
-                    // Используем extraOpts для надежной передачи флага компилятору
                     extraOpts("-compiler-option", "-F$path")
                 }
             }
         }
 
-        // Настройка бинарников (Линковка)
         iosTarget.binaries.all {
-            // 1. Передаем пути поиска (-F)
             allFrameworks.forEach { (_, path) ->
                 linkerOpts("-F$path")
             }
 
-            // 2. Линкуем сами фреймворки (-framework Name)
             allFrameworks.forEach { (name, _) ->
                 linkerOpts("-framework", name)
             }
 
-            // 3. Добавляем системные зависимости, которые нужны Firebase
-            // Firebase требует довольно много системных библиотек
             linkerOpts(
                 "-lsqlite3", "-lz", "-lc++",
                 "-framework", "StoreKit",
@@ -101,11 +90,10 @@ kotlin {
                 "-framework", "UIKit",
                 "-framework", "SystemConfiguration",
                 "-framework", "Security",
-                "-framework", "AdSupport",     // Нужно для Analytics
-                "-framework", "UserNotifications" // Может понадобиться
+                "-framework", "AdSupport",
+                "-framework", "UserNotifications"
             )
         }
-
     }
     
     sourceSets {
@@ -114,12 +102,13 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.analytics)
-            implementation(libs.firebase.config)
             implementation(libs.firebase.crashlytics)
         }
         commonMain.dependencies {
             implementation(project(":feature:currency:api"))
             implementation(project(":feature:currency:impl"))
+            implementation(project(":feature:currency:logic-api"))
+            implementation(project(":feature:currency:logic-impl"))
             implementation(project(":core:navigation"))
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -132,7 +121,6 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(project(":core:navigation"))
             implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {

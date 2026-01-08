@@ -1,5 +1,7 @@
 package com.onthecrow.nomadrates.currency.di
 
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.onthecrow.nomadrates.currency.CurrencyListRoute
 import com.onthecrow.nomadrates.currency.CurrencyListScreen
 import com.onthecrow.nomadrates.currency.CurrencyListViewModel
@@ -13,8 +15,10 @@ val currencyModule = module {
 
     registerScreen<CurrencyListRoute> { _, modifier ->
         val viewModel: CurrencyListViewModel = koinViewModel()
+        val state by viewModel.state.collectAsStateWithLifecycle()
+
         CurrencyListScreen(
-            viewModel = viewModel,
+            state = state,
             modifier = modifier,
         )
     }

@@ -29,6 +29,9 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":core:navigation")
+include(":core:util")
 include(":feature:currency:api")
 include(":feature:currency:impl")
-include(":core:navigation")
+include(":feature:currency:logic-api")
+include(":feature:currency:logic-impl")

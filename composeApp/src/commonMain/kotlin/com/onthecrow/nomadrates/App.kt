@@ -1,11 +1,20 @@
 package com.onthecrow.nomadrates
 
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -40,20 +49,53 @@ fun App() {
         }
         val backStack = rememberNavBackStack(config, CurrencyListRoute)
 
-        NavDisplay(
-            modifier = Modifier.systemBarsPadding()
-                .imePadding(),
-            backStack = backStack,
-        ) { key ->
-            NavEntry(
-                key = key,
-                content = @Composable {
-                    val entry = entryMap[key::class]
+        // TODO implement themes and use colors from there
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xff1e1f25))) {
+            NavDisplay(
+                modifier = Modifier.fillMaxSize(),
+                backStack = backStack,
+            ) { key ->
+                NavEntry(
+                    key = key,
+                    content = @Composable {
+                        val entry = entryMap[key::class]
 
-                    @Suppress("UNCHECKED_CAST")
-                    val typedEntry = entry as? FeatureEntry<NavKey>
-                    typedEntry?.content?.invoke(key, Modifier)
-                },
+                        @Suppress("UNCHECKED_CAST")
+                        val typedEntry = entry as? FeatureEntry<NavKey>
+                        typedEntry?.content?.invoke(key, Modifier)
+                    },
+                )
+            }
+
+            // TODO move these shades to ui-kit
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(WindowInsets.systemBars.asPaddingValues().calculateTopPadding() * 2)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.7f),
+                                Color.Transparent,
+                            )
+                        )
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() * 2)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.5f)
+                            )
+                        )
+                    )
             )
         }
     }
