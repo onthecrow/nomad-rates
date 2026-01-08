@@ -35,9 +35,6 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.coil.svg)
-            implementation(libs.coil.compose)
-            implementation(libs.coil3.coil.network.ktor3)
         }
         androidMain.dependencies {
             implementation(compose.uiTooling)
