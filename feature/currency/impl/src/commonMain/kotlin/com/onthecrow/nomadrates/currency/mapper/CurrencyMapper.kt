@@ -22,5 +22,6 @@ private fun String?.toFlagResourceUri(): String {
             println("error: $error")
             null
         }
-    } ?: Res.getUri("files/flags/wiphala.svg")
+        // TODO need to implement a placeholder or smth
+    } ?: Res.getUri("files/flags/ae.svg")
 }

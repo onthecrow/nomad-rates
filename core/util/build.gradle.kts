@@ -9,7 +9,7 @@ plugins {
 kotlin {
     @Suppress("UnstableApiUsage")
     androidLibrary {
-        namespace = "com.onthecrow.nomadrates.currency"
+        namespace = "com.onthecrow.nomadrates.util"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

@@ -36,8 +36,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -78,10 +80,11 @@ internal fun CurrencyListScreen(
             }
         }
 
+        val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
         val radialBrush = remember {
             Brush.radialGradient(
                 colors = listOf(
-                    Color.Black.copy(alpha = 0.5f),
+                    gradientBaseColor,
                     Color.Transparent,
                 ),
             )
@@ -110,8 +113,8 @@ internal fun CurrencyListScreen(
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                     )
-                    Text(text = state.currencies[index].nameShort, color = Color.White)
-                    Text(text = state.currencies[index].nameLong, color = Color.White)
+                    Text(text = state.currencies[index].nameShort, color = MaterialTheme.colorScheme.onBackground)
+                    Text(text = state.currencies[index].nameLong, color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -129,7 +132,7 @@ internal fun CurrencyListScreen(
                     .padding(12.dp),
                 imageVector = vectorResource(Res.drawable.ic_back),
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onBackground,
             )
             val interaction = remember { MutableInteractionSource() }
             val isFocused by interaction.collectIsFocusedAsState()
@@ -139,16 +142,26 @@ internal fun CurrencyListScreen(
                 value = "",
                 interactionSource = interaction,
                 onValueChange = {},
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontSize = 16.sp,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
                 decorationBox = { innerTextField ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = RoundedCornerShape(100.dp),
+                                clip = false,
+                            )
                             .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(100.dp)
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = RoundedCornerShape(100.dp),
                             )
                             .padding(horizontal = 16.dp, vertical = 12.dp),
-                        contentAlignment = Alignment.CenterStart
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -157,6 +170,7 @@ internal fun CurrencyListScreen(
                             Icon(
                                 imageVector = vectorResource(Res.drawable.ic_search),
                                 contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Box(
@@ -167,6 +181,7 @@ internal fun CurrencyListScreen(
                                     Text(
                                         text = "Search",
                                         fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                 }
                                 innerTextField()

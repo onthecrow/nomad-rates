@@ -105,11 +105,12 @@ kotlin {
             implementation(libs.firebase.crashlytics)
         }
         commonMain.dependencies {
+            implementation(project(":core:navigation"))
+            implementation(project(":core:ui"))
             implementation(project(":feature:currency:api"))
             implementation(project(":feature:currency:impl"))
             implementation(project(":feature:currency:logic-api"))
             implementation(project(":feature:currency:logic-impl"))
-            implementation(project(":core:navigation"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)

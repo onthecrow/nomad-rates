@@ -22,6 +22,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.onthecrow.nomadrates.currency.CurrencyListRoute
 import com.onthecrow.nomadrates.navigation.FeatureEntry
+import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -30,7 +31,11 @@ import org.koin.compose.getKoin
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    NomadRatesTheme(
+        // TODO take it from settings later
+        dynamicColor = false,
+        darkTheme = true,
+    ) {
         val koin = getKoin()
         val entries = remember(koin) { koin.getAll<FeatureEntry<*>>() }
         val entryMap = remember(entries) { entries.associateBy { it.keyClass } }
@@ -49,8 +54,10 @@ fun App() {
         }
         val backStack = rememberNavBackStack(config, CurrencyListRoute)
 
-        // TODO implement themes and use colors from there
-        Box(modifier = Modifier.fillMaxSize().background(Color(0xff1e1f25))) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
             NavDisplay(
                 modifier = Modifier.fillMaxSize(),
                 backStack = backStack,
@@ -76,7 +83,7 @@ fun App() {
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.7f),
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
                                 Color.Transparent,
                             )
                         )
@@ -92,7 +99,7 @@ fun App() {
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.5f)
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
                             )
                         )
                     )
