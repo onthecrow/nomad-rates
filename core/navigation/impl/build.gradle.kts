@@ -25,6 +25,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.koin.core)
         }
     }

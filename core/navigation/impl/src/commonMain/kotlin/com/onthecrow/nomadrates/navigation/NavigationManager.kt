@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.navigation
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -20,6 +21,8 @@ internal class NavigationManager(
     private val navigator: NavigatorImpl,
     private val startDestination: Destination,
 ): NavigationProvider, KoinComponent {
+
+    private val scopeController = NavigationScopeController()
 
     @Composable
     override fun Navigation(modifier: Modifier) {
@@ -40,6 +43,8 @@ internal class NavigationManager(
             }
         }
         val backStack = rememberNavBackStack(config, startDestination)
+
+        scopeController.ObserveBackStack(backStack)
 
         LaunchedEffect(navigator) {
             navigator.commands.collect { command ->
@@ -73,11 +78,15 @@ internal class NavigationManager(
             NavEntry(
                 key = key,
                 content = @Composable {
-                    val entry = entryMap[key::class]
-
-                    @Suppress("UNCHECKED_CAST")
-                    val typedEntry = entry as? FeatureEntry<NavKey>
-                    typedEntry?.content?.invoke(key, Modifier)
+                    NavigationScopeProvider(
+                        controller = scopeController,
+                        key = key
+                    ) {
+                        val entry = entryMap[key::class]
+                        @Suppress("UNCHECKED_CAST")
+                        val typedEntry = entry as? FeatureEntry<NavKey>
+                        typedEntry?.content?.invoke(key, Modifier.fillMaxSize())
+                    }
                 },
             )
         }
