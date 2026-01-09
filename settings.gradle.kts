@@ -29,7 +29,8 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include(":core:navigation")
+include(":core:navigation:api")
+include(":core:navigation:impl")
 include(":core:ui")
 include(":core:ui-core")
 include(":core:util")

@@ -2,12 +2,14 @@ package com.onthecrow.nomadrates.currency
 
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.currency.model.CurrencyUI
+import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 internal class CurrencyListViewModel(
+    private val navigator: Navigator,
     getCurrencyListUseCase: GetCurrencyListUseCase,
     reducer: CurrencyListReducer,
 ): BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
@@ -32,10 +34,11 @@ internal class CurrencyListViewModel(
     override fun getInitialState(): CurrencyListState = CurrencyListState()
 
     private fun onBackPress() {
-        // TODO: navigate back
+        navigator.navigateBack()
     }
 
     private fun onCurrencyClick(currency: CurrencyUI) {
-        // TODO: navigate to currency details
+        // TODO return result
+        navigator.navigateBack()
     }
 }

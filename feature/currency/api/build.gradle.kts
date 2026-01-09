@@ -16,7 +16,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core:navigation"))
+            implementation(project(":core:navigation:api"))
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)

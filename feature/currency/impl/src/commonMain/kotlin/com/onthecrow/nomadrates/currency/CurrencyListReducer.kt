@@ -5,7 +5,7 @@ import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.currency.model.CurrencyUI
 import com.onthecrow.nomadrates.uicore.Reducer
 
-class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEvent> {
+internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEvent> {
     override fun reduce(
         state: CurrencyListState,
         event: CurrencyListEvent

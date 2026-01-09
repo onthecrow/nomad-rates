@@ -23,7 +23,7 @@ fun BackButtonView(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+    val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
     val radialBrush = remember {
         Brush.radialGradient(
             colors = listOf(

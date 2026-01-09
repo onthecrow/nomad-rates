@@ -6,7 +6,7 @@ import com.onthecrow.nomadrates.util.toCurrencyName
 import com.onthecrow.nomadrates.util.toIsoCountryCode
 import nomadrates.feature.currency.impl.generated.resources.Res
 
-fun Currency.toUi(): CurrencyUI {
+internal fun Currency.toUi(): CurrencyUI {
     return CurrencyUI(
         flagIcon = this.code.toIsoCountryCode().toFlagResourceUri(),
         nameShort = this.code.uppercase(),

@@ -1,7 +1,7 @@
 package com.onthecrow.nomadrates.currency
 
-import com.onthecrow.nomadrates.navigation.AppRoute
+import com.onthecrow.nomadrates.navigation.Destination
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object CurrencyListRoute : AppRoute
+data object CurrencyListRoute : Destination

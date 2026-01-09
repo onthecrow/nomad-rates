@@ -8,13 +8,13 @@ import org.koin.core.module.Module
 import org.koin.dsl.bind
 import kotlin.reflect.KClass
 
-interface FeatureEntry<T : AppRoute> {
+interface FeatureEntry<T : Destination> {
     val keyClass: KClass<T>
     val serializer: KSerializer<T>
     val content: @Composable (T, Modifier) -> Unit
 }
 
-inline fun <reified T : AppRoute> Module.registerScreen(
+inline fun <reified T : Destination> Module.registerScreen(
     noinline content: @Composable (T, Modifier) -> Unit
 ) {
     val entry = object : FeatureEntry<T> {
