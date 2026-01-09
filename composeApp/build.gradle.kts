@@ -16,7 +16,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -95,7 +95,7 @@ kotlin {
             )
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -108,6 +108,8 @@ kotlin {
             implementation(project(":core:navigation:api"))
             implementation(project(":core:navigation:impl"))
             implementation(project(":core:ui"))
+            implementation(project(":feature:conversion:ui-api"))
+            implementation(project(":feature:conversion:ui-impl"))
             implementation(project(":feature:currency:api"))
             implementation(project(":feature:currency:impl"))
             implementation(project(":feature:currency:logic-api"))

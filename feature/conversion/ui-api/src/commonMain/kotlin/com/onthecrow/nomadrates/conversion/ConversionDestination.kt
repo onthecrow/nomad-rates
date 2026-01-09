@@ -1,7 +1,7 @@
-package com.onthecrow.nomadrates.currency
+package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.navigation.Destination
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object CurrencyListRoute : Destination
+data object ConversionDestination : Destination
