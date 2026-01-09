@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.conversion
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.navigation.Navigator
+import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -10,7 +11,8 @@ import kotlinx.coroutines.flow.onEach
 internal class ConversionViewModel(
     private val navigator: Navigator,
     reducer: ConversionReducer,
-): BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
+    screenResultDispatcher: ScreenResultDispatcher,
+) : BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
 
     init {
         event.onEach { event ->
@@ -20,6 +22,8 @@ internal class ConversionViewModel(
                 else -> {}
             }
         }
+            .launchIn(viewModelScope)
+        screenResultDispatcher.resultFlow
             .launchIn(viewModelScope)
     }
 

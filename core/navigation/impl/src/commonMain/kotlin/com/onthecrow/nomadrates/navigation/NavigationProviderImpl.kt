@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.core.component.KoinComponent
 
-internal class NavigationManager(
+internal class NavigationProviderImpl(
     private val navigator: NavigatorImpl,
     private val startDestination: Destination,
 ): NavigationProvider, KoinComponent {

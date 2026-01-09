@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.currency
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.currency.model.CurrencyUI
 import com.onthecrow.nomadrates.navigation.Navigator
+import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
@@ -10,9 +11,10 @@ import kotlinx.coroutines.flow.onEach
 
 internal class CurrencyListViewModel(
     private val navigator: Navigator,
+    private val screenResultDispatcher: ScreenResultDispatcher,
     getCurrencyListUseCase: GetCurrencyListUseCase,
     reducer: CurrencyListReducer,
-): BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
+) : BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
 
     init {
         getCurrencyListUseCase()
@@ -38,7 +40,9 @@ internal class CurrencyListViewModel(
     }
 
     private fun onCurrencyClick(currency: CurrencyUI) {
-        // TODO return result
+        screenResultDispatcher.dispatch(
+            CurrencyListScreenResult(currency.nameShort)
+        )
         navigator.navigateBack()
     }
 }
