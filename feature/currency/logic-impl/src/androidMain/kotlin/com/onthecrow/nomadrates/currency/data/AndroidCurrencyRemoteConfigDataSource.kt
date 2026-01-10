@@ -7,7 +7,7 @@ import com.google.firebase.remoteconfig.ConfigUpdateListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
 import com.google.firebase.remoteconfig.remoteConfig
 
-class AndroidCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSource() {
+internal class AndroidCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSource() {
 
     // TODO to di
     private val remoteConfig = Firebase.remoteConfig

@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.currency
 
 import androidx.lifecycle.viewModelScope
+import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.model.CurrencyUI
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher

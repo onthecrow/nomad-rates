@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 @Composable
-fun CurrencyView(
+fun CurrencyItemView(
     modifier: Modifier = Modifier,
     currencyIcon: String,
     currencyCode: String,

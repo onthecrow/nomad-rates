@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.ui.view.AppBarSearchView
-import com.onthecrow.nomadrates.ui.view.CurrencyView
+import com.onthecrow.nomadrates.ui.view.CurrencyItemView
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -66,7 +66,7 @@ internal fun CurrencyListScreen(
                 items = state.currenciesFiltered,
                 key = { it.nameShort },
             ) { currency ->
-                CurrencyView(
+                CurrencyItemView(
                     modifier = Modifier.fillMaxWidth()
                         .clickable(
                             enabled = true,

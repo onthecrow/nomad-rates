@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.di
 
 import com.onthecrow.nomadrates.conversion.ConversionDestination
+import com.onthecrow.nomadrates.conversion.di.conversionLogicModule
 import com.onthecrow.nomadrates.conversion.di.conversionModule
 import com.onthecrow.nomadrates.currency.di.currencyLogicModule
 import com.onthecrow.nomadrates.currency.di.currencyModule
@@ -17,6 +18,7 @@ val applicationModule = module {
     includes(
         navigationModule,
         conversionModule,
+        conversionLogicModule,
         currencyModule,
         currencyLogicModule,
     )

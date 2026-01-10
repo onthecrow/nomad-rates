@@ -7,7 +7,7 @@ import platform.Foundation.NSError
 import platform.Foundation.NSLog
 
 @OptIn(ExperimentalForeignApi::class)
-class IOSCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSource() {
+internal class IOSCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSource() {
 
     // TODO implement a proper di here
 //    private val remoteConfig: FIRRemoteConfig by lazy { FIRRemoteConfig.remoteConfig() }

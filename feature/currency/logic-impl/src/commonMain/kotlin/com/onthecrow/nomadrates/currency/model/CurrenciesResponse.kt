@@ -3,7 +3,7 @@ package com.onthecrow.nomadrates.currency.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CurrenciesResponse(
+internal data class CurrenciesResponse(
     val disclaimer: String,
     val license: String,
     val timestamp: Long,

@@ -1,4 +1,4 @@
-package com.onthecrow.nomadrates.currency
+package com.onthecrow.nomadrates.currency.domain
 
 import com.onthecrow.nomadrates.currency.model.Currency
 import kotlinx.coroutines.flow.Flow
