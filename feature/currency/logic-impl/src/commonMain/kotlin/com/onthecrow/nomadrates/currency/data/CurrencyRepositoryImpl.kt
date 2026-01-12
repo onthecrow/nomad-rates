@@ -1,38 +1,63 @@
 package com.onthecrow.nomadrates.currency.data
 
-import com.onthecrow.nomadrates.currency.model.CurrenciesResponse
 import com.onthecrow.nomadrates.currency.model.Currency
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteConfigDataSource: CurrencyRemoteConfigDataSource,
-): CurrencyRepository {
+    private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
+) : CurrencyRepository {
     override fun getCurrencyList(): Flow<List<Currency>?> {
-        return currencyRemoteConfigDataSource.configDataFlow
-            .map { currenciesResponse: CurrenciesResponse? ->
-                currenciesResponse?.rates?.map { (code, rate) ->
-                    Currency(
-                        code,
-                        conversionRate = rate
-                    )
+        return channelFlow {
+            launch {
+                currencyRemoteConfigDataSource.configDataFlow.collect { currenciesResponse ->
+                    val currencies = currenciesResponse?.rates?.map { (code, rate) ->
+                        Currency(
+                            code = code,
+                            conversionRate = rate
+                        )
+                    }
+                    println("Got currencies from config: $currencies")
+
+                    if (currencies != null) {
+                        currencyDatabaseDataSource.saveCurrencies(currencies)
+                    }
                 }
             }
+
+            currencyDatabaseDataSource.getCurrencies()
+                .collect { currencies -> send(currencies) }
+        }
     }
 
     override fun getCurrency(currencyCode: String): Flow<Currency?> {
-        return currencyRemoteConfigDataSource.configDataFlow
-            .map { response ->
-                val rate = response?.rates?.get(currencyCode)
-                rate?.let { Currency(code = currencyCode, conversionRate = it) }
+        return channelFlow {
+            launch {
+                currencyRemoteConfigDataSource.configDataFlow
+                    .map { response ->
+                        val rate = response?.rates?.get(currencyCode)
+                        rate?.let { Currency(code = currencyCode, conversionRate = it) }
+                    }
+                    .distinctUntilChanged()
+                    .collect { currency ->
+                        // todo error handling if currency is null?
+                        currencyDatabaseDataSource.saveCurrency(currency ?: return@collect)
+                    }
             }
-            .distinctUntilChanged()
+
+            currencyDatabaseDataSource.getCurrency(currencyCode)
+                .collect { currency -> send(currency) }
+        }
     }
 
     override fun getBaseCurrency(): Flow<Currency?> {
         return currencyRemoteConfigDataSource.configDataFlow
             // TODO implement a proper error handling
+            // TODO return it from db as well
             .map { currenciesResponse ->
                 val base = currenciesResponse?.base ?: return@map null
                 val rate = currenciesResponse.rates[base] ?: return@map null

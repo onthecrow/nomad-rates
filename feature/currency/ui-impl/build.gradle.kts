@@ -24,7 +24,7 @@ kotlin {
             implementation(project(":core:ui"))
             implementation(project(":core:ui-core"))
             implementation(project(":core:util"))
-            implementation(project(":feature:currency:api"))
+            implementation(project(":feature:currency:ui-api"))
             implementation(project(":feature:currency:logic-api"))
             implementation(compose.runtime)
             implementation(compose.foundation)

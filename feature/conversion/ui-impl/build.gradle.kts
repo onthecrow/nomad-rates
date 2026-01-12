@@ -26,7 +26,7 @@ kotlin {
             implementation(project(":core:util"))
             implementation(project(":feature:conversion:logic-api"))
             implementation(project(":feature:conversion:ui-api"))
-            implementation(project(":feature:currency:api"))
+            implementation(project(":feature:currency:ui-api"))
             implementation(project(":feature:currency:logic-api"))
             implementation(compose.runtime)
             implementation(compose.foundation)
