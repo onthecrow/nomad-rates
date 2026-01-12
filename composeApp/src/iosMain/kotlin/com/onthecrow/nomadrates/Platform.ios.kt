@@ -1,15 +1,16 @@
 package com.onthecrow.nomadrates
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import org.koin.dsl.module
 import platform.UIKit.UIDevice
 import platform.Foundation.NSLog
 import platform.Firebase.*
 
+@Suppress("unused")
 class IOSPlatform: Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+    override val platformModule = module {  }
 }
-
-actual fun getPlatform(): Platform = IOSPlatform()
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun initFirebase() {

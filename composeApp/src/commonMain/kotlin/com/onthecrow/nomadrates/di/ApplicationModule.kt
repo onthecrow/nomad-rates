@@ -5,10 +5,12 @@ import com.onthecrow.nomadrates.conversion.di.conversionLogicModule
 import com.onthecrow.nomadrates.conversion.di.conversionModule
 import com.onthecrow.nomadrates.currency.di.currencyLogicModule
 import com.onthecrow.nomadrates.currency.di.currencyModule
+import com.onthecrow.nomadrates.database.di.databaseModule
 import com.onthecrow.nomadrates.navigation.Destination
 import com.onthecrow.nomadrates.navigation.di.StartDestination
 import com.onthecrow.nomadrates.navigation.di.navigationModule
 import kotlinx.serialization.json.Json
+import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
@@ -16,6 +18,7 @@ val applicationModule = module {
     single { Json { ignoreUnknownKeys = true } }
     single(StartDestination) { ConversionDestination } bind Destination::class
     includes(
+        databaseModule,
         navigationModule,
         conversionModule,
         conversionLogicModule,

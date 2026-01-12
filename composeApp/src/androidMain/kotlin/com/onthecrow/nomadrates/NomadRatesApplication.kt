@@ -5,6 +5,6 @@ import android.app.Application
 class NomadRatesApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        getPlatform().initialize()
+        AppInitializer.initialize(AndroidPlatform(this))
     }
 }

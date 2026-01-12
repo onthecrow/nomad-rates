@@ -105,8 +105,10 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
+            implementation(project(":core:database"))
             implementation(project(":core:navigation:api"))
             implementation(project(":core:navigation:impl"))
             implementation(project(":core:ui"))

@@ -1,22 +1,8 @@
 package com.onthecrow.nomadrates
 
-import com.onthecrow.nomadrates.di.applicationModule
-import org.koin.core.context.startKoin
+import org.koin.core.module.Module
 
 interface Platform {
     val name: String
-    fun initialize() {
-        initFirebase()
-        initKoin()
-    }
-}
-
-expect fun getPlatform(): Platform
-
-expect fun initFirebase()
-
-private fun initKoin() = startKoin {
-    modules(
-        applicationModule,
-    )
+    val platformModule: Module
 }

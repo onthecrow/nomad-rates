@@ -5,7 +5,7 @@ import ComposeApp
 struct iOSApp: App {
     
     init() {
-        Platform_iosKt.getPlatform().initialize()
+        AppInitializer.shared.initialize(platform: IOSPlatform())
     }
     
     var body: some Scene {
