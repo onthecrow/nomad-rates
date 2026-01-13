@@ -43,7 +43,16 @@ fun AppBarSearchView(
     ) {
         BackButtonView(onClick = onBackPress)
         BasicTextField(
-            modifier = Modifier.weight(1f).height(48.dp),
+            modifier = Modifier.weight(1f)
+                .height(48.dp)
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(100.dp),
+                )
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(100.dp),
+                ),
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
@@ -53,55 +62,40 @@ fun AppBarSearchView(
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
             decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(
-                            elevation = 6.dp,
-                            shape = RoundedCornerShape(100.dp),
-                            clip = false,
-                        )
-                        .background(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(100.dp),
-                        ),
-                    contentAlignment = Alignment.CenterStart,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
+                    Icon(
+                        modifier = Modifier.padding(start = 12.dp),
+                        imageVector = vectorResource(Res.drawable.ic_search),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart,
                     ) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = "Search",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                        }
+                        innerTextField()
+                    }
+                    if (value.isNotEmpty()) {
                         Icon(
-                            modifier = Modifier.padding(start = 12.dp),
-                            imageVector = vectorResource(Res.drawable.ic_search),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable(enabled = true, onClick = onClearClick)
+                                .padding(12.dp),
+                            imageVector = vectorResource(Res.drawable.ic_cancel),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            if (value.isEmpty()) {
-                                Text(
-                                    text = "Search",
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                )
-                            }
-                            innerTextField()
-                        }
-                        if (value.isNotEmpty()) {
-                            Icon(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable(enabled = true, onClick = onClearClick)
-                                    .padding(12.dp),
-                                imageVector = vectorResource(Res.drawable.ic_cancel),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            )
-                        }
                     }
                 }
             }
