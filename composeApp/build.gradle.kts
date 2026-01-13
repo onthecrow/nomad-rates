@@ -111,6 +111,7 @@ kotlin {
             implementation(project(":core:database"))
             implementation(project(":core:navigation:api"))
             implementation(project(":core:navigation:impl"))
+            implementation(project(":core:remoteconfig"))
             implementation(project(":core:ui"))
             implementation(project(":feature:conversion:logic-api"))
             implementation(project(":feature:conversion:logic-impl"))

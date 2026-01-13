@@ -1,4 +1,4 @@
-package com.onthecrow.nomadrates.currency.data
+package com.onthecrow.nomadrates.remoteconfig
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Firebase.FIRRemoteConfig
@@ -7,7 +7,7 @@ import platform.Foundation.NSError
 import platform.Foundation.NSLog
 
 @OptIn(ExperimentalForeignApi::class)
-internal class IOSCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSource() {
+internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
 
     // TODO implement a proper di here
 //    private val remoteConfig: FIRRemoteConfig by lazy { FIRRemoteConfig.remoteConfig() }
@@ -35,8 +35,7 @@ internal class IOSCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSourc
             if (error != null) {
                 logError("Initial Fetch Error", error)
             } else {
-                updateData()
-                updateHistoricalData()
+                onConfigUpdated()
             }
         }
     }
@@ -44,24 +43,15 @@ internal class IOSCurrencyRemoteConfigDataSource : CurrencyRemoteConfigDataSourc
     private fun checkUpdates(configUpdate: FIRRemoteConfigUpdate?) {
         val updatedKeys = configUpdate?.updatedKeys ?: return
 
-        if (updatedKeys.contains(KEY_DATA)) {
-            updateData()
-        }
-
-        val stringKeys = updatedKeys.map { it.toString() }
-        if (stringKeys.any { it.startsWith(PREFIX_CURRENCY) }) {
-            updateHistoricalData()
+        configFields.forEach { configField ->
+            if (updatedKeys.contains(configField)) {
+                onConfigUpdated(configField)
+            }
         }
     }
 
     override fun getString(key: String): String {
         return FIRRemoteConfig.remoteConfig().configValueForKey(key).stringValue ?: ""
-    }
-
-    override fun getKeysByPrefix(prefix: String): Set<String> {
-        return FIRRemoteConfig.remoteConfig().keysWithPrefix(prefix)
-            .mapNotNull { it?.toString() }
-            .toSet()
     }
 
     private fun logError(tag: String, error: NSError) {

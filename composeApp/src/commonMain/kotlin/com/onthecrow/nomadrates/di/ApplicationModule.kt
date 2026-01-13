@@ -9,8 +9,8 @@ import com.onthecrow.nomadrates.database.di.databaseModule
 import com.onthecrow.nomadrates.navigation.Destination
 import com.onthecrow.nomadrates.navigation.di.StartDestination
 import com.onthecrow.nomadrates.navigation.di.navigationModule
+import com.onthecrow.nomadrates.remoteconfig.di.remoteConfigModule
 import kotlinx.serialization.json.Json
-import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
@@ -20,6 +20,7 @@ val applicationModule = module {
     includes(
         databaseModule,
         navigationModule,
+        remoteConfigModule,
         conversionModule,
         conversionLogicModule,
         currencyModule,

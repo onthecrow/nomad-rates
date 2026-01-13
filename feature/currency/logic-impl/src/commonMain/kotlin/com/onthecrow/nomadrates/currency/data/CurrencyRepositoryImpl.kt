@@ -8,13 +8,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 internal class CurrencyRepositoryImpl(
-    private val currencyRemoteConfigDataSource: CurrencyRemoteConfigDataSource,
+    private val currencyRemoteDataSource: CurrencyRemoteDataSource,
     private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
 ) : CurrencyRepository {
     override fun getCurrencyList(): Flow<List<Currency>?> {
         return channelFlow {
             launch {
-                currencyRemoteConfigDataSource.configDataFlow.collect { currenciesResponse ->
+                currencyRemoteDataSource.configDataFlow.collect { currenciesResponse ->
                     val currencies = currenciesResponse?.rates?.map { (code, rate) ->
                         Currency(
                             code = code,
@@ -37,7 +37,7 @@ internal class CurrencyRepositoryImpl(
     override fun getCurrency(currencyCode: String): Flow<Currency?> {
         return channelFlow {
             launch {
-                currencyRemoteConfigDataSource.configDataFlow
+                currencyRemoteDataSource.configDataFlow
                     .map { response ->
                         val rate = response?.rates?.get(currencyCode)
                         rate?.let { Currency(code = currencyCode, conversionRate = it) }
@@ -55,7 +55,7 @@ internal class CurrencyRepositoryImpl(
     }
 
     override fun getBaseCurrency(): Flow<Currency?> {
-        return currencyRemoteConfigDataSource.configDataFlow
+        return currencyRemoteDataSource.configDataFlow
             // TODO implement a proper error handling
             // TODO return it from db as well
             .map { currenciesResponse ->

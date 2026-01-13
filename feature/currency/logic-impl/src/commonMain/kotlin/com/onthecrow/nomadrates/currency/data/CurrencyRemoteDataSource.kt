@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-internal abstract class CurrencyRemoteConfigDataSource : KoinComponent {
+internal abstract class CurrencyRemoteDataSource : KoinComponent {
 
     private val json: Json by inject()
     private val _configDataFlow = MutableStateFlow<CurrenciesResponse?>(null)
@@ -41,7 +41,7 @@ internal abstract class CurrencyRemoteConfigDataSource : KoinComponent {
         }
     }
 
-    companion object {
+    companion object Companion {
         protected const val PREFIX_CURRENCY = "currency_"
         protected const val KEY_DATA = "exchange_rates"
         private const val DELIMITER_HISTORICAL_VALUE = ";"
