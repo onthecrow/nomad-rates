@@ -100,6 +100,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project(":core:database"))
+            implementation(project(":core:remoteconfig"))
             implementation(project(":feature:currency:logic-api"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(project.dependencies.platform(libs.koin.bom))

@@ -32,6 +32,8 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.coil.svg)
+            implementation(libs.coil.compose)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)

@@ -1,8 +1,7 @@
 package com.onthecrow.nomadrates.currency
 
 import com.onthecrow.nomadrates.currency.mapper.toUi
-import com.onthecrow.nomadrates.currency.model.Currency
-import com.onthecrow.nomadrates.currency.model.CurrencyUI
+import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEvent> {
@@ -13,7 +12,11 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         return when (event) {
             is CurrencyListEvent.OnCurrencyListUpdate -> reduceCurrencyListUpdate(state, event)
             is CurrencyListEvent.OnSearchValueChange -> reduceOnSearchValueChange(state, event)
-            is CurrencyListEvent.OnSearchValueClear -> state.copy(searchValue = "", currenciesFiltered = state.currencies)
+            is CurrencyListEvent.OnSearchValueClear -> state.copy(
+                searchValue = "",
+                currenciesFiltered = state.currencies
+            )
+
             else -> state
         }
     }
@@ -22,32 +25,42 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         state: CurrencyListState,
         event: CurrencyListEvent.OnSearchValueChange
     ): CurrencyListState {
-        return state.copy(searchValue = event.value, currenciesFiltered = state.currencies.filterCurrencies(event.value))
+        return state.copy(
+            searchValue = event.value,
+            currenciesFiltered = state.currencies.filterCurrencies(event.value)
+        )
     }
 
     private fun reduceCurrencyListUpdate(
         state: CurrencyListState,
         event: CurrencyListEvent.OnCurrencyListUpdate
     ): CurrencyListState {
-        val mappedCurrencies = event.currencies.map(Currency::toUi)
+        println("$$$$ pre-mapped: ${event.currencies}")
+        val mappedCurrencies = event.currencies.toUi()
+        println("$$$$ mapped: $mappedCurrencies")
         return state.copy(
             currencies = mappedCurrencies,
             currenciesFiltered = mappedCurrencies.filterCurrencies(state.searchValue),
-        )
+        ).also {
+            println("$$$$ reduced: ${it.currenciesFiltered}")
+        }
     }
 
-    private fun List<CurrencyUI>.filterCurrencies(
+    private fun List<CurrencyListItem>.filterCurrencies(
         query: String
-    ): List<CurrencyUI> {
+    ): List<CurrencyListItem> {
         return if (query.isEmpty()) {
             this
         } else {
             this.filter { currency ->
-                val codeMatch = currency.nameShort.contains(
+                if (currency !is CurrencyListItem.Data) return@filter false
+                if (currency.isFeatured || currency.isFavourite) return@filter false
+
+                val codeMatch = currency.currencyCode.contains(
                     other = query,
                     ignoreCase = true,
                 )
-                val nameMatch = currency.nameLong.contains(
+                val nameMatch = currency.currencyName.contains(
                     other = query,
                     ignoreCase = true,
                 )

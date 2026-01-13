@@ -4,10 +4,10 @@ import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.GetCurrencyListUseCaseImpl
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
 import com.onthecrow.nomadrates.currency.GetCurrencyUseCaseImpl
-import com.onthecrow.nomadrates.currency.data.CurrencyDao
-import com.onthecrow.nomadrates.currency.data.CurrencyDatabase
-import com.onthecrow.nomadrates.currency.data.CurrencyDatabaseConstructor
-import com.onthecrow.nomadrates.currency.data.CurrencyDatabaseDataSource
+import com.onthecrow.nomadrates.currency.data.database.CurrencyDao
+import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabase
+import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseConstructor
+import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
 import com.onthecrow.nomadrates.currency.data.CurrencyRepository
 import org.koin.dsl.module
 import com.onthecrow.nomadrates.currency.data.CurrencyRepositoryImpl
@@ -17,7 +17,7 @@ import org.koin.core.module.Module
 
 val currencyLogicModule: Module = module {
     includes(currencyLogicPlatformModule)
-    single<CurrencyRepository> { CurrencyRepositoryImpl(get(), get()) }
+    single<CurrencyRepository> { CurrencyRepositoryImpl(get(), get(), get()) }
     single<GetCurrencyListUseCase> { GetCurrencyListUseCaseImpl(get()) }
     single<GetCurrencyUseCase> { GetCurrencyUseCaseImpl(get()) }
     single<CurrencyDao> {

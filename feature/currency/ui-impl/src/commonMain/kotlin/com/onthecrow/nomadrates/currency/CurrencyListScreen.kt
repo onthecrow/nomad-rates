@@ -1,6 +1,5 @@
 package com.onthecrow.nomadrates.currency
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,8 +26,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.onthecrow.nomadrates.currency.view.CurrencyListItemView
 import com.onthecrow.nomadrates.ui.view.AppBarSearchView
-import com.onthecrow.nomadrates.ui.view.CurrencyItemView
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -64,19 +63,14 @@ internal fun CurrencyListScreen(
         ) {
             items(
                 items = state.currenciesFiltered,
-                key = { it.nameShort },
+                key = { it.listKey },
+                contentType = { it::class },
             ) { currency ->
-                CurrencyItemView(
+                CurrencyListItemView(
                     modifier = Modifier.fillMaxWidth()
-                        .clickable(
-                            enabled = true,
-                            onClick = { onEvent(CurrencyListEvent.OnCurrencyClick(currency)) },
-                        )
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
                         .animateItem(),
-                    currencyIcon = currency.flagIcon,
-                    currencyCode = currency.nameShort,
-                    currencyName = currency.nameLong,
+                    onClick = { onEvent(CurrencyListEvent.OnCurrencyClick(it)) },
+                    state = currency,
                 )
             }
         }

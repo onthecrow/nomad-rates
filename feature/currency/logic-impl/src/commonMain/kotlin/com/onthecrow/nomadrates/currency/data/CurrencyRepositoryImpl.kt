@@ -1,33 +1,40 @@
 package com.onthecrow.nomadrates.currency.data
 
+import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
 import com.onthecrow.nomadrates.currency.model.Currency
+import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.onEach
 
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteDataSource: CurrencyRemoteDataSource,
     private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
+    private val remoteConfigProvider: RemoteConfigProvider,
 ) : CurrencyRepository {
     override fun getCurrencyList(): Flow<List<Currency>?> {
         return channelFlow {
-            launch {
-                currencyRemoteDataSource.configDataFlow.collect { currenciesResponse ->
-                    val currencies = currenciesResponse?.rates?.map { (code, rate) ->
-                        Currency(
-                            code = code,
-                            conversionRate = rate
-                        )
-                    }
-                    println("Got currencies from config: $currencies")
-
-                    if (currencies != null) {
-                        currencyDatabaseDataSource.saveCurrencies(currencies)
-                    }
+            combine(
+                remoteConfigProvider.getRemoteConfigFlow(),
+                currencyRemoteDataSource.configDataFlow,
+            ) { remoteConfig, currenciesResponse ->
+                val currencies = currenciesResponse?.rates?.map { (code, rate) ->
+                    Currency(
+                        code = code,
+                        conversionRate = rate,
+                        isFeatured = code in remoteConfig.featuredCurrencies,
+                        isFavourite = false,
+                    )
                 }
-            }
+
+                if (currencies != null) {
+                    currencyDatabaseDataSource.saveCurrencies(currencies)
+                }
+            }.launchIn(this)
 
             currencyDatabaseDataSource.getCurrencies()
                 .collect { currencies -> send(currencies) }
@@ -36,20 +43,27 @@ internal class CurrencyRepositoryImpl(
 
     override fun getCurrency(currencyCode: String): Flow<Currency?> {
         return channelFlow {
-            launch {
-                currencyRemoteDataSource.configDataFlow
-                    .map { response ->
-                        val rate = response?.rates?.get(currencyCode)
-                        rate?.let { Currency(code = currencyCode, conversionRate = it) }
-                    }
-                    .distinctUntilChanged()
-                    .collect { currency ->
-                        // todo error handling if currency is null?
-                        currencyDatabaseDataSource.saveCurrency(currency ?: return@collect)
-                    }
+            combine(
+                currencyRemoteDataSource.configDataFlow,
+                remoteConfigProvider.getRemoteConfigFlow(),
+            ) { currenciesResponse, remoteConfig ->
+                val rate = currenciesResponse?.rates?.get(currencyCode)
+                rate?.let {
+                    Currency(
+                        code = currencyCode,
+                        conversionRate = it,
+                        isFeatured = currencyCode in remoteConfig.featuredCurrencies,
+                        isFavourite = false,
+                    )
+                }
             }
+                .distinctUntilChanged()
+                .onEach { currency ->
+                    currencyDatabaseDataSource.saveCurrency(currency ?: return@onEach)
+                }
+                .launchIn(this)
 
-            currencyDatabaseDataSource.getCurrency(currencyCode)
+            currencyDatabaseDataSource.getCurrencyFlow(currencyCode)
                 .collect { currency -> send(currency) }
         }
     }
@@ -61,7 +75,7 @@ internal class CurrencyRepositoryImpl(
             .map { currenciesResponse ->
                 val base = currenciesResponse?.base ?: return@map null
                 val rate = currenciesResponse.rates[base] ?: return@map null
-                return@map Currency(code = base, conversionRate = rate)
+                return@map Currency(code = base, conversionRate = rate, isFeatured = false, isFavourite = false)
             }
             .distinctUntilChanged()
     }

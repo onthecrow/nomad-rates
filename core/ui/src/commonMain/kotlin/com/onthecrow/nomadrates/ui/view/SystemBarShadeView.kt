@@ -9,12 +9,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 enum class ShadePosition {
     TOP, BOTTOM;
@@ -33,19 +39,23 @@ fun BoxScope.SystemBarShadeView(
 ) {
     val shadeColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
     val systemBarsPaddings = WindowInsets.systemBars.asPaddingValues()
-    val state = remember(position, systemBarsPaddings, shadeColor) {
-        when (position) {
-            ShadePosition.TOP -> SystemBarShadeViewState(
-                alignment = Alignment.TopCenter,
-                height = systemBarsPaddings.calculateTopPadding() * 2,
-                colors = listOf(shadeColor, Color.Transparent),
-            )
-            ShadePosition.BOTTOM -> SystemBarShadeViewState(
-                alignment = Alignment.BottomCenter,
-                height = systemBarsPaddings.calculateBottomPadding() * 2,
-                colors = listOf(Color.Transparent, shadeColor),
-            )
-        }
+    var state by remember { mutableStateOf(SystemBarShadeViewState(Alignment.TopCenter, height = 0.dp, colors = emptyList())) }
+    LaunchedEffect(position, systemBarsPaddings, shadeColor) {
+        snapshotFlow { systemBarsPaddings }
+            .collect { currentList ->
+                state = when (position) {
+                    ShadePosition.TOP -> SystemBarShadeViewState(
+                        alignment = Alignment.TopCenter,
+                        height = currentList.calculateTopPadding() * 2,
+                        colors = listOf(shadeColor, Color.Transparent),
+                    )
+                    ShadePosition.BOTTOM -> SystemBarShadeViewState(
+                        alignment = Alignment.BottomCenter,
+                        height = currentList.calculateBottomPadding() * 2,
+                        colors = listOf(Color.Transparent, shadeColor),
+                    )
+                }
+            }
     }
 
     Box(

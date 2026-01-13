@@ -2,7 +2,7 @@ package com.onthecrow.nomadrates.currency
 
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
-import com.onthecrow.nomadrates.currency.model.CurrencyUI
+import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
@@ -21,6 +21,7 @@ internal class CurrencyListViewModel(
         getCurrencyListUseCase()
             .filterNotNull()
             .onEach { currencies ->
+                println("$$$$ loaded: $currencies")
                 onEvent(CurrencyListEvent.OnCurrencyListUpdate(currencies))
             }
             .launchIn(viewModelScope)
@@ -40,9 +41,9 @@ internal class CurrencyListViewModel(
         navigator.navigateBack()
     }
 
-    private fun onCurrencyClick(currency: CurrencyUI) {
+    private fun onCurrencyClick(currency: CurrencyListItem.Data) {
         screenResultDispatcher.dispatch(
-            CurrencyListScreenResult(currency.nameShort)
+            CurrencyListScreenResult(currency.currencyCode)
         )
         navigator.navigateBack()
     }
