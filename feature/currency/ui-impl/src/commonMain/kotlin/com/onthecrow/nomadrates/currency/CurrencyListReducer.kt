@@ -12,6 +12,7 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         return when (event) {
             is CurrencyListEvent.OnCurrencyListUpdate -> reduceCurrencyListUpdate(state, event)
             // TODO implement db/domain search? + currency code search priority
+            // TODO ‼️ favourite currencies doesn't appear in search results
             is CurrencyListEvent.OnSearchValueChange -> reduceOnSearchValueChange(state, event)
             is CurrencyListEvent.OnSearchValueClear -> state.copy(
                 searchValue = "",
