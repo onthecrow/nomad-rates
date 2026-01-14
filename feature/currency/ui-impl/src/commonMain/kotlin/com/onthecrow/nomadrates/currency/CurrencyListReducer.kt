@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.currency
 
 import com.onthecrow.nomadrates.currency.mapper.toUi
 import com.onthecrow.nomadrates.currency.model.CurrencyListItem
+import com.onthecrow.nomadrates.currency.model.ListGroup
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEvent> {
@@ -12,7 +13,6 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         return when (event) {
             is CurrencyListEvent.OnCurrencyListUpdate -> reduceCurrencyListUpdate(state, event)
             // TODO implement db/domain search? + currency code search priority
-            // TODO ‼️ favourite currencies doesn't appear in search results
             is CurrencyListEvent.OnSearchValueChange -> reduceOnSearchValueChange(state, event)
             is CurrencyListEvent.OnSearchValueClear -> state.copy(
                 searchValue = "",
@@ -50,19 +50,24 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         return if (query.isEmpty()) {
             this
         } else {
-            this.filter { currency ->
-                if (currency !is CurrencyListItem.Data) return@filter false
-                if (currency.isFeatured || currency.isFavourite) return@filter false
-
-                val codeMatch = currency.currencyCode.contains(
-                    other = query,
-                    ignoreCase = true,
-                )
-                val nameMatch = currency.currencyName.contains(
-                    other = query,
-                    ignoreCase = true,
-                )
-                codeMatch || nameMatch
+            this.let { currencies ->
+                val codeFiltered = currencies.filter { currencyListItem ->
+                    if (currencyListItem !is CurrencyListItem.Data) return@filter false
+                    if (currencyListItem.listGroup != ListGroup.ALL) return@filter false
+                    currencyListItem.currencyCode.contains(
+                        other = query,
+                        ignoreCase = true,
+                    )
+                }
+                val nameFiltered = currencies.filter { currencyListItem ->
+                    if (currencyListItem !is CurrencyListItem.Data) return@filter false
+                    if (currencyListItem.listGroup != ListGroup.ALL) return@filter false
+                    currencyListItem.currencyName.contains(
+                        other = query,
+                        ignoreCase = true,
+                    )
+                }
+                return@let codeFiltered.union(nameFiltered).toList()
             }
         }
     }

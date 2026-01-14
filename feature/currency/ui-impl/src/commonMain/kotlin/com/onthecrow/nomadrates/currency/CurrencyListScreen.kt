@@ -24,6 +24,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.currency.view.CurrencyListItemView
 import com.onthecrow.nomadrates.ui.view.AppBarSearchView
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import nomadrates.feature.currency.ui_impl.generated.resources.Res
 import nomadrates.feature.currency.ui_impl.generated.resources.currency_list_search_bar_hint
@@ -52,6 +55,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 internal fun CurrencyListScreen(
     state: CurrencyListState,
     modifier: Modifier = Modifier,
+    eventFlow: Flow<CurrencyListEvent> = emptyFlow(),
     onEvent: (CurrencyListEvent) -> Unit = {},
 ) {
     Box(
@@ -80,6 +84,15 @@ internal fun CurrencyListScreen(
                     start = calculateStartPadding(layoutDirection),
                     end = calculateEndPadding(layoutDirection),
                 )
+            }
+        }
+
+        LaunchedEffect(eventFlow) {
+            eventFlow.collect { event ->
+                when (event) {
+                    is CurrencyListEvent.OnScrollToTop -> { listState.animateScrollToItem(0) }
+                    else -> {}
+                }
             }
         }
 

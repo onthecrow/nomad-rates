@@ -22,6 +22,7 @@ val currencyModule = module {
 
         CurrencyListScreen(
             state = state,
+            eventFlow = viewModel.eventFlow,
             modifier = modifier,
             onEvent = viewModel::onEvent,
         )

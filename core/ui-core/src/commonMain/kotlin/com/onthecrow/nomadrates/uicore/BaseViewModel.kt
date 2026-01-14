@@ -16,7 +16,7 @@ abstract class BaseViewModel<E : Event, S : State, R : Reducer<S, E>>(
 
     private val _event: MutableSharedFlow<E> =
         MutableSharedFlow(extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val event = _event.asSharedFlow()
+    val eventFlow = _event.asSharedFlow()
 
     private val _state: StateFlow<S> = _event.runningFold(getInitialState(), reducer::reduce)
         .stateIn(viewModelScope, SharingStarted.Eagerly, getInitialState())

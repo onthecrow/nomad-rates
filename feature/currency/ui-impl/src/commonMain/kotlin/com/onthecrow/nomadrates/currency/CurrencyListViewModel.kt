@@ -26,11 +26,12 @@ internal class CurrencyListViewModel(
                 onEvent(CurrencyListEvent.OnCurrencyListUpdate(currencies))
             }
             .launchIn(viewModelScope)
-        event.onEach { event ->
+        eventFlow.onEach { event ->
             when (event) {
                 is CurrencyListEvent.OnBackPress -> onBackPress()
                 is CurrencyListEvent.OnCurrencyClick -> onCurrencyClick(event.currencyCode)
                 is CurrencyListEvent.OnAddToFavouriteClick -> onAddToFavouriteClick(event.currencyCode)
+                is CurrencyListEvent.OnSearchValueChange -> onSearchValueChange(event.value)
                 else -> {}
             }
         }
@@ -54,5 +55,11 @@ internal class CurrencyListViewModel(
             CurrencyListScreenResult(currencyCode)
         )
         navigator.navigateBack()
+    }
+
+    private fun onSearchValueChange(value: String) {
+        if (value.isNotEmpty()) {
+            onEvent(CurrencyListEvent.OnScrollToTop)
+        }
     }
 }

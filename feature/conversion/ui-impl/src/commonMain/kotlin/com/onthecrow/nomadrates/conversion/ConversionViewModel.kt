@@ -31,7 +31,7 @@ internal class ConversionViewModel(
     private var conversionCurrencySource: ConversionCurrencySource = ConversionCurrencySource.FROM
 
     init {
-        event.onEach { event ->
+        eventFlow.onEach { event ->
             when (event) {
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
