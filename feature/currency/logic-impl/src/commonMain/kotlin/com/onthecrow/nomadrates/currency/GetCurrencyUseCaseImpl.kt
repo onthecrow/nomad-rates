@@ -9,6 +9,6 @@ internal class GetCurrencyUseCaseImpl(
     private val currencyRepository: CurrencyRepository
 ) : GetCurrencyUseCase {
     override fun invoke(currencyCode: String): Flow<Currency?> {
-        return currencyRepository.getCurrency(currencyCode)
+        return currencyRepository.getCurrencyFlow(currencyCode)
     }
 }

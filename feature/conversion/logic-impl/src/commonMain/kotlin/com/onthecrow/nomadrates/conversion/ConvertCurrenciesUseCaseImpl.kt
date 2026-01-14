@@ -14,8 +14,8 @@ class ConvertCurrenciesUseCaseImpl(
     ): Double {
         // TODO implement error handling
         val base = currencyRepository.getBaseCurrency().first() ?: return amount
-        val from = currencyRepository.getCurrency(fromCurrencyCode).first() ?: return amount
-        val to = currencyRepository.getCurrency(toCurrencyCode).first() ?: return amount
+        val from = currencyRepository.getCurrencyFlow(fromCurrencyCode).first() ?: return amount
+        val to = currencyRepository.getCurrencyFlow(toCurrencyCode).first() ?: return amount
 
         val inBaseCurrency = amount / from.conversionRate
         return inBaseCurrency * to.conversionRate

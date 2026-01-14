@@ -33,6 +33,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun AppBarSearchView(
     modifier: Modifier = Modifier,
+    hint: String,
     value: String,
     onBackPress: () -> Unit = {},
     onValueChange: (String) -> Unit = {},
@@ -79,7 +80,7 @@ fun AppBarSearchView(
                     ) {
                         if (value.isEmpty()) {
                             Text(
-                                text = "Search",
+                                text = hint,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
@@ -110,6 +111,6 @@ fun AppBarSearchView(
 @Composable
 private fun AppBarSearchViewPreview() {
     MaterialTheme {
-        AppBarSearchView(value = "")
+        AppBarSearchView(value = "", hint = "")
     }
 }

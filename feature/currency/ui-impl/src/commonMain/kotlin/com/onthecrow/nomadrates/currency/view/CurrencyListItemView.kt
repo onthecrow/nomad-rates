@@ -6,15 +6,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.StrongPastelRed
+import nomadrates.feature.currency.ui_impl.generated.resources.Res
+import nomadrates.feature.currency.ui_impl.generated.resources.ic_like
+import nomadrates.feature.currency.ui_impl.generated.resources.ic_like_filled
+import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 
@@ -22,10 +31,17 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 internal fun CurrencyListItemView(
     state: CurrencyListItem,
     modifier: Modifier = Modifier,
-    onClick: (CurrencyListItem.Data) -> Unit = {},
+    onItemClick: (CurrencyListItem.Data) -> Unit = {},
+    onFavouriteClick: (CurrencyListItem.Data) -> Unit = {},
 ) {
     when (state) {
-        is CurrencyListItem.Data -> DataItemView(modifier = modifier, state = state, onClick = onClick)
+        is CurrencyListItem.Data -> DataItemView(
+            modifier = modifier,
+            state = state,
+            onClick = onItemClick,
+            onFavouriteClick = onFavouriteClick,
+        )
+
         is CurrencyListItem.Header -> HeaderItemView(modifier = modifier, state = state)
     }
 }
@@ -35,13 +51,14 @@ private fun DataItemView(
     state: CurrencyListItem.Data,
     modifier: Modifier = Modifier,
     onClick: (CurrencyListItem.Data) -> Unit = {},
+    onFavouriteClick: (CurrencyListItem.Data) -> Unit,
 ) {
     Row(
         modifier = modifier.clickable(
             enabled = true,
             onClick = { onClick(state) },
         )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -55,8 +72,28 @@ private fun DataItemView(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
+            modifier = Modifier.weight(1f),
             text = state.currencyName,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
             color = MaterialTheme.colorScheme.onBackground,
+        )
+        Icon(
+            modifier = Modifier.clip(CircleShape)
+                .clickable(enabled = true, onClick = { onFavouriteClick(state) })
+                .padding(12.dp),
+            imageVector = vectorResource(
+                when {
+                    state.isFavourite -> Res.drawable.ic_like_filled
+                    else -> Res.drawable.ic_like
+                }
+            ),
+            contentDescription = null,
+            tint = when {
+                // todo use custom theme instead eg. NomadRatesTheme.colorScheme.StrongPastelRed
+                state.isFavourite -> StrongPastelRed
+                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = .5f)
+            },
         )
     }
 }

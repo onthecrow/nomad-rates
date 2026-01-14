@@ -5,12 +5,13 @@ import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEvent> {
-    override fun reduce(
+    override suspend fun reduce(
         state: CurrencyListState,
         event: CurrencyListEvent
     ): CurrencyListState {
         return when (event) {
             is CurrencyListEvent.OnCurrencyListUpdate -> reduceCurrencyListUpdate(state, event)
+            // TODO implement db/domain search?
             is CurrencyListEvent.OnSearchValueChange -> reduceOnSearchValueChange(state, event)
             is CurrencyListEvent.OnSearchValueClear -> state.copy(
                 searchValue = "",
@@ -31,19 +32,15 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         )
     }
 
-    private fun reduceCurrencyListUpdate(
+    private suspend fun reduceCurrencyListUpdate(
         state: CurrencyListState,
         event: CurrencyListEvent.OnCurrencyListUpdate
     ): CurrencyListState {
-        println("$$$$ pre-mapped: ${event.currencies}")
         val mappedCurrencies = event.currencies.toUi()
-        println("$$$$ mapped: $mappedCurrencies")
         return state.copy(
             currencies = mappedCurrencies,
             currenciesFiltered = mappedCurrencies.filterCurrencies(state.searchValue),
-        ).also {
-            println("$$$$ reduced: ${it.currenciesFiltered}")
-        }
+        )
     }
 
     private fun List<CurrencyListItem>.filterCurrencies(

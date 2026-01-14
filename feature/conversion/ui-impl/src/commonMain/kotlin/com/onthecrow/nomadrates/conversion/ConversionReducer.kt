@@ -4,7 +4,7 @@ import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
-    override fun reduce(
+    override suspend fun reduce(
         state: ConversionState,
         event: ConversionEvent
     ): ConversionState {

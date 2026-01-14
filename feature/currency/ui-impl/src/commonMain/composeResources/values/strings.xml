@@ -1,0 +1,6 @@
+<resources>
+    <string name="currency_list_search_bar_hint">Search for currency</string>
+    <string name="currency_list_favourites_header">Favourites</string>
+    <string name="currency_list_featured_header">Featured</string>
+    <string name="currency_list_all_header">All currencies</string>
+</resources>

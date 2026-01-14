@@ -11,7 +11,6 @@ class CurrencyDatabaseDataSource(
     fun getCurrencies(): Flow<List<Currency>> {
         return currencyDao.getAllCurrenciesFlow()
             .map { currencies ->
-                println("Got currencies from database: $currencies")
                 currencies.map { currency ->
                     Currency(
                         code = currency.currencyCode,
@@ -41,8 +40,8 @@ class CurrencyDatabaseDataSource(
             id = currency.code,
             currencyCode = currency.code,
             conversionRate = currency.conversionRate,
-            isFavourite = false,
-            isFeatured = false,
+            isFavourite = currency.isFavourite,
+            isFeatured = currency.isFeatured,
         )
         currencyDao.insert(currencyEntity)
     }

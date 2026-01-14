@@ -82,3 +82,6 @@ val md_theme_dark_inversePrimary = Color(0xFF6750A4)
 val md_theme_dark_shadow = Color(0xFF000000)
 val md_theme_dark_surfaceTint = Color(0xFFD0BCFF)
 val md_theme_dark_scrim = Color(0xFF000000)
+
+
+val StrongPastelRed = Color(0xFFFFB4AB) // Tone 80 (Чуть более насыщенный)

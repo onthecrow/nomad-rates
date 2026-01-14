@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -17,17 +18,22 @@ internal class CurrencyRepositoryImpl(
     private val remoteConfigProvider: RemoteConfigProvider,
 ) : CurrencyRepository {
     override fun getCurrencyList(): Flow<List<Currency>?> {
+        // TODO make this offline-first logic reusable
         return channelFlow {
             combine(
                 remoteConfigProvider.getRemoteConfigFlow(),
                 currencyRemoteDataSource.configDataFlow,
             ) { remoteConfig, currenciesResponse ->
+
+                // todo possible race condition, maybe need to do it atomically or/and in domain
+                val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first().associateBy { currency -> currency.code }
                 val currencies = currenciesResponse?.rates?.map { (code, rate) ->
+                    val localCurrency = localCurrenciesMap[code]
                     Currency(
                         code = code,
                         conversionRate = rate,
                         isFeatured = code in remoteConfig.featuredCurrencies,
-                        isFavourite = false,
+                        isFavourite = localCurrency?.isFavourite ?: false,
                     )
                 }
 
@@ -41,7 +47,7 @@ internal class CurrencyRepositoryImpl(
         }
     }
 
-    override fun getCurrency(currencyCode: String): Flow<Currency?> {
+    override fun getCurrencyFlow(currencyCode: String): Flow<Currency?> {
         return channelFlow {
             combine(
                 currencyRemoteDataSource.configDataFlow,
@@ -53,7 +59,7 @@ internal class CurrencyRepositoryImpl(
                         code = currencyCode,
                         conversionRate = it,
                         isFeatured = currencyCode in remoteConfig.featuredCurrencies,
-                        isFavourite = false,
+                        isFavourite = currencyDatabaseDataSource.getCurrency(currencyCode)?.isFavourite ?: false,
                     )
                 }
             }
@@ -78,5 +84,9 @@ internal class CurrencyRepositoryImpl(
                 return@map Currency(code = base, conversionRate = rate, isFeatured = false, isFavourite = false)
             }
             .distinctUntilChanged()
+    }
+
+    override suspend fun saveCurrency(currency: Currency) {
+        currencyDatabaseDataSource.saveCurrency(currency)
     }
 }

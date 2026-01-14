@@ -42,7 +42,9 @@ import com.onthecrow.nomadrates.currency.view.CurrencyListItemView
 import com.onthecrow.nomadrates.ui.view.AppBarSearchView
 import kotlinx.coroutines.launch
 import nomadrates.feature.currency.ui_impl.generated.resources.Res
+import nomadrates.feature.currency.ui_impl.generated.resources.currency_list_search_bar_hint
 import nomadrates.feature.currency.ui_impl.generated.resources.ic_arrow_up
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -74,7 +76,7 @@ internal fun CurrencyListScreen(
             with(systemBarsPaddingValues) {
                 PaddingValues(
                     top = height + 16.dp,
-                    bottom = calculateBottomPadding(),
+                    bottom = calculateBottomPadding() + 100.dp,
                     start = calculateStartPadding(layoutDirection),
                     end = calculateEndPadding(layoutDirection),
                 )
@@ -94,7 +96,12 @@ internal fun CurrencyListScreen(
                 CurrencyListItemView(
                     modifier = Modifier.fillMaxWidth()
                         .animateItem(),
-                    onClick = { onEvent(CurrencyListEvent.OnCurrencyClick(it)) },
+                    onItemClick = { currency ->
+                        onEvent(CurrencyListEvent.OnCurrencyClick(currency.currencyCode))
+                    },
+                    onFavouriteClick = { currency ->
+                        onEvent(CurrencyListEvent.OnAddToFavouriteClick(currency.currencyCode))
+                    },
                     state = currency,
                 )
             }
@@ -103,7 +110,10 @@ internal fun CurrencyListScreen(
         AppBarSearchView(
             modifier = Modifier.systemBarsPadding()
                 .padding(top = 16.dp)
-                .onGloballyPositioned { searchBarHeight = it.positionOnScreen().y + it.size.height },
+                .onGloballyPositioned {
+                    searchBarHeight = it.positionOnScreen().y + it.size.height
+                },
+            hint = stringResource(Res.string.currency_list_search_bar_hint),
             value = state.searchValue,
             onBackPress = { onEvent(CurrencyListEvent.OnBackPress) },
             onValueChange = { onEvent(CurrencyListEvent.OnSearchValueChange(it)) },

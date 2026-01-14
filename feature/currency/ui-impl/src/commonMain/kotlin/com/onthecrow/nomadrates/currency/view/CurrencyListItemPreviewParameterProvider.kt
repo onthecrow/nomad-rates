@@ -15,5 +15,13 @@ internal class CurrencyListItemPreviewParameterProvider : PreviewParameterProvid
             isFeatured = true,
             listGroup = ListGroup.ALL,
         ),
+        CurrencyListItem.Data(
+            flagIcon = "",
+            currencyCode = "USD",
+            currencyName = "US Dollar",
+            isFavourite = false,
+            isFeatured = true,
+            listGroup = ListGroup.ALL,
+        ),
     )
 }
