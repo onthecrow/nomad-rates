@@ -21,9 +21,9 @@ kotlin {
         commonMain.dependencies {
             api(libs.androidx.navigation3)
             implementation(project(":core:navigation:api"))
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.ui)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.koin.core)

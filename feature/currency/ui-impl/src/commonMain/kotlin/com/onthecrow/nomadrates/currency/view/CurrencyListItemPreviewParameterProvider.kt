@@ -1,10 +1,11 @@
 package com.onthecrow.nomadrates.currency.view
 
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.currency.model.ListGroup
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
-internal class CurrencyListItemPreviewParameterProvider : PreviewParameterProvider<CurrencyListItem> {
+internal class CurrencyListItemPreviewParameterProvider :
+    PreviewParameterProvider<CurrencyListItem> {
     override val values = sequenceOf(
         CurrencyListItem.Header("Featured"),
         CurrencyListItem.Data(

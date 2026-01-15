@@ -9,12 +9,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_swap
 import org.jetbrains.compose.resources.vectorResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun ConversionSwapView(

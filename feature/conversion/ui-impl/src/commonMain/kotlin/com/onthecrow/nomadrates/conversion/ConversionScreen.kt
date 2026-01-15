@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.view.ConversionView
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun ConversionScreen(

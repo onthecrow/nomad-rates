@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.currency.view.CurrencyListItemView
@@ -49,7 +50,6 @@ import nomadrates.feature.currency.ui_impl.generated.resources.currency_list_sea
 import nomadrates.feature.currency.ui_impl.generated.resources.ic_arrow_up
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun CurrencyListScreen(

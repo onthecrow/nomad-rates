@@ -26,12 +26,12 @@ kotlin {
             implementation(project(":core:util"))
             implementation(project(":feature:currency:ui-api"))
             implementation(project(":feature:currency:logic-api"))
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.material3)
+            implementation(libs.ui)
+            implementation(libs.components.resources)
+            implementation(libs.ui.tooling.preview)
             implementation(libs.coil.svg)
             implementation(libs.coil.compose)
             implementation(project.dependencies.platform(libs.koin.bom))
@@ -40,7 +40,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
         }
         androidMain.dependencies {
-            implementation(compose.uiTooling)
             implementation(libs.ktor.client.android)
         }
         iosMain.dependencies {

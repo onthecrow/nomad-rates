@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.currency.model.CurrencyListItem
@@ -24,8 +26,6 @@ import nomadrates.feature.currency.ui_impl.generated.resources.Res
 import nomadrates.feature.currency.ui_impl.generated.resources.ic_like
 import nomadrates.feature.currency.ui_impl.generated.resources.ic_like_filled
 import org.jetbrains.compose.resources.vectorResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 
 @Composable
 internal fun CurrencyListItemView(

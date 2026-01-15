@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyState
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun ConversionView(
