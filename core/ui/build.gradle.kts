@@ -25,6 +25,9 @@ kotlin {
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
         }
+        androidMain.dependencies {
+            implementation(libs.ui.tooling)
+        }
     }
 }
 

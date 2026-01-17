@@ -40,6 +40,9 @@ kotlin {
             implementation(libs.coil.svg)
             implementation(libs.coil.compose)
         }
+        androidMain.dependencies {
+            implementation(libs.ui.tooling)
+        }
     }
 }
 
