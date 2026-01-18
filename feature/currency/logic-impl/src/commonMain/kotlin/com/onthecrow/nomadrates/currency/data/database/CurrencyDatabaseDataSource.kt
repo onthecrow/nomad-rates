@@ -17,6 +17,7 @@ class CurrencyDatabaseDataSource(
                         conversionRate = currency.conversionRate,
                         isFavourite = currency.isFavourite,
                         isFeatured = currency.isFeatured,
+                        rates = currency.rates,
                     )
                 }
             }
@@ -30,6 +31,7 @@ class CurrencyDatabaseDataSource(
                 conversionRate = currency.conversionRate,
                 isFavourite = currency.isFavourite,
                 isFeatured = currency.isFeatured,
+                rates = currency.rates,
             )
         }
         currencyDao.insertAll(currencyEntities)
@@ -42,6 +44,7 @@ class CurrencyDatabaseDataSource(
             conversionRate = currency.conversionRate,
             isFavourite = currency.isFavourite,
             isFeatured = currency.isFeatured,
+            rates = currency.rates,
         )
         currencyDao.insert(currencyEntity)
     }
@@ -54,6 +57,7 @@ class CurrencyDatabaseDataSource(
                     conversionRate = currencyEntity.conversionRate,
                     isFavourite = currencyEntity.isFavourite,
                     isFeatured = currencyEntity.isFeatured,
+                    rates = currencyEntity.rates,
                 )
             }
     }
@@ -65,6 +69,7 @@ class CurrencyDatabaseDataSource(
             conversionRate = currency.conversionRate,
             isFavourite = currency.isFavourite,
             isFeatured = currency.isFeatured,
+            rates = currency.rates,
         )
     }
 }

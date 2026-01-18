@@ -16,10 +16,8 @@ internal class AndroidCurrencyRemoteDataSource : CurrencyRemoteDataSource() {
         Firebase.remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {
                 remoteConfig.activate().addOnCompleteListener {
-                    when {
-                        configUpdate.updatedKeys.contains(KEY_DATA) -> updateData()
-                        configUpdate.updatedKeys.contains(PREFIX_CURRENCY) -> updateHistoricalData()
-                    }
+                    updateData()
+                    updateHistoricalData()
                 }
             }
 

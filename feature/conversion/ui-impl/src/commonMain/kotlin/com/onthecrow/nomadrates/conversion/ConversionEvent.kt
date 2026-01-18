@@ -7,11 +7,12 @@ internal sealed interface ConversionEvent: Event {
     data object OnBackPress : ConversionEvent
     data object OnFromCurrencyClick : ConversionEvent
     data object OnToCurrencyClick : ConversionEvent
+    data object OnSwitchButtonPress : ConversionEvent
     data class OnFromValueConverted(val newValue: String) : ConversionEvent
     data class OnFromValueChange(val value: String) : ConversionEvent
     data class OnToValueConverted(val newValue: String) : ConversionEvent
     data class OnToValueChange(val value: String) : ConversionEvent
     data class OnFromCurrencyChange(val currency: Currency) : ConversionEvent
     data class OnToCurrencyChange(val currency: Currency) : ConversionEvent
-    data object OnSwitchButtonPress : ConversionEvent
+    data class OnHistoricalRatesChange(val rates: List<Double>) : ConversionEvent
 }

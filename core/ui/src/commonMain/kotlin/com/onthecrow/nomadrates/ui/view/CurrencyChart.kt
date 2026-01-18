@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -28,7 +31,7 @@ private const val DEFAULT_ANIMATION_DURATION = 1500
 
 @Composable
 fun CurrencyChart(
-    data: List<Float>,
+    data: List<Double>,
     graphColor: Color,
     modifier: Modifier = Modifier,
     strokeWidth: Dp = 4.dp,
@@ -36,9 +39,10 @@ fun CurrencyChart(
 ) {
     if (data.size < 2) return
 
-    val animationProgress = remember { Animatable(0f) }
+    var animationProgress by remember { mutableStateOf(Animatable(0f)) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(data, graphColor) {
+        animationProgress = Animatable(0f)
         animationProgress.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
@@ -52,14 +56,23 @@ fun CurrencyChart(
         val verticalPadding = strokeWidth.toPx() / 2
         val drawableHeight = height - strokeWidth.toPx()
 
-        val maxVal = data.maxOrNull() ?: 0f
-        val minVal = data.minOrNull() ?: 0f
-        val range = if (maxVal == minVal) 1f else maxVal - minVal
+        val maxVal = data.maxOrNull() ?: 0.0
+        val minVal = data.minOrNull() ?: 0.0
+
+        val isFlat = maxVal == minVal
+
+        val range = if (isFlat) 1.0 else maxVal - minVal
+
         val stepX = width / (data.size - 1)
 
         val points = data.mapIndexed { index, value ->
-            val normalizedFraction = (value - minVal) / range
-            val y = verticalPadding + (1f - normalizedFraction) * drawableHeight
+            val normalizedFraction = if (isFlat) {
+                0.5
+            } else {
+                (value - minVal) / range
+            }
+
+            val y = verticalPadding + (1f - normalizedFraction.toFloat()) * drawableHeight
             Offset(x = index * stepX, y = y)
         }
 
@@ -129,7 +142,7 @@ private fun CurrencyChartPreview() {
             912.2861f, 915.4287f, 915.428667f, 912.286f, 912.286f,
             917f, 917f, 914.643f, 915.428667f, 915.02f,
             915.428667f, 915.428667f, 917f, 917f, 915.4287f
-        )
+        ).map { value -> value.toDouble() }
 
         CurrencyChart(
             modifier = Modifier

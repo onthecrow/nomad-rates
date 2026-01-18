@@ -14,4 +14,15 @@ object CommonTypeConverters {
     fun dateToTimestamp(date: Instant?): Long? {
         return date?.toEpochMilliseconds()
     }
+
+    @TypeConverter
+    fun fromString(value: String): List<Double> {
+        if (value.isEmpty()) return emptyList()
+        return value.split(";").map { it.toDouble() }
+    }
+
+    @TypeConverter
+    fun fromList(list: List<Double>): String {
+        return list.joinToString(separator = ";")
+    }
 }

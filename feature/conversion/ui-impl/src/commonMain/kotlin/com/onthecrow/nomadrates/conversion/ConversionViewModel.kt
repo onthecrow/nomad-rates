@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
+import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
@@ -11,6 +12,7 @@ import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -22,8 +24,9 @@ internal class ConversionViewModel(
     private val navigator: Navigator,
     private val getCurrencyUseCase: GetCurrencyUseCase,
     private val convertCurrenciesUseCase: ConvertCurrenciesUseCase,
+    private val getHistoricalRatesUseCase: GetHistoricalRatesUseCase,
     reducer: ConversionReducer,
-    private val screenResultDispatcher: ScreenResultDispatcher,
+    screenResultDispatcher: ScreenResultDispatcher,
 ) : BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
 
     private val fromCurrencyCodeStateFlow: MutableStateFlow<String> = MutableStateFlow("USD")
@@ -51,7 +54,20 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
+
+
         loadInitialConversionCurrencies()
+        combine(
+            fromCurrencyCodeStateFlow,
+            toCurrencyCodeStateFlow,
+        ) { fromCurrencyCode, toCurrencyCode ->
+            fromCurrencyCode to toCurrencyCode
+        }
+            .flatMapLatest { getHistoricalRatesUseCase(it.first, it.second) }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .onEach { onEvent(ConversionEvent.OnHistoricalRatesChange(it)) }
+            .launchIn(viewModelScope)
     }
 
     override fun getInitialState(): ConversionState = ConversionState()

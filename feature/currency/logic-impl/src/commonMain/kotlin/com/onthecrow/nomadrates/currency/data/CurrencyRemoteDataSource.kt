@@ -12,7 +12,7 @@ internal abstract class CurrencyRemoteDataSource : KoinComponent {
 
     private val json: Json by inject()
     private val _configDataFlow = MutableStateFlow<CurrenciesResponse?>(null)
-    private val _historicalDataFlow = MutableStateFlow<Map<String, List<Float>>?>(null)
+    private val _historicalDataFlow = MutableStateFlow<Map<String, List<Double>>?>(null)
 
     val configDataFlow = _configDataFlow.asStateFlow()
     val historicalDataFlow = _historicalDataFlow.asStateFlow()
@@ -34,9 +34,12 @@ internal abstract class CurrencyRemoteDataSource : KoinComponent {
     protected fun updateHistoricalData() {
         val keys = getKeysByPrefix(prefix = PREFIX_CURRENCY)
         _historicalDataFlow.update {
-            keys.associateWith { key ->
-                getString(key).split(DELIMITER_HISTORICAL_VALUE)
-                    .map(String::toFloat)
+            keys.associate { key ->
+                key.removePrefix(PREFIX_CURRENCY) to
+                        getString(key).split(
+                            DELIMITER_HISTORICAL_VALUE
+                        )
+                            .map { it.toDouble() }
             }
         }
     }

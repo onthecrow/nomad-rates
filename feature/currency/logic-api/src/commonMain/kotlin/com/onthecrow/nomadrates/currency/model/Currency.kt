@@ -5,4 +5,5 @@ data class Currency(
     val conversionRate: Double,
     val isFavourite: Boolean,
     val isFeatured: Boolean,
+    val rates: List<Double>,
 )
