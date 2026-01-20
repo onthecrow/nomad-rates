@@ -1,6 +1,5 @@
 package com.onthecrow.nomadrates.conversion
 
-import androidx.compose.ui.graphics.Color
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.ui.MutedClay
 import com.onthecrow.nomadrates.ui.SageGreen
