@@ -83,5 +83,8 @@ val md_theme_dark_shadow = Color(0xFF000000)
 val md_theme_dark_surfaceTint = Color(0xFFD0BCFF)
 val md_theme_dark_scrim = Color(0xFF000000)
 
-
+val SageGreen = Color(0xFF689F75)
+val PaleEmerald = Color(0xFFA5D6A7)
+val MutedClay = Color(0xFFC47068)
+val PaleRose = Color(0xFFEF9A9A)
 val StrongPastelRed = Color(0xFFFFB4AB) // Tone 80 (Чуть более насыщенный)

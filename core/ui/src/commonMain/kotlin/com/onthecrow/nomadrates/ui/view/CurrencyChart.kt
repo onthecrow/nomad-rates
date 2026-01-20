@@ -39,10 +39,9 @@ fun CurrencyChart(
 ) {
     if (data.size < 2) return
 
-    var animationProgress by remember { mutableStateOf(Animatable(0f)) }
+    var animationProgress by remember(data) { mutableStateOf(Animatable(0f)) }
 
     LaunchedEffect(data, graphColor) {
-        animationProgress = Animatable(0f)
         animationProgress.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),

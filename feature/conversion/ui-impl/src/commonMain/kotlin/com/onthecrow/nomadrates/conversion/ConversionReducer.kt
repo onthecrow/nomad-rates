@@ -2,6 +2,8 @@ package com.onthecrow.nomadrates.conversion
 
 import androidx.compose.ui.graphics.Color
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
+import com.onthecrow.nomadrates.ui.MutedClay
+import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
@@ -43,7 +45,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         state: ConversionState,
         event: ConversionEvent.OnHistoricalRatesChange,
     ): ConversionState {
-        return state.copy(historicalRates = event.rates, historicalRatesColor = if (event.rates.first() > event.rates.last()) Color.Red else Color.Green)
+        return state.copy(historicalRates = event.rates, historicalRatesColor = if (event.rates.first() > event.rates.last()) MutedClay else SageGreen)
     }
 
     private fun reduceSwitchEvent(
