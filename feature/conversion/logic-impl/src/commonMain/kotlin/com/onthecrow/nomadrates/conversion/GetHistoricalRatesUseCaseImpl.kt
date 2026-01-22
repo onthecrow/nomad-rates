@@ -15,7 +15,10 @@ class GetHistoricalRatesUseCaseImpl(
         ) { fromCurrency, toCurrency ->
             val fromRates = fromCurrency?.rates ?: return@combine null
             val toRates = toCurrency?.rates ?: return@combine null
-            fromRates.mapIndexed { index, fromRate -> toRates[index] / fromRate }
+            fromRates.mapIndexed { index, fromRate ->
+                val toRate = toRates.getOrNull(index) ?: return@combine null
+                toRate / fromRate
+            }
         }
     }
 }

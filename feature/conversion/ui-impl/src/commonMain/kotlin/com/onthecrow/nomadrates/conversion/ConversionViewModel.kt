@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
+import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
@@ -25,6 +26,7 @@ internal class ConversionViewModel(
     private val getCurrencyUseCase: GetCurrencyUseCase,
     private val convertCurrenciesUseCase: ConvertCurrenciesUseCase,
     private val getHistoricalRatesUseCase: GetHistoricalRatesUseCase,
+    getConversionPairsUseCase: GetConversionPairsUseCase,
     reducer: ConversionReducer,
     screenResultDispatcher: ScreenResultDispatcher,
 ) : BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
@@ -54,7 +56,11 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
-
+        getConversionPairsUseCase()
+            .onEach { conversionPairs ->
+                onEvent(ConversionEvent.OnConversionPairsReceived(conversionPairs))
+            }
+            .launchIn(viewModelScope)
 
         loadInitialConversionCurrencies()
         combine(

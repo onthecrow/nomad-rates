@@ -16,6 +16,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":feature:currency:logic-api"))
             implementation(libs.kotlinx.coroutines.core)
         }
     }

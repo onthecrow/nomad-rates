@@ -45,7 +45,7 @@ internal fun ConversionCurrencyView(
     Row(
         modifier = modifier.height(48.dp)
             .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShape(100.dp),
             ),
         verticalAlignment = Alignment.CenterVertically,

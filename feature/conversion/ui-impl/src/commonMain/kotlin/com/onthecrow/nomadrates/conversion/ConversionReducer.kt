@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
+import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.ui.MutedClay
 import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.uicore.Reducer
@@ -24,6 +25,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             is ConversionEvent.OnToValueConverted -> state.copy(to = state.to?.copy(conversionValue = event.newValue))
             is ConversionEvent.OnFromValueConverted -> state.copy(from = state.from?.copy(conversionValue = event.newValue))
             is ConversionEvent.OnHistoricalRatesChange -> reduceHistoricalRatesChange(state, event)
+            is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(state, event)
             else -> state
         }
     }
@@ -44,6 +46,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         state: ConversionState,
         event: ConversionEvent.OnHistoricalRatesChange,
     ): ConversionState {
+        if (event.rates.size < 2) return state
         return state.copy(historicalRates = event.rates, historicalRatesColor = if (event.rates.first() > event.rates.last()) MutedClay else SageGreen)
     }
 
@@ -63,5 +66,12 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 state.to?.conversionValue ?: ""
             )
         )
+    }
+
+    private fun reduceConversionPairsReceived(
+        state: ConversionState,
+        event: ConversionEvent.OnConversionPairsReceived,
+    ): ConversionState {
+        return state.copy(conversionListItems = event.conversionPairs.toConversionListItems())
     }
 }

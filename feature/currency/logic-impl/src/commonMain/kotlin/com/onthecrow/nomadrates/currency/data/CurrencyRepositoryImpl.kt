@@ -3,79 +3,58 @@ package com.onthecrow.nomadrates.currency.data
 import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteDataSource: CurrencyRemoteDataSource,
     private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
-    private val remoteConfigProvider: RemoteConfigProvider,
+    remoteConfigProvider: RemoteConfigProvider,
 ) : CurrencyRepository {
-    override fun getCurrencyList(): Flow<List<Currency>?> {
-        // TODO make this offline-first logic reusable
-        return channelFlow {
-            combine(
-                remoteConfigProvider.getRemoteConfigFlow(),
-                currencyRemoteDataSource.configDataFlow,
-                currencyRemoteDataSource.historicalDataFlow,
-            ) { remoteConfig, currenciesResponse, historical ->
-                // todo possible race condition, maybe need to do it atomically or/and in domain
-                val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first()
-                    .associateBy { currency -> currency.code }
-                val currencies = currenciesResponse?.rates?.map { (code, rate) ->
-                    val localCurrency = localCurrenciesMap[code]
-                    Currency(
-                        code = code,
-                        conversionRate = rate,
-                        isFeatured = code in remoteConfig.featuredCurrencies,
-                        isFavourite = localCurrency?.isFavourite ?: false,
-                        rates = historical?.get(code) ?: emptyList(),
-                    )
-                }
 
-                if (currencies != null) {
-                    currencyDatabaseDataSource.saveCurrencies(currencies)
-                }
-            }.launchIn(this)
+    init {
+        combine(
+            currencyRemoteDataSource.configDataFlow,
+            remoteConfigProvider.getRemoteConfigFlow(),
+            currencyRemoteDataSource.historicalDataFlow,
+        ) { currenciesResponse, remoteConfig, historical ->
 
-            currencyDatabaseDataSource.getCurrencies()
-                .collect { currencies -> send(currencies) }
+            val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first()
+                .associateBy { currency -> currency.code }
+            val currencies = currenciesResponse?.rates?.map { (code, rate) ->
+                val localCurrency = localCurrenciesMap[code]
+                Currency(
+                    code = code,
+                    conversionRate = rate,
+                    isFeatured = code in remoteConfig.featuredCurrencies,
+                    isFavourite = localCurrency?.isFavourite ?: false,
+                    rates = historical?.get(code) ?: emptyList(),
+                )
+            }
+
+            if (currencies != null) {
+                currencyDatabaseDataSource.saveCurrencies(currencies)
+            }
         }
+            .launchIn(MainScope())
     }
 
-    override fun getCurrencyFlow(currencyCode: String): Flow<Currency?> {
-        return channelFlow {
-            combine(
-                currencyRemoteDataSource.configDataFlow,
-                remoteConfigProvider.getRemoteConfigFlow(),
-                currencyRemoteDataSource.historicalDataFlow,
-            ) { currenciesResponse, remoteConfig, historical ->
-                val rate = currenciesResponse?.rates?.get(currencyCode)
-                rate?.let {
-                    Currency(
-                        code = currencyCode,
-                        conversionRate = it,
-                        isFeatured = currencyCode in remoteConfig.featuredCurrencies,
-                        isFavourite = currencyDatabaseDataSource.getCurrency(currencyCode)?.isFavourite
-                            ?: false,
-                        rates = historical?.get(currencyCode) ?: emptyList(),
-                    )
-                }
-            }
-                .distinctUntilChanged()
-                .onEach { currency ->
-                    currencyDatabaseDataSource.saveCurrency(currency ?: return@onEach)
-                }
-                .launchIn(this)
 
-            currencyDatabaseDataSource.getCurrencyFlow(currencyCode)
-                .collect { currency -> send(currency) }
-        }
+    override fun getCurrencyList(): Flow<List<Currency>?> {
+        return currencyDatabaseDataSource.getCurrencies()
+    }
+
+    override suspend fun getCurrency(currencyCode: String): Currency? {
+        return currencyDatabaseDataSource.getCurrency(currencyCode)
+    }
+
+
+    override fun getCurrencyFlow(currencyCode: String): Flow<Currency?> {
+        return currencyDatabaseDataSource.getCurrencyFlow(currencyCode)
     }
 
     override fun getBaseCurrency(): Flow<Currency?> {

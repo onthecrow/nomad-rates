@@ -20,6 +20,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":core:entity"))
             implementation(project(":core:navigation:api"))
             implementation(project(":core:ui"))
             implementation(project(":core:ui-core"))

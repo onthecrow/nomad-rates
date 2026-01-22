@@ -1,5 +1,7 @@
 package com.onthecrow.nomadrates.conversion
 
+import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
+import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.uicore.Event
 
@@ -15,4 +17,6 @@ internal sealed interface ConversionEvent: Event {
     data class OnFromCurrencyChange(val currency: Currency) : ConversionEvent
     data class OnToCurrencyChange(val currency: Currency) : ConversionEvent
     data class OnHistoricalRatesChange(val rates: List<Double>) : ConversionEvent
+    data class OnConversionPairsReceived(val conversionPairs: List<ConversionPair>) : ConversionEvent
+    data class OnConversionViewClick(val conversionListItem: ConversionListItem) : ConversionEvent
 }
