@@ -25,7 +25,6 @@ expect object PlatformFormatter {
     fun format(amount: MoneyAmount, pattern: String, currencyCode: String): String
 }
 
-
 fun MoneyAmount.formatAdaptive(currencyCode: String): String {
     val absValue = this.abs()
 
@@ -34,10 +33,10 @@ fun MoneyAmount.formatAdaptive(currencyCode: String): String {
     val oneUnit = MoneyAmount("1")
 
     val pattern = when {
-        this.compareTo(zero) == 0 -> "#,##0.00"
-        absValue.compareTo(oneCent) < 0 -> "#,##0.########"
-        absValue.compareTo(oneUnit) < 0 -> "#,##0.####"
-        else -> "#,##0.00"
+        this.compareTo(zero) == 0 -> "###0.00"
+        absValue.compareTo(oneCent) < 0 -> "###0.########"
+        absValue.compareTo(oneUnit) < 0 -> "###0.####"
+        else -> "###0.00"
     }
 
     return PlatformFormatter.format(this, pattern, currencyCode)

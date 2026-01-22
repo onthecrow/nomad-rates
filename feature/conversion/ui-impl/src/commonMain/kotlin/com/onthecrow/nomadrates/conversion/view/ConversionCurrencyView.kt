@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,7 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,7 +51,7 @@ internal fun ConversionCurrencyView(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.height(48.dp)
+        modifier = modifier.height(56.dp)
             .background(
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShape(100.dp),
@@ -52,7 +60,7 @@ internal fun ConversionCurrencyView(
     ) {
         Row(
             modifier = Modifier.fillMaxHeight()
-                .padding(4.dp)
+                .padding(8.dp)
                 .clip(RoundedCornerShape(100.dp))
                 .clickable(enabled = true, onClick = onCurrencyClick),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -78,23 +86,40 @@ internal fun ConversionCurrencyView(
         }
         BasicTextField(
             modifier = Modifier.weight(1f)
-                .height(48.dp)
-                .padding(horizontal = 16.dp),
+                .height(48.dp),
             value = value,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             onValueChange = onValueChange,
+            visualTransformation = CurrencyAmountInputVisualTransformation(),
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
+            textStyle = TextStyle(
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
                 textAlign = TextAlign.End,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontSize = 16.sp,
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
             decorationBox = { innerTextField ->
                 Box(
+                    modifier = Modifier
+                        .padding(end = 24.dp)
+                        .fillMaxSize(),
                     contentAlignment = Alignment.CenterEnd,
-                    modifier = Modifier.fillMaxSize()
                 ) {
                     innerTextField()
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .width(20.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.secondaryContainer, Color.Transparent
+                                    )
+                                )
+                            )
+                            .align(Alignment.CenterStart),
+                    )
                 }
             }
         )

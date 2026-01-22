@@ -6,14 +6,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -21,11 +18,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.currency.model.CurrencyListItem
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
-import com.onthecrow.nomadrates.ui.StrongPastelRed
-import nomadrates.feature.currency.ui_impl.generated.resources.Res
-import nomadrates.feature.currency.ui_impl.generated.resources.ic_like
-import nomadrates.feature.currency.ui_impl.generated.resources.ic_like_filled
-import org.jetbrains.compose.resources.vectorResource
+import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
 @Composable
 internal fun CurrencyListItemView(
@@ -78,22 +71,9 @@ private fun DataItemView(
             maxLines = 1,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        Icon(
-            modifier = Modifier.clip(CircleShape)
-                .clickable(enabled = true, onClick = { onFavouriteClick(state) })
-                .padding(12.dp),
-            imageVector = vectorResource(
-                when {
-                    state.isFavourite -> Res.drawable.ic_like_filled
-                    else -> Res.drawable.ic_like
-                }
-            ),
-            contentDescription = null,
-            tint = when {
-                // todo use custom theme instead eg. NomadRatesTheme.colorScheme.StrongPastelRed
-                state.isFavourite -> StrongPastelRed
-                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = .5f)
-            },
+        LikeButtonView(
+            isFavourite = state.isFavourite,
+            onClick = { onFavouriteClick(state) },
         )
     }
 }

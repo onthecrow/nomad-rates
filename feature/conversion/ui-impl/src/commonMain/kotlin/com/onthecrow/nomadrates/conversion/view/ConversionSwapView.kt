@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
@@ -22,8 +23,13 @@ internal fun ConversionSwapView(
     onClick: () -> Unit = {},
 ) {
     Icon(
-        modifier = modifier.clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
+        modifier = modifier
+            .shadow(
+                elevation = 6.dp,
+                shape = CircleShape,
+            )
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = true, onClick = onClick)
             .padding(8.dp),
         imageVector = vectorResource(Res.drawable.ic_swap),

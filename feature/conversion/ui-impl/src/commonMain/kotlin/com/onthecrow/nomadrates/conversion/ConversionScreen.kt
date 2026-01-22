@@ -49,7 +49,7 @@ internal fun ConversionScreen(
         }
         if (state.from != null && state.to != null) {
             ConversionView(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier,
                 from = state.from,
                 to = state.to,
                 onEvent = onEvent,
