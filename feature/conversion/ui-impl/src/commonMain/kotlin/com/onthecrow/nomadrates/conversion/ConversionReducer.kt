@@ -4,6 +4,8 @@ import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
+import com.onthecrow.nomadrates.ui.MutedClay
+import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
@@ -14,35 +16,42 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         return when (event) {
             is ConversionEvent.OnFromValueChange -> reduceFromValueChange(state, event)
             is ConversionEvent.OnToValueChange -> reduceToValueChange(state, event)
-            is ConversionEvent.OnSwitchButtonPress -> reduceSwitchEvent(state)
-            is ConversionEvent.OnToValueConverted -> state.copy(
-                to = state.to?.copy(
-                    conversionValue = MoneyAmount(
-                        event.newValue
-                    ).formatAdaptive(state.to.currencyCode)
-                )
-            )
-
-            is ConversionEvent.OnFromValueConverted -> state.copy(
-                from = state.from?.copy(
-                    conversionValue = MoneyAmount(event.newValue).formatAdaptive(state.from.currencyCode)
-                )
-            )
-
-            is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(
-                state,
-                event
-            )
+            is ConversionEvent.OnToValueConverted -> reduceToValueConverted(state, event)
+            is ConversionEvent.OnFromValueConverted -> reduceFromValueConverted(state, event)
+            is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(state, event)
             is ConversionEvent.OnActiveConversionPairChanged -> reduceActiveConversionPairChanged(state, event)
-
             else -> state
         }
     }
 
-    private fun reduceSwitchEvent(
+    private fun reduceFromValueConverted(
         state: ConversionState,
+        event: ConversionEvent.OnFromValueConverted
     ): ConversionState {
-        return state.copy(from = state.to, to = state.from)
+        val conversionCurrencyState = state.conversionViewState.from
+        val newConversionViewStat = state.conversionViewState.copy(
+            from = conversionCurrencyState?.copy(
+                conversionValue = MoneyAmount(
+                    event.newValue
+                ).formatAdaptive(conversionCurrencyState.currencyCode)
+            )
+        )
+        return state.copy(conversionViewState = newConversionViewStat)
+    }
+
+    private fun reduceToValueConverted(
+        state: ConversionState,
+        event: ConversionEvent.OnToValueConverted
+    ): ConversionState {
+        val conversionCurrencyState = state.conversionViewState.to
+        val newConversionViewStat = state.conversionViewState.copy(
+            to = conversionCurrencyState?.copy(
+                conversionValue = MoneyAmount(
+                    event.newValue
+                ).formatAdaptive(conversionCurrencyState.currencyCode)
+            )
+        )
+        return state.copy(conversionViewState = newConversionViewStat)
     }
 
     private fun reduceConversionPairsReceived(
@@ -57,7 +66,12 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         event: ConversionEvent.OnFromValueChange,
     ): ConversionState {
         val newValue = event.value.filterAmountInput()
-        return state.copy(from = state.from?.copy(conversionValue = newValue))
+        val conversionViewState = state.conversionViewState
+        return state.copy(
+            conversionViewState = conversionViewState.copy(
+                from = conversionViewState.from?.copy(conversionValue = newValue)
+            ),
+        )
     }
 
     private fun reduceToValueChange(
@@ -65,7 +79,44 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         event: ConversionEvent.OnToValueChange,
     ): ConversionState {
         val newValue = event.value.filterAmountInput()
-        return state.copy(to = state.to?.copy(conversionValue = newValue))
+        val conversionViewState = state.conversionViewState
+        return state.copy(
+            conversionViewState = conversionViewState.copy(
+                to = conversionViewState.to?.copy(conversionValue = newValue)
+            ),
+        )
+    }
+
+    private fun reduceActiveConversionPairChanged(
+        state: ConversionState,
+        event: ConversionEvent.OnActiveConversionPairChanged,
+    ): ConversionState {
+        val conversionPair = event.conversionPair
+        val historicalRates = conversionPair.historicalRates
+        val conversionViewState = state.conversionViewState
+        val chartColor = if (historicalRates.size >= 2 &&
+            historicalRates.first() < historicalRates.last()
+        ) {
+            SageGreen
+        } else {
+            MutedClay
+        }
+
+        return state.copy(
+            conversionViewState = conversionViewState.copy(
+                from = ConversionCurrencyStateMapper.fromCurrency(
+                    conversionPair.fromCurrency,
+                    conversionViewState.to?.conversionValue ?: ""
+                ),
+                to = ConversionCurrencyStateMapper.fromCurrency(
+                    conversionPair.toCurrency,
+                    conversionViewState.from?.conversionValue ?: ""
+                ),
+                isFavourite = conversionPair.isFavourite,
+            ),
+            chartColor = chartColor,
+            chartData = historicalRates,
+        )
     }
 
     private fun String.filterAmountInput(): String {
@@ -80,22 +131,5 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 }
             }
         }
-    }
-
-    private fun reduceActiveConversionPairChanged(
-        state: ConversionState,
-        event: ConversionEvent.OnActiveConversionPairChanged,
-    ): ConversionState {
-        return state.copy(
-            from = ConversionCurrencyStateMapper.fromCurrency(
-                event.conversionPair.fromCurrency,
-                state.from?.conversionValue ?: ""
-            ),
-            to = ConversionCurrencyStateMapper.fromCurrency(
-                event.conversionPair.toCurrency,
-                state.to?.conversionValue ?: ""
-            ),
-            activeConversionPair = event.conversionPair
-        )
     }
 }

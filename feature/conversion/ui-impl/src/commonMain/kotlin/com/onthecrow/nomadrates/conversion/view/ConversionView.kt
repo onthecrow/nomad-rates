@@ -17,16 +17,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyState
+import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
 @Composable
 internal fun ConversionView(
-    from: ConversionCurrencyState,
-    to: ConversionCurrencyState,
+    state: ConversionViewState,
     modifier: Modifier = Modifier,
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
+    if (state.from == null) return
+    if (state.to == null) return
     Box(
         modifier = modifier,
     ) {
@@ -35,26 +37,27 @@ internal fun ConversionView(
                 .padding(16.dp)
                 .shadow(
                     elevation = 6.dp,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(32.dp),
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(32.dp),
                 )
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             ConversionCurrencyView(
-                currencyCode = from.currencyCode,
-                currencyIcon = from.currencyIcon,
-                value = from.conversionValue,
+                // todo reduce these fields to single state
+                currencyCode = state.from.currencyCode,
+                currencyIcon = state.from.currencyIcon,
+                value = state.from.conversionValue,
                 onCurrencyClick = { onEvent(ConversionEvent.OnFromCurrencyClick) },
                 onValueChange = { onEvent(ConversionEvent.OnFromValueChange(it)) },
             )
             ConversionCurrencyView(
-                currencyCode = to.currencyCode,
-                currencyIcon = to.currencyIcon,
-                value = to.conversionValue,
+                currencyCode = state.to.currencyCode,
+                currencyIcon = state.to.currencyIcon,
+                value = state.to.conversionValue,
                 onCurrencyClick = { onEvent(ConversionEvent.OnToCurrencyClick) },
                 onValueChange = { onEvent(ConversionEvent.OnToValueChange(it)) },
             )
@@ -66,7 +69,7 @@ internal fun ConversionView(
         LikeButtonView(
             modifier = Modifier.align(Alignment.TopEnd)
                 .background(MaterialTheme.colorScheme.background, shape = CircleShape),
-            isFavourite = false,
+            isFavourite = state.isFavourite,
             onClick = { onEvent(ConversionEvent.OnActiveConversionPairFavouritesClick) },
         )
     }
@@ -80,8 +83,10 @@ internal fun ConversionView(
 private fun ConversionViewPreview() {
     NomadRatesTheme(darkTheme = true) {
         ConversionView(
-            from = ConversionCurrencyState("", "", .0, ""),
-            to = ConversionCurrencyState("", "", .0, ""),
+            state = ConversionViewState(
+                from = ConversionCurrencyState("", "", .0, ""),
+                to = ConversionCurrencyState("", "", .0, ""),
+            ),
             modifier = Modifier.fillMaxWidth(),
         )
     }

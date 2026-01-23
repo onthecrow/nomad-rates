@@ -96,7 +96,8 @@ internal class ConversionViewModel(
             ConversionCurrencySource.TO -> toCurrencyCodeStateFlow
         }
             .update { selectedCurrencyCode }
-        onFromCurrencyValueChange(state.value.from?.conversionValue ?: return)
+        // todo maybe move it to reducer
+        onFromCurrencyValueChange(state.value.conversionViewState.from?.conversionValue ?: return)
     }
 
     private fun onFromCurrencyValueChange(value: String) {
