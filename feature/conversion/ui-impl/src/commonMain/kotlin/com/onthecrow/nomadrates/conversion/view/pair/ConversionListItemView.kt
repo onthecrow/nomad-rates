@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,21 +27,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
+import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
 @Composable
 internal fun ConversionListItemView(
     state: ConversionListItem,
     modifier: Modifier = Modifier,
     onClick: (ConversionListItem.Data) -> Unit = {},
+    onAddToFavouritesClick: (ConversionListItem.Data) -> Unit = {},
 ) {
     when (state) {
         is ConversionListItem.Data -> ConversionListItemDataView(
             modifier = modifier,
             state = state,
             onClick = onClick,
+            onAddToFavouritesClick = onAddToFavouritesClick,
         )
 
         is ConversionListItem.Header -> ConversionListItemHeaderView(
@@ -67,6 +72,7 @@ private fun ConversionListItemDataView(
     state: ConversionListItem.Data,
     modifier: Modifier = Modifier,
     onClick: (ConversionListItem.Data) -> Unit = {},
+    onAddToFavouritesClick: (ConversionListItem.Data) -> Unit = {},
 ) {
     Row(
         modifier = modifier.clickable(enabled = true, onClick = { onClick(state) })
@@ -135,6 +141,22 @@ private fun ConversionListItemDataView(
                         )
                     )
                     .align(Alignment.CenterStart),
+            )
+
+            val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+            val radialBrush = remember {
+                Brush.radialGradient(
+                    colors = listOf(
+                        gradientBaseColor,
+                        Color.Transparent,
+                    ),
+                )
+            }
+            LikeButtonView(
+                modifier = Modifier.align(Alignment.CenterEnd)
+                    .background(radialBrush),
+                isFavourite = state.isFavourite,
+                onClick = { onAddToFavouritesClick(state) },
             )
         }
     }

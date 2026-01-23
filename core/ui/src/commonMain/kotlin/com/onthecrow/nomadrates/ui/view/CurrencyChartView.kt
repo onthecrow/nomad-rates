@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 
-private const val DEFAULT_ANIMATION_DURATION = 1500
+private const val DEFAULT_ANIMATION_DURATION = 750
 
 @Composable
 fun CurrencyChart(

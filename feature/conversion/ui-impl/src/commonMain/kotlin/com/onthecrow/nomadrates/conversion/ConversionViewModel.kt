@@ -47,11 +47,14 @@ internal class ConversionViewModel(
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
                 is ConversionEvent.OnFromValueChange -> onFromCurrencyValueChange(event.value)
                 is ConversionEvent.OnToValueChange -> onToCurrencyValueChange(event.value)
-                is ConversionEvent.OnActiveConversionPairFavouritesClick -> addToFavourites()
+                is ConversionEvent.OnActiveConversionPairFavouritesClick -> toggleFavourites()
+                is ConversionEvent.OnConversionPairFavouritesClick -> toggleFavourites(event.currencyPair)
+                is ConversionEvent.OnConversionViewClick -> onListItemClick(event.conversionPair)
                 else -> {}
             }
         }
             .launchIn(viewModelScope)
+
         screenResultDispatcher.resultFlow
             .onEach { screenResult ->
                 when (screenResult) {
@@ -75,15 +78,28 @@ internal class ConversionViewModel(
             .flatMapLatest { getConversionPairUseCase(it.first, it.second) }
             .filterNotNull()
             .distinctUntilChanged()
-            .onEach { onEvent(ConversionEvent.OnActiveConversionPairChanged(it)) }
+            .onEach {
+                onEvent(ConversionEvent.OnActiveConversionPairChanged(it))
+                val fromValue = state.value.conversionViewState.from?.conversionValue
+                if (!fromValue.isNullOrBlank()) {
+                    onEvent(ConversionEvent.OnFromValueChange(fromValue))
+                }
+            }
             .launchIn(viewModelScope)
     }
 
-    private fun addToFavourites() {
+    private fun onListItemClick(conversionPair: Pair<String, String>) {
+        fromCurrencyCodeStateFlow.value = conversionPair.first
+        toCurrencyCodeStateFlow.value = conversionPair.second
+    }
+
+    private fun toggleFavourites(currencyPair: Pair<String, String>? = null) {
+        val conversionPair = currencyPair
+            ?: (fromCurrencyCodeStateFlow.value to toCurrencyCodeStateFlow.value)
         viewModelScope.launch {
             toggleConversionPairFavouriteUseCase(
-                fromCurrencyCodeStateFlow.value,
-                toCurrencyCodeStateFlow.value,
+                conversionPair.first,
+                conversionPair.second,
             )
         }
     }
@@ -97,7 +113,7 @@ internal class ConversionViewModel(
         }
             .update { selectedCurrencyCode }
         // todo maybe move it to reducer
-        onFromCurrencyValueChange(state.value.conversionViewState.from?.conversionValue ?: return)
+//        onFromCurrencyValueChange(state.value.conversionViewState.from?.conversionValue ?: return)
     }
 
     private fun onFromCurrencyValueChange(value: String) {

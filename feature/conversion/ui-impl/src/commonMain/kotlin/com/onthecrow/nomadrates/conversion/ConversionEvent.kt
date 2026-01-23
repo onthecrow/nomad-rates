@@ -1,7 +1,6 @@
 package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
-import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.uicore.Event
 
 internal sealed interface ConversionEvent : Event {
@@ -15,6 +14,10 @@ internal sealed interface ConversionEvent : Event {
     data class OnToValueConverted(val newValue: String) : ConversionEvent
     data class OnToValueChange(val value: String) : ConversionEvent
     data class OnConversionPairsReceived(val conversionPairs: List<ConversionPair>) : ConversionEvent
-    data class OnConversionViewClick(val conversionListItem: ConversionListItem) : ConversionEvent
+    data class OnConversionViewClick(val conversionPair: Pair<String, String>) : ConversionEvent
     data class OnActiveConversionPairChanged(val conversionPair: ConversionPair) : ConversionEvent
+    data class OnConversionPairFavouritesClick(
+        // todo replace with a class or proper id
+        val currencyPair: Pair<String, String>,
+    ) : ConversionEvent
 }

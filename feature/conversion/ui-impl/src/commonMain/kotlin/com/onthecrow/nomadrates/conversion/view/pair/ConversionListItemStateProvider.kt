@@ -22,6 +22,8 @@ internal class ConversionListItemStateProvider : PreviewParameterProvider<Conver
                 915.428667f, 915.428667f, 917f, 917f, 915.4287f
             ).map { value -> value.toDouble() },
             chartColor = SageGreen,
+            isFavourite = false,
+            currencyPair = "EUR" to "USD",
             listGroup = ListGroup.FEATURED,
         )
     )

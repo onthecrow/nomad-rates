@@ -37,7 +37,7 @@ fun BoxScope.SystemBarShadeView(
     position: ShadePosition,
     modifier: Modifier = Modifier,
 ) {
-    val shadeColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
+    val shadeColor = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
     val systemBarsPaddings = WindowInsets.systemBars.asPaddingValues()
     var state by remember { mutableStateOf(SystemBarShadeViewState(Alignment.TopCenter, height = 0.dp, colors = emptyList())) }
     LaunchedEffect(position, systemBarsPaddings, shadeColor) {

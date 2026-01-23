@@ -19,6 +19,8 @@ internal sealed interface ConversionListItem {
         val subtitle: String,
         val chartData: List<Double>,
         val chartColor: Color,
+        val currencyPair: Pair<String, String>,
+        val isFavourite: Boolean,
         val listGroup: ListGroup,
     ) : ConversionListItem {
         override val listKey: String = "key_${title}_${listGroup.name}"

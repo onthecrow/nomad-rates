@@ -12,9 +12,12 @@ import com.onthecrow.nomadrates.util.toIsoCountryCode
 
 internal fun List<ConversionPair>.toConversionListItems(): List<ConversionListItem> {
     val featuredPairs = this.filter { conversionPair -> conversionPair.isFeatured }
-        .map(ConversionPair::toConversionPair)
+        .map { it.toConversionPair(ListGroup.FEATURED) }
+        .sortedByDescending { it.title }
     val favouritePairs = this.filter { conversionPair -> conversionPair.isFavourite }
-        .map(ConversionPair::toConversionPair)
+        .map { it.toConversionPair(ListGroup.FAVOURITE) }
+        .sortedByDescending { it.title }
+
     return buildList {
         if (favouritePairs.isNotEmpty()) {
             addAll(favouritePairs)
@@ -27,7 +30,7 @@ internal fun List<ConversionPair>.toConversionListItems(): List<ConversionListIt
     }
 }
 
-private fun ConversionPair.toConversionPair(): ConversionListItem.Data {
+private fun ConversionPair.toConversionPair(group: ListGroup): ConversionListItem.Data {
     // TODO use this entity across whole app
     val rate = MoneyAmount(this.conversionRate)
     return ConversionListItem.Data(
@@ -37,6 +40,8 @@ private fun ConversionPair.toConversionPair(): ConversionListItem.Data {
         subtitle = "1 ${fromCurrency.code} = ${rate.formatAdaptive(toCurrency.code)} ${toCurrency.code}",
         chartData = historicalRates,
         chartColor = if (historicalRates.size >= 2 && historicalRates.first() > historicalRates.last()) MutedClay else SageGreen,
-        listGroup = if (isFeatured) ListGroup.FEATURED else ListGroup.FAVOURITE,
+        currencyPair = fromCurrency.code to toCurrency.code,
+        isFavourite = isFavourite,
+        listGroup = group,
     )
 }

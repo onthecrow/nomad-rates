@@ -75,12 +75,16 @@ internal fun ConversionScreen(
                 items(
                     items = state.conversionListItems,
                     key = { it.listKey },
-                    contentType = { it::class }
+                    contentType = { it::class },
                 ) { listItem ->
                     ConversionListItemView(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .animateItem(),
                         state = listItem,
-                        onClick = { onEvent(ConversionEvent.OnConversionViewClick(it)) }
+                        onClick = { onEvent(ConversionEvent.OnConversionViewClick(it.currencyPair)) },
+                        onAddToFavouritesClick = {
+                            onEvent(ConversionEvent.OnConversionPairFavouritesClick(it.currencyPair))
+                        },
                     )
                 }
             }
@@ -93,7 +97,7 @@ internal fun ConversionScreen(
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                MaterialTheme.colorScheme.background
+                                MaterialTheme.colorScheme.background,
                             )
                         )
                     ),

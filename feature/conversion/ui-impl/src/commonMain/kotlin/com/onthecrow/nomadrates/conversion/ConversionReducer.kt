@@ -106,11 +106,11 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             conversionViewState = conversionViewState.copy(
                 from = ConversionCurrencyStateMapper.fromCurrency(
                     conversionPair.fromCurrency,
-                    conversionViewState.to?.conversionValue ?: ""
+                    conversionViewState.from?.conversionValue ?: ""
                 ),
                 to = ConversionCurrencyStateMapper.fromCurrency(
                     conversionPair.toCurrency,
-                    conversionViewState.from?.conversionValue ?: ""
+                    conversionViewState.to?.conversionValue ?: ""
                 ),
                 isFavourite = conversionPair.isFavourite,
             ),
