@@ -1,12 +1,9 @@
 package com.onthecrow.nomadrates.conversion
 
-import androidx.compose.ui.util.fastJoinToString
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
-import com.onthecrow.nomadrates.ui.MutedClay
-import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.uicore.Reducer
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
@@ -17,8 +14,6 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         return when (event) {
             is ConversionEvent.OnFromValueChange -> reduceFromValueChange(state, event)
             is ConversionEvent.OnToValueChange -> reduceToValueChange(state, event)
-            is ConversionEvent.OnFromCurrencyChange -> reduceFromCurrencyChange(state, event)
-            is ConversionEvent.OnToCurrencyChange -> reduceToCurrencyChange(state, event)
             is ConversionEvent.OnSwitchButtonPress -> reduceSwitchEvent(state)
             is ConversionEvent.OnToValueConverted -> state.copy(
                 to = state.to?.copy(
@@ -34,55 +29,20 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 )
             )
 
-            is ConversionEvent.OnHistoricalRatesChange -> reduceHistoricalRatesChange(state, event)
             is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(
                 state,
                 event
             )
+            is ConversionEvent.OnActiveConversionPairChanged -> reduceActiveConversionPairChanged(state, event)
 
             else -> state
         }
-    }
-
-    private fun reduceFromCurrencyChange(
-        state: ConversionState,
-        event: ConversionEvent.OnFromCurrencyChange,
-    ): ConversionState {
-        return state.copy(
-            from = ConversionCurrencyStateMapper.fromCurrency(
-                event.currency,
-                state.from?.conversionValue ?: ""
-            )
-        )
-    }
-
-    private fun reduceHistoricalRatesChange(
-        state: ConversionState,
-        event: ConversionEvent.OnHistoricalRatesChange,
-    ): ConversionState {
-        if (event.rates.size < 2) return state
-        return state.copy(
-            historicalRates = event.rates,
-            historicalRatesColor = if (event.rates.first() > event.rates.last()) MutedClay else SageGreen
-        )
     }
 
     private fun reduceSwitchEvent(
         state: ConversionState,
     ): ConversionState {
         return state.copy(from = state.to, to = state.from)
-    }
-
-    private fun reduceToCurrencyChange(
-        state: ConversionState,
-        event: ConversionEvent.OnToCurrencyChange,
-    ): ConversionState {
-        return state.copy(
-            to = ConversionCurrencyStateMapper.fromCurrency(
-                event.currency,
-                state.to?.conversionValue ?: ""
-            )
-        )
     }
 
     private fun reduceConversionPairsReceived(
@@ -120,5 +80,22 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 }
             }
         }
+    }
+
+    private fun reduceActiveConversionPairChanged(
+        state: ConversionState,
+        event: ConversionEvent.OnActiveConversionPairChanged,
+    ): ConversionState {
+        return state.copy(
+            from = ConversionCurrencyStateMapper.fromCurrency(
+                event.conversionPair.fromCurrency,
+                state.from?.conversionValue ?: ""
+            ),
+            to = ConversionCurrencyStateMapper.fromCurrency(
+                event.conversionPair.toCurrency,
+                state.to?.conversionValue ?: ""
+            ),
+            activeConversionPair = event.conversionPair
+        )
     }
 }

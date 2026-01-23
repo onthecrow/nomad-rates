@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,19 +46,17 @@ internal fun ConversionScreen(
                 )
             }
         }
-        if (state.from != null && state.to != null) {
+        if (state.activeConversionPair != null && state.from != null && state.to != null) {
             ConversionView(
                 modifier = Modifier,
                 from = state.from,
                 to = state.to,
                 onEvent = onEvent,
             )
-        }
-        if (state.historicalRates != null) {
             CurrencyChart(
                 modifier = Modifier.fillMaxWidth()
                     .height(100.dp),
-                data = state.historicalRates,
+                data = state.activeConversionPair.historicalRates,
                 graphColor = state.historicalRatesColor,
             )
         }

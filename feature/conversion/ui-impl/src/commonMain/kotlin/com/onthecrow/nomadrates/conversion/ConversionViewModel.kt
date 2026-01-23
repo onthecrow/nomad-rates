@@ -2,15 +2,16 @@ package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
+import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
+import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -26,13 +27,15 @@ internal class ConversionViewModel(
     private val getCurrencyUseCase: GetCurrencyUseCase,
     private val convertCurrenciesUseCase: ConvertCurrenciesUseCase,
     private val getHistoricalRatesUseCase: GetHistoricalRatesUseCase,
-    getConversionPairsUseCase: GetConversionPairsUseCase,
+    private val getConversionPairUseCase: GetConversionPairUseCase,
+    private val getConversionPairsUseCase: GetConversionPairsUseCase,
+    private val toggleConversionPairFavouriteUseCase: ToggleConversionPairFavouriteUseCase,
     reducer: ConversionReducer,
     screenResultDispatcher: ScreenResultDispatcher,
 ) : BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
-
     private val fromCurrencyCodeStateFlow: MutableStateFlow<String> = MutableStateFlow("USD")
     private val toCurrencyCodeStateFlow: MutableStateFlow<String> = MutableStateFlow("EUR")
+
     private var conversionCurrencySource: ConversionCurrencySource = ConversionCurrencySource.FROM
 
     init {
@@ -44,6 +47,7 @@ internal class ConversionViewModel(
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
                 is ConversionEvent.OnFromValueChange -> onFromCurrencyValueChange(event.value)
                 is ConversionEvent.OnToValueChange -> onToCurrencyValueChange(event.value)
+                is ConversionEvent.OnActiveConversionPairFavouritesClick -> addToFavourites()
                 else -> {}
             }
         }
@@ -62,37 +66,29 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
-        loadInitialConversionCurrencies()
         combine(
             fromCurrencyCodeStateFlow,
             toCurrencyCodeStateFlow,
         ) { fromCurrencyCode, toCurrencyCode ->
             fromCurrencyCode to toCurrencyCode
         }
-            .flatMapLatest { getHistoricalRatesUseCase(it.first, it.second) }
+            .flatMapLatest { getConversionPairUseCase(it.first, it.second) }
             .filterNotNull()
             .distinctUntilChanged()
-            .onEach { onEvent(ConversionEvent.OnHistoricalRatesChange(it)) }
+            .onEach { onEvent(ConversionEvent.OnActiveConversionPairChanged(it)) }
             .launchIn(viewModelScope)
+    }
+
+    private fun addToFavourites() {
+        viewModelScope.launch {
+            toggleConversionPairFavouriteUseCase(
+                fromCurrencyCodeStateFlow.value,
+                toCurrencyCodeStateFlow.value,
+            )
+        }
     }
 
     override fun getInitialState(): ConversionState = ConversionState()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun loadInitialConversionCurrencies() {
-        combine(
-            fromCurrencyCodeStateFlow.flatMapLatest { currencyCode ->
-                getCurrencyUseCase(currencyCode).filterNotNull()
-            },
-            toCurrencyCodeStateFlow.flatMapLatest { currencyCode ->
-                getCurrencyUseCase(currencyCode).filterNotNull()
-            },
-        ) { fromCurrency, toCurrency ->
-            onEvent(ConversionEvent.OnFromCurrencyChange(fromCurrency))
-            onEvent(ConversionEvent.OnToCurrencyChange(toCurrency))
-        }
-            .launchIn(viewModelScope)
-    }
 
     private fun onCurrencySelected(selectedCurrencyCode: String) {
         when (conversionCurrencySource) {
@@ -118,7 +114,6 @@ internal class ConversionViewModel(
                 }
         }
     }
-
 
     private fun onFromCurrencyChangeClick() {
         conversionCurrencySource = ConversionCurrencySource.FROM

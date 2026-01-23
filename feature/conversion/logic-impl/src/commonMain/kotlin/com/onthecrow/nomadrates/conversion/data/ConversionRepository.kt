@@ -35,4 +35,8 @@ internal class ConversionRepository(
         }
         conversionDatabaseDataSource.saveConversions(conversionsToUpdate)
     }
+
+    suspend fun saveConversion(conversionEntity: ConversionEntity) {
+        conversionDatabaseDataSource.saveConversion(conversionEntity)
+    }
 }
