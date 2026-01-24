@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
+import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
 import com.onthecrow.nomadrates.ui.MutedClay
@@ -20,8 +21,26 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             is ConversionEvent.OnFromValueConverted -> reduceFromValueConverted(state, event)
             is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(state, event)
             is ConversionEvent.OnActiveConversionPairChanged -> reduceActiveConversionPairChanged(state, event)
+            is ConversionEvent.HighlightConversionPair -> reduceHighlightConversionPair(state, event)
             else -> state
         }
+    }
+
+    private fun reduceHighlightConversionPair(
+        state: ConversionState,
+        event: ConversionEvent.HighlightConversionPair
+    ): ConversionState {
+        val itemToHighlight = state.conversionListItems.map { listItem ->
+            val listItemData = listItem as? ConversionListItem.Data
+            if (listItemData?.currencyPair == event.conversionPair) {
+                listItemData.copy(highlighted = event.shouldHighlight)
+            } else {
+                listItem
+            }
+        }
+        return state.copy(
+            conversionListItems = itemToHighlight,
+        )
     }
 
     private fun reduceFromValueConverted(

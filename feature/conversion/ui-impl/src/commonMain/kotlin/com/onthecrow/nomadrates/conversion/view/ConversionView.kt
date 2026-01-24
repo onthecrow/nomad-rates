@@ -63,11 +63,15 @@ internal fun ConversionView(
             )
         }
         ConversionSwapView(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier.align(Alignment.Center)
+                .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
+                .padding(4.dp),
             onClick = { onEvent(ConversionEvent.OnSwitchButtonPress) },
         )
         LikeButtonView(
             modifier = Modifier.align(Alignment.TopEnd)
+                .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
+                .padding(4.dp)
                 .background(MaterialTheme.colorScheme.background, shape = CircleShape),
             isFavourite = state.isFavourite,
             onClick = { onEvent(ConversionEvent.OnActiveConversionPairFavouritesClick) },

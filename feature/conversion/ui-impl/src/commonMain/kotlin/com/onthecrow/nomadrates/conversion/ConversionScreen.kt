@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,36 +34,57 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.view.ConversionView
 import com.onthecrow.nomadrates.conversion.view.pair.ConversionListItemView
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 internal fun ConversionScreen(
     state: ConversionState,
     modifier: Modifier = Modifier,
+    eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
+    val layoutDirections = LocalLayoutDirection.current
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+    var contentPadding by remember { mutableStateOf(PaddingValues()) }
+
+    LaunchedEffect(systemBarsPadding, layoutDirections) {
+        snapshotFlow { systemBarsPadding to layoutDirections }
+            .collect { (systemBarsPadding, layoutDirections) ->
+                contentPadding = PaddingValues(
+                    top = systemBarsPadding.calculateTopPadding(),
+                    bottom = 16.dp,
+                    start = systemBarsPadding.calculateStartPadding(layoutDirections),
+                    end = systemBarsPadding.calculateEndPadding(layoutDirections),
+                )
+            }
+    }
+
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(state) {
+        eventFlow.collect { event ->
+            when (event) {
+                is ConversionEvent.OnItemAddToFavourite -> {
+                    val newFavouriteIndex = state.conversionListItems.indexOfFirst { listItem ->
+                        (listItem as? ConversionListItem.Data)?.currencyPair == event.conversionPair
+                    }
+                    lazyListState.animateScrollToItem(newFavouriteIndex)
+                }
+                else -> {}
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .navigationBarsPadding()
             .imePadding(),
-//        verticalArrangement = Arrangement.spacedBy(32.dp),
     ) {
-        val layoutDirections = LocalLayoutDirection.current
-        val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
-        var contentPadding by remember { mutableStateOf(PaddingValues()) }
-        LaunchedEffect(systemBarsPadding, layoutDirections) {
-            snapshotFlow { systemBarsPadding to layoutDirections }
-                .collect { (systemBarsPadding, layoutDirections) ->
-                    contentPadding = PaddingValues(
-                        top = systemBarsPadding.calculateTopPadding(),
-                        bottom = 16.dp,
-                        start = systemBarsPadding.calculateStartPadding(layoutDirections),
-                        end = systemBarsPadding.calculateEndPadding(layoutDirections),
-                    )
-                }
-        }
         Box(
             modifier = Modifier.weight(1f)
                 .fillMaxWidth(),
@@ -70,6 +92,7 @@ internal fun ConversionScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 reverseLayout = true,
+                state = lazyListState,
                 contentPadding = contentPadding,
             ) {
                 items(

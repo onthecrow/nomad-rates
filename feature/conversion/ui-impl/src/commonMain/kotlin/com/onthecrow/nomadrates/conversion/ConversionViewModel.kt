@@ -6,12 +6,14 @@ import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
+import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.runningReduce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -63,7 +66,14 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
-        getConversionPairsUseCase()
+        getConversionPairsUseCase().runningReduce { prevValue, newValue ->
+            // Check if the pair was added to favourites, to highlite it to the user
+            val diff = (newValue - prevValue.toSet())
+            if (diff.size == 1 && diff.first().isFavourite) {
+                scrollToItemAndHighlight(diff.first())
+            }
+            newValue
+        }
             .onEach { conversionPairs ->
                 onEvent(ConversionEvent.OnConversionPairsReceived(conversionPairs))
             }
@@ -86,6 +96,35 @@ internal class ConversionViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    // todo refactor and maybe move this logic to compose
+    private fun scrollToItemAndHighlight(item: ConversionPair) {
+        viewModelScope.launch {
+            val conversionPair = item.fromCurrency.code to item.toCurrency.code
+            delay(100)
+            onEvent(
+                ConversionEvent.OnItemAddToFavourite(conversionPair)
+            )
+            delay(150)
+
+            repeat(2) {
+                delay(150)
+                onEvent(
+                    ConversionEvent.HighlightConversionPair(
+                        conversionPair,
+                        shouldHighlight = true,
+                    )
+                )
+                delay(150)
+                onEvent(
+                    ConversionEvent.HighlightConversionPair(
+                        conversionPair,
+                        shouldHighlight = false,
+                    )
+                )
+            }
+        }
     }
 
     private fun onListItemClick(conversionPair: Pair<String, String>) {

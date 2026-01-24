@@ -13,11 +13,19 @@ internal sealed interface ConversionEvent : Event {
     data class OnFromValueChange(val value: String) : ConversionEvent
     data class OnToValueConverted(val newValue: String) : ConversionEvent
     data class OnToValueChange(val value: String) : ConversionEvent
-    data class OnConversionPairsReceived(val conversionPairs: List<ConversionPair>) : ConversionEvent
+    data class OnConversionPairsReceived(val conversionPairs: List<ConversionPair>) :
+        ConversionEvent
+
     data class OnConversionViewClick(val conversionPair: Pair<String, String>) : ConversionEvent
     data class OnActiveConversionPairChanged(val conversionPair: ConversionPair) : ConversionEvent
     data class OnConversionPairFavouritesClick(
         // todo replace with a class or proper id
         val currencyPair: Pair<String, String>,
+    ) : ConversionEvent
+
+    data class OnItemAddToFavourite(val conversionPair: Pair<String, String>) : ConversionEvent
+    data class HighlightConversionPair(
+        val conversionPair: Pair<String, String>,
+        val shouldHighlight: Boolean,
     ) : ConversionEvent
 }

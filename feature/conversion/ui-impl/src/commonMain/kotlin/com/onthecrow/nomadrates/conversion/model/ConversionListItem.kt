@@ -22,6 +22,7 @@ internal sealed interface ConversionListItem {
         val currencyPair: Pair<String, String>,
         val isFavourite: Boolean,
         val listGroup: ListGroup,
+        val highlighted: Boolean = false,
     ) : ConversionListItem {
         override val listKey: String = "key_${title}_${listGroup.name}"
     }

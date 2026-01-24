@@ -23,6 +23,7 @@ val conversionModule = module {
         ConversionScreen(
             state = state,
             modifier = modifier,
+            eventFlow = viewModel.eventFlow,
             onEvent = viewModel::onEvent,
         )
     }

@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
@@ -76,6 +76,12 @@ private fun ConversionListItemDataView(
 ) {
     Row(
         modifier = modifier.clickable(enabled = true, onClick = { onClick(state) })
+            .drawWithContent {
+                drawContent()
+                if (state.highlighted) {
+                    drawRect(Color.White.copy(alpha = 0.1f))
+                }
+            }
             .padding(start = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
