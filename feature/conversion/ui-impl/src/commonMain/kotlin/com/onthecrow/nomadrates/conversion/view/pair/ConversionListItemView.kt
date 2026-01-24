@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
@@ -64,6 +65,7 @@ private fun ConversionListItemHeaderView(
         modifier = modifier.padding(16.dp),
         text = state.title,
         color = MaterialTheme.colorScheme.onBackground,
+        style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
     )
 }
 
@@ -114,7 +116,7 @@ private fun ConversionListItemDataView(
             Text(
                 text = state.title,
                 color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
             )
             Text(
                 text = state.subtitle,
@@ -160,7 +162,8 @@ private fun ConversionListItemDataView(
             }
             LikeButtonView(
                 modifier = Modifier.align(Alignment.CenterEnd)
-                    .background(radialBrush),
+                    .background(radialBrush)
+                    .padding(end = 4.dp),
                 isFavourite = state.isFavourite,
                 onClick = { onAddToFavouritesClick(state) },
             )

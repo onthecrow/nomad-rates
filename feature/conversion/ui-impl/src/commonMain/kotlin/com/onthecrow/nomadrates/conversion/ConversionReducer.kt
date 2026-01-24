@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.conversion
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
+import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
 import com.onthecrow.nomadrates.ui.MutedClay
@@ -19,9 +20,21 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             is ConversionEvent.OnToValueChange -> reduceToValueChange(state, event)
             is ConversionEvent.OnToValueConverted -> reduceToValueConverted(state, event)
             is ConversionEvent.OnFromValueConverted -> reduceFromValueConverted(state, event)
-            is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(state, event)
-            is ConversionEvent.OnActiveConversionPairChanged -> reduceActiveConversionPairChanged(state, event)
-            is ConversionEvent.HighlightConversionPair -> reduceHighlightConversionPair(state, event)
+            is ConversionEvent.OnConversionPairsReceived -> reduceConversionPairsReceived(
+                state,
+                event
+            )
+
+            is ConversionEvent.OnActiveConversionPairChanged -> reduceActiveConversionPairChanged(
+                state,
+                event
+            )
+
+            is ConversionEvent.HighlightConversionPair -> reduceHighlightConversionPair(
+                state,
+                event
+            )
+
             else -> state
         }
     }
@@ -32,7 +45,9 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         val itemToHighlight = state.conversionListItems.map { listItem ->
             val listItemData = listItem as? ConversionListItem.Data
-            if (listItemData?.currencyPair == event.conversionPair) {
+            if (listItemData?.currencyPair == event.conversionPair &&
+                listItem.listGroup == ListGroup.FAVOURITE
+            ) {
                 listItemData.copy(highlighted = event.shouldHighlight)
             } else {
                 listItem

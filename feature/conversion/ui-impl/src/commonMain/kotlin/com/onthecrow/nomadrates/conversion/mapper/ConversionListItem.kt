@@ -36,7 +36,7 @@ private fun ConversionPair.toConversionPair(group: ListGroup): ConversionListIte
     return ConversionListItem.Data(
         fromIcon = fromCurrency.code.toIsoCountryCode().toFlagResourceUri(),
         toIcon = toCurrency.code.toIsoCountryCode().toFlagResourceUri(),
-        title = "${fromCurrency.code} to ${toCurrency.code}",
+        title = "${fromCurrency.code} — ${toCurrency.code}",
         subtitle = "1 ${fromCurrency.code} = ${rate.formatAdaptive(toCurrency.code)} ${toCurrency.code}",
         chartData = historicalRates,
         chartColor = if (historicalRates.size >= 2 && historicalRates.first() > historicalRates.last()) MutedClay else SageGreen,

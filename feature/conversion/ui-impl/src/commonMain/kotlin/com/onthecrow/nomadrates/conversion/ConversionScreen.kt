@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
+import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.conversion.view.ConversionView
 import com.onthecrow.nomadrates.conversion.view.pair.ConversionListItemView
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
@@ -71,7 +72,8 @@ internal fun ConversionScreen(
             when (event) {
                 is ConversionEvent.OnItemAddToFavourite -> {
                     val newFavouriteIndex = state.conversionListItems.indexOfFirst { listItem ->
-                        (listItem as? ConversionListItem.Data)?.currencyPair == event.conversionPair
+                        (listItem as? ConversionListItem.Data)?.currencyPair == event.conversionPair &&
+                                listItem.listGroup == ListGroup.FAVOURITE
                     }
                     lazyListState.animateScrollToItem(newFavouriteIndex)
                 }
