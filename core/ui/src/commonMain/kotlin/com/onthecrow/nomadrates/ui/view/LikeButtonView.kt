@@ -1,5 +1,11 @@
 package com.onthecrow.nomadrates.ui.view
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -21,21 +27,31 @@ fun LikeButtonView(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    Icon(
-        modifier = modifier.clip(CircleShape)
-            .clickable(enabled = true, onClick = onClick)
-            .padding(12.dp),
-        imageVector = vectorResource(
+    AnimatedContent(
+        modifier = modifier,
+        targetState = vectorResource(
             when {
                 isFavourite -> Res.drawable.ic_like_filled
                 else -> Res.drawable.ic_like
             }
         ),
-        contentDescription = null,
-        tint = when {
-            // todo use custom theme instead eg. NomadRatesTheme.colorScheme.StrongPastelRed
-            isFavourite -> StrongPastelRed
-            else -> MaterialTheme.colorScheme.onBackground.copy(alpha = .5f)
-        },
-    )
+        label = "icon",
+        transitionSpec = {
+            (scaleIn(initialScale = 0.5f) + fadeIn()) togetherWith
+                    (scaleOut(targetScale = 0.5f) + fadeOut())
+        }
+    ) { vector ->
+        Icon(
+            modifier = Modifier.clip(CircleShape)
+                .clickable(enabled = true, onClick = onClick)
+                .padding(12.dp),
+            imageVector = vector,
+            contentDescription = null,
+            tint = when {
+                // todo use custom theme instead eg. NomadRatesTheme.colorScheme.StrongPastelRed
+                isFavourite -> StrongPastelRed
+                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = .5f)
+            },
+        )
+    }
 }

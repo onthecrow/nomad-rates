@@ -63,9 +63,7 @@ internal fun ConversionView(
             )
         }
         ConversionSwapView(
-            modifier = Modifier.align(Alignment.Center)
-                .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
-                .padding(4.dp),
+            modifier = Modifier.align(Alignment.Center),
             onClick = { onEvent(ConversionEvent.OnSwitchButtonPress) },
         )
         LikeButtonView(

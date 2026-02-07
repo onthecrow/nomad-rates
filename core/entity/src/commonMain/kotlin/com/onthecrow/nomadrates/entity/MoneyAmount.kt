@@ -1,5 +1,6 @@
 package com.onthecrow.nomadrates.entity
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class MoneyAmount {
     constructor(value: String)
     constructor(value: Double)
@@ -21,6 +22,7 @@ expect class MoneyAmount {
     fun toPlainString(): String
 }
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object PlatformFormatter {
     fun format(amount: MoneyAmount, pattern: String, currencyCode: String): String
 }

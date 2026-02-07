@@ -7,6 +7,7 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import java.util.Currency
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class MoneyAmount : Comparable<MoneyAmount> {
     private val value: BigDecimal
 
@@ -50,6 +51,7 @@ actual class MoneyAmount : Comparable<MoneyAmount> {
     fun getNative(): BigDecimal = value
 }
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFormatter {
     actual fun format(amount: MoneyAmount, pattern: String, currencyCode: String): String {
         val symbols = DecimalFormatSymbols(Locale.getDefault())

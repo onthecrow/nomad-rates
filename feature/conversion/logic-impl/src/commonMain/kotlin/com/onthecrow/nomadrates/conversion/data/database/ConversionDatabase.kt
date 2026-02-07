@@ -14,5 +14,7 @@ internal abstract class ConversionDatabase : RoomDatabase() {
     abstract fun conversionDao(): ConversionDao
 }
 
-@Suppress("KotlinNoActualForExpect", "AbstractMemberNotImplemented")
+@Suppress("KotlinNoActualForExpect", "AbstractMemberNotImplemented",
+    "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING"
+)
 internal expect object ConversionDatabaseConstructor : RoomDatabaseConstructor<ConversionDatabase>

@@ -14,5 +14,7 @@ abstract class CurrencyDatabase : RoomDatabase() {
     abstract fun currencyDao(): CurrencyDao
 }
 
-@Suppress("KotlinNoActualForExpect", "AbstractMemberNotImplemented")
+@Suppress("KotlinNoActualForExpect", "AbstractMemberNotImplemented",
+    "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING"
+)
 expect object CurrencyDatabaseConstructor : RoomDatabaseConstructor<CurrencyDatabase>

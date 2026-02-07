@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.onthecrow.nomadrates.navigation.NavigationProvider
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.view.SystemBarShadeView
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.getKoin
 
 @Composable
