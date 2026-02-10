@@ -14,9 +14,6 @@ kotlin {
         implementation(projects.composeApp)
         implementation(libs.androidx.activity.compose)
         implementation(libs.ui.tooling.preview)
-        implementation(project.dependencies.platform(libs.firebase.bom))
-        implementation(libs.firebase.analytics)
-        implementation(libs.firebase.crashlytics)
         implementation(libs.androidx.core.splashscreen)
     }
 }

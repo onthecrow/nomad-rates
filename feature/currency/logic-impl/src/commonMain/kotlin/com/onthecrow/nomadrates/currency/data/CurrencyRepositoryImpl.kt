@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteDataSource: CurrencyRemoteDataSource,
@@ -18,14 +19,14 @@ internal class CurrencyRepositoryImpl(
 
     init {
         combine(
-            currencyRemoteDataSource.configDataFlow,
+            currencyRemoteDataSource.state,
             remoteConfigProvider.getRemoteConfigFlow(),
-            currencyRemoteDataSource.historicalDataFlow,
-        ) { currenciesResponse, remoteConfig, historical ->
+        ) { currenciesResponse, remoteConfig ->
 
             val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first()
                 .associateBy { currency -> currency.code }
-            val currencies = currenciesResponse?.rates?.map { (code, rate) ->
+            val historical = currenciesResponse?.getOrNull()?.historical
+            val currencies = currenciesResponse?.getOrNull()?.config?.rates?.map { (code, rate) ->
                 val localCurrency = localCurrenciesMap[code]
                 Currency(
                     code = code,
@@ -58,20 +59,18 @@ internal class CurrencyRepositoryImpl(
     }
 
     override fun getBaseCurrency(): Flow<Currency?> {
-        return combine(
-            currencyRemoteDataSource.configDataFlow,
-            currencyRemoteDataSource.historicalDataFlow,
-        ) { currenciesResponse, historical ->
+        return currencyRemoteDataSource.state.map { currenciesResponse ->
             // TODO implement a proper error handling
             // TODO return it from db as well
-            val base = currenciesResponse?.base ?: return@combine null
-            val rate = currenciesResponse.rates[base] ?: return@combine null
+            val config = currenciesResponse?.getOrNull()?.config
+            val base = config?.base ?: return@map null
+            val rate = config.rates[base] ?: return@map null
             Currency(
                 code = base,
                 conversionRate = rate,
                 isFeatured = false,
                 isFavourite = false,
-                rates = historical?.get(base) ?: emptyList(),
+                rates = currenciesResponse.getOrNull()?.historical?.get(base) ?: emptyList(),
             )
         }.distinctUntilChanged()
     }

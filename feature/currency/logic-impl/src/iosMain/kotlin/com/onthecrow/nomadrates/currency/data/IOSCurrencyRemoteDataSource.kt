@@ -1,58 +1,63 @@
 package com.onthecrow.nomadrates.currency.data
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.Firebase.FIRConfigUpdateListenerRegistration
 import platform.Firebase.FIRRemoteConfig
-import platform.Firebase.FIRRemoteConfigUpdate
+import platform.Firebase.FIRRemoteConfigFetchAndActivateStatus
 import platform.Foundation.NSError
-import platform.Foundation.NSLog
+import kotlin.coroutines.resume
+
 
 @OptIn(ExperimentalForeignApi::class)
-internal class IOSCurrencyRemoteDataSource : CurrencyRemoteDataSource() {
+internal class IOSCurrencyRemoteDataSource(
+    private val remoteConfig: FIRRemoteConfig,
+) : CurrencyRemoteDataSource() {
 
-    // TODO implement a proper di here
-//    private val remoteConfig: FIRRemoteConfig by lazy { FIRRemoteConfig.remoteConfig() }
+    private var listenerRegistration: FIRConfigUpdateListenerRegistration? = null
 
-    // TODO check how it work in case: no internet -> has internet
-    override fun startBackgroundSync() {
-        FIRRemoteConfig.remoteConfig().addOnConfigUpdateListener { configUpdate, error ->
+    init {
+        start()
+    }
+
+    override fun startBackgroundSync(
+        onActivated: () -> Unit,
+        onError: (Throwable) -> Unit
+    ) {
+        listenerRegistration = remoteConfig.addOnConfigUpdateListener { _, error ->
             if (error != null) {
-                logError("Real-time Error", error)
+                onError(error.toThrowable("Remote Config update listener error"))
                 return@addOnConfigUpdateListener
             }
 
-            // Changes subscription
-            FIRRemoteConfig.remoteConfig().activateWithCompletion { _, activateError ->
+            remoteConfig.activateWithCompletion { _, activateError ->
                 if (activateError != null) {
-                    logError("Activation Error", activateError)
+                    onError(activateError.toThrowable("Remote Config activate error"))
                 } else {
-                    checkUpdates(configUpdate)
+                    onActivated()
                 }
             }
         }
+    }
 
-        // Initial loading
-        FIRRemoteConfig.remoteConfig().fetchAndActivateWithCompletionHandler { status, error ->
-            if (error != null) {
-                logError("Initial Fetch Error", error)
-            } else {
-                updateData()
-                updateHistoricalData()
+    override suspend fun fetchAndActivate(): Boolean =
+        suspendCancellableCoroutine { cont ->
+            remoteConfig.fetchAndActivateWithCompletionHandler { status, error ->
+                if (!cont.isActive) return@fetchAndActivateWithCompletionHandler
+
+                if (error != null) {
+                    cont.resume(false)
+                    return@fetchAndActivateWithCompletionHandler
+                }
+
+                val ok =
+                    status == FIRRemoteConfigFetchAndActivateStatus.FIRRemoteConfigFetchAndActivateStatusSuccessFetchedFromRemote ||
+                            status == FIRRemoteConfigFetchAndActivateStatus.FIRRemoteConfigFetchAndActivateStatusSuccessUsingPreFetchedData
+
+                cont.resume(ok)
             }
         }
-    }
-
-    private fun checkUpdates(configUpdate: FIRRemoteConfigUpdate?) {
-        val updatedKeys = configUpdate?.updatedKeys ?: return
-
-        if (updatedKeys.contains(KEY_DATA)) {
-            updateData()
-        }
-
-        val stringKeys = updatedKeys.map { it.toString() }
-        if (stringKeys.any { it.startsWith(PREFIX_CURRENCY) }) {
-            updateHistoricalData()
-        }
-    }
+    // TODO check how it work in case: no internet -> has internet
 
     override fun getString(key: String): String {
         return FIRRemoteConfig.remoteConfig().configValueForKey(key).stringValue ?: ""
@@ -64,7 +69,6 @@ internal class IOSCurrencyRemoteDataSource : CurrencyRemoteDataSource() {
             .toSet()
     }
 
-    private fun logError(tag: String, error: NSError) {
-        NSLog("$tag: ${error.localizedDescription}")
-    }
+    private fun NSError.toThrowable(fallback: String): Throwable =
+        RuntimeException(localizedDescription ?: fallback)
 }

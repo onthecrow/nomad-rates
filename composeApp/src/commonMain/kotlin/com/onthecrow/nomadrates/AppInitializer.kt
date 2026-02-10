@@ -5,12 +5,12 @@ import org.koin.core.context.startKoin
 
 object AppInitializer {
     fun initialize(platform: Platform) {
-        initFirebase()
+        initFirebase(platform)
         initKoin(platform)
     }
 }
 
-expect fun initFirebase()
+expect fun initFirebase(platform: Platform)
 
 private fun initKoin(platform: Platform) = startKoin {
     modules(

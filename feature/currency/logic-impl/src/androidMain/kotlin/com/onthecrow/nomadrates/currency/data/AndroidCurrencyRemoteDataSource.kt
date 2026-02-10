@@ -1,47 +1,56 @@
 package com.onthecrow.nomadrates.currency.data
 
 import android.util.Log
-import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.ConfigUpdate
 import com.google.firebase.remoteconfig.ConfigUpdateListener
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
-import com.google.firebase.remoteconfig.remoteConfig
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-internal class AndroidCurrencyRemoteDataSource : CurrencyRemoteDataSource() {
+internal class AndroidCurrencyRemoteDataSource(
+    private val remoteConfig: FirebaseRemoteConfig,
+) : CurrencyRemoteDataSource() {
 
-    // TODO to di
-    private val remoteConfig = Firebase.remoteConfig
+    init {
+        start()
+    }
 
-    override fun startBackgroundSync() {
-        Firebase.remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
+    override fun startBackgroundSync(
+        onActivated: () -> Unit,
+        onError: (Throwable) -> Unit
+    ) {
+        remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {
-                remoteConfig.activate().addOnCompleteListener {
-                    updateData()
-                    updateHistoricalData()
+                remoteConfig.activate().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        onActivated()
+                    } else {
+                        onError(task.exception ?: RuntimeException("activate() failed"))
+                    }
                 }
             }
 
             override fun onError(error: FirebaseRemoteConfigException) {
                 Log.e(javaClass.simpleName, error.message, error)
+                onError(error)
             }
         })
-        Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("RemoteConfig", "Initial Fetch Succeeded")
-                updateData()
-                updateHistoricalData()
-            } else {
-                // TODO implement retry logic
-                Log.e("RemoteConfig", "Initial Fetch Failed")
+    }
+
+    override suspend fun fetchAndActivate(): Boolean {
+        return suspendCoroutine { cont ->
+            remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+                cont.resume(task.isSuccessful)
             }
         }
     }
 
     override fun getString(key: String): String {
-        return Firebase.remoteConfig.getString(key)
+        return remoteConfig.getString(key)
     }
 
     override fun getKeysByPrefix(prefix: String): Set<String> {
-        return Firebase.remoteConfig.getKeysByPrefix(prefix)
+        return remoteConfig.getKeysByPrefix(prefix)
     }
 }
