@@ -41,6 +41,18 @@ internal class AndroidCurrencyRemoteDataSource(
     override suspend fun fetchAndActivate(): Boolean {
         return suspendCoroutine { cont ->
             remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(
+                        "NomadRatesFirebase",
+                        "Currency RemoteConfig fetch succeeded: exchange_rates_length=${remoteConfig.getString(KEY_DATA).length}, historical_keys=${remoteConfig.getKeysByPrefix(PREFIX_CURRENCY).size}"
+                    )
+                } else {
+                    Log.e(
+                        "NomadRatesFirebase",
+                        "Currency RemoteConfig fetch failed: lastFetchStatus=${remoteConfig.info.lastFetchStatus}, error=${task.exception?.message}",
+                        task.exception,
+                    )
+                }
                 cont.resume(task.isSuccessful)
             }
         }

@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.initialize
@@ -21,5 +22,11 @@ class AndroidPlatform(val context: Application) : Platform {
 }
 
 actual fun initFirebase(platform: Platform) {
-    Firebase.initialize((platform as AndroidPlatform).context)
+    val context = (platform as AndroidPlatform).context
+    Firebase.initialize(context)
+    val firebaseApp = FirebaseApp.getInstance()
+    Log.d(
+        "NomadRatesFirebase",
+        "Firebase initialized for package=${context.packageName}, appId=${firebaseApp.options.applicationId}, projectId=${firebaseApp.options.projectId}",
+    )
 }

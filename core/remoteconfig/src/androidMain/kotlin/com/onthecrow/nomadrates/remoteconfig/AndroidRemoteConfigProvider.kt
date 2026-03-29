@@ -16,6 +16,10 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
         Firebase.remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {
                 remoteConfig.activate().addOnCompleteListener {
+                    Log.d(
+                        "NomadRatesFirebase",
+                        "RemoteConfig update received: keys=${configUpdate.updatedKeys}, activateSuccess=${it.isSuccessful}, error=${it.exception?.message}"
+                    )
                     configFields.forEach { configField ->
                         if (configUpdate.updatedKeys.contains(configField)) {
                             onConfigUpdated(configField)
@@ -30,11 +34,17 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
         })
         Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Log.d("RemoteConfig", "Initial Fetch Succeeded")
+                Log.d(
+                    "NomadRatesFirebase",
+                    "RemoteConfig initial fetch succeeded: lastFetchStatus=${remoteConfig.info.lastFetchStatus}"
+                )
                 onConfigUpdated()
             } else {
-                // TODO implement retry logic
-                Log.e("RemoteConfig", "Initial Fetch Failed")
+                Log.e(
+                    "NomadRatesFirebase",
+                    "RemoteConfig initial fetch failed: lastFetchStatus=${remoteConfig.info.lastFetchStatus}, error=${task.exception?.message}",
+                    task.exception,
+                )
             }
         }
     }

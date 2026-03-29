@@ -25,3 +25,4 @@ node_modules/
 /composeApp/release/
 /feature/currency/logic-impl/schemas/
 /feature/conversion/logic-impl/schemas/
+/iosApp/Configuration/GoogleService-Info-Debug.plist

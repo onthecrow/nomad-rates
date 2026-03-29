@@ -1,0 +1,5 @@
+#include "Config.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER=com.onthecrow.nomadrates.NomadRates$(TEAM_ID)
+APP_DISPLAY_NAME=NomadRates
+APP_ICON_NAME=AppIcon
