@@ -12,6 +12,10 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
     // TODO to di
     private val remoteConfig = Firebase.remoteConfig
 
+    init {
+        initializeBackgroundSync()
+    }
+
     override fun startBackgroundSync() {
         Firebase.remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {

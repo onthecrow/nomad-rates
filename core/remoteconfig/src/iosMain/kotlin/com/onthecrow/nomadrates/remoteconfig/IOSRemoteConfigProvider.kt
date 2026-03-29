@@ -1,40 +1,47 @@
 package com.onthecrow.nomadrates.remoteconfig
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Firebase.FIRRemoteConfig
+import platform.Firebase.FIRRemoteConfigFetchAndActivateStatus
 import platform.Firebase.FIRRemoteConfigUpdate
 import platform.Foundation.NSError
 import platform.Foundation.NSLog
+import kotlin.coroutines.resume
 
 @OptIn(ExperimentalForeignApi::class)
 internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // TODO implement a proper di here
-//    private val remoteConfig: FIRRemoteConfig by lazy { FIRRemoteConfig.remoteConfig() }
+    init {
+        initializeBackgroundSync()
+    }
 
-    // TODO check how it work in case: no internet -> has internet
     override fun startBackgroundSync() {
-        FIRRemoteConfig.remoteConfig().addOnConfigUpdateListener { configUpdate, error ->
+        val remoteConfig = FIRRemoteConfig.remoteConfig()
+        remoteConfig.addOnConfigUpdateListener { configUpdate, error ->
             if (error != null) {
-                logError("Real-time Error", error)
+                logError("Real-time Error", error.localizedDescription)
                 return@addOnConfigUpdateListener
             }
 
-            // Changes subscription
-            FIRRemoteConfig.remoteConfig().activateWithCompletion { _, activateError ->
+            remoteConfig.activateWithCompletion { _, activateError ->
                 if (activateError != null) {
-                    logError("Activation Error", activateError)
+                    logError("Activation Error", activateError.localizedDescription)
                 } else {
                     checkUpdates(configUpdate)
                 }
             }
         }
 
-        // Initial loading
-        FIRRemoteConfig.remoteConfig().fetchAndActivateWithCompletionHandler { status, error ->
-            if (error != null) {
-                logError("Initial Fetch Error", error)
-            } else {
+        scope.launch {
+            val initialFetchSucceeded = remoteConfig.fetchAndActivateWithRetry()
+            if (initialFetchSucceeded) {
                 onConfigUpdated()
             }
         }
@@ -51,10 +58,70 @@ internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
     }
 
     override fun getString(key: String): String {
-        return FIRRemoteConfig.remoteConfig().configValueForKey(key).stringValue ?: ""
+        return FIRRemoteConfig.remoteConfig().configValueForKey(key).stringValue
     }
 
-    private fun logError(tag: String, error: NSError) {
-        NSLog("$tag: ${error.localizedDescription}")
+    private suspend fun FIRRemoteConfig.fetchAndActivateWithRetry(): Boolean {
+        repeat(INITIAL_FETCH_RETRY_COUNT) { attempt ->
+            val result = awaitFetchAndActivate()
+            if (result.isSuccessful) return true
+
+            logError(
+                tag = "Initial Fetch Error (${attempt + 1}/$INITIAL_FETCH_RETRY_COUNT)",
+                message = result.errorDescription,
+            )
+
+            if (attempt != INITIAL_FETCH_RETRY_COUNT - 1) {
+                delay(INITIAL_FETCH_RETRY_DELAY_MS)
+            }
+        }
+
+        return false
+    }
+
+    private suspend fun FIRRemoteConfig.awaitFetchAndActivate(): FetchAndActivateResult =
+        suspendCancellableCoroutine { cont ->
+            ensureInitializedWithCompletionHandler { initializationError ->
+                if (!cont.isActive) return@ensureInitializedWithCompletionHandler
+
+                if (initializationError != null) {
+                    cont.resume(
+                        FetchAndActivateResult(
+                            isSuccessful = false,
+                            errorDescription = initializationError.localizedDescription,
+                        )
+                    )
+                    return@ensureInitializedWithCompletionHandler
+                }
+
+                fetchAndActivateWithCompletionHandler { status, error ->
+                    if (!cont.isActive) return@fetchAndActivateWithCompletionHandler
+
+                    val isSuccessful =
+                        status == FIRRemoteConfigFetchAndActivateStatus.FIRRemoteConfigFetchAndActivateStatusSuccessFetchedFromRemote ||
+                            status == FIRRemoteConfigFetchAndActivateStatus.FIRRemoteConfigFetchAndActivateStatusSuccessUsingPreFetchedData
+
+                    cont.resume(
+                        FetchAndActivateResult(
+                            isSuccessful = isSuccessful,
+                            errorDescription = error?.localizedDescription,
+                        )
+                    )
+                }
+            }
+        }
+
+    private fun logError(tag: String, message: String?) {
+        NSLog("$tag: ${message ?: "Unknown error"}")
+    }
+
+    private data class FetchAndActivateResult(
+        val isSuccessful: Boolean,
+        val errorDescription: String?,
+    )
+
+    private companion object {
+        private const val INITIAL_FETCH_RETRY_COUNT = 3
+        private const val INITIAL_FETCH_RETRY_DELAY_MS = 1_000L
     }
 }

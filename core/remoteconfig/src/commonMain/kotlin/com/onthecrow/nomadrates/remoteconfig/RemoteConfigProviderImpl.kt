@@ -10,11 +10,8 @@ import org.koin.core.component.KoinComponent
 internal abstract class RemoteConfigProviderImpl : KoinComponent, RemoteConfigProvider {
 
     private val _configDataFlow = MutableStateFlow<RemoteConfig?>(null)
+    private var isBackgroundSyncStarted = false
     protected val configFields = listOf(KEY_FEATURED_CONVERSIONS, KEY_FEATURED_CURRENCIES)
-
-    init {
-        startBackgroundSync()
-    }
 
     override fun getRemoteConfigFlow(): Flow<RemoteConfig> {
         return _configDataFlow.filterNotNull()
@@ -23,6 +20,12 @@ internal abstract class RemoteConfigProviderImpl : KoinComponent, RemoteConfigPr
 
     protected abstract fun getString(key: String): String
     protected abstract fun startBackgroundSync()
+
+    protected fun initializeBackgroundSync() {
+        if (isBackgroundSyncStarted) return
+        isBackgroundSyncStarted = true
+        startBackgroundSync()
+    }
 
     protected fun onConfigUpdated(configField: String? = null) {
         when (configField) {
