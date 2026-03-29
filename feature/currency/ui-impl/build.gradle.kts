@@ -18,12 +18,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core:navigation:api"))
-            implementation(project(":core:ui"))
-            implementation(project(":core:ui-core"))
-            implementation(project(":core:util"))
-            implementation(project(":feature:currency:ui-api"))
-            implementation(project(":feature:currency:logic-api"))
+            implementation(projects.core.navigation.api)
+            implementation(projects.core.ui)
+            implementation(projects.core.uiCore)
+            implementation(projects.core.util)
+            implementation(projects.feature.currency.uiApi)
+            implementation(projects.feature.currency.logicApi)
             implementation(libs.runtime)
             implementation(libs.foundation)
             implementation(libs.material3)

@@ -5,8 +5,11 @@ import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
+import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
+import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
@@ -15,15 +18,15 @@ import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningReduce
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,12 +37,19 @@ internal class ConversionViewModel(
     private val getHistoricalRatesUseCase: GetHistoricalRatesUseCase,
     private val getConversionPairUseCase: GetConversionPairUseCase,
     private val getConversionPairsUseCase: GetConversionPairsUseCase,
+    private val getSelectedConversionPairUseCase: GetSelectedConversionPairUseCase,
+    private val saveSelectedConversionPairUseCase: SaveSelectedConversionPairUseCase,
     private val toggleConversionPairFavouriteUseCase: ToggleConversionPairFavouriteUseCase,
     reducer: ConversionReducer,
     screenResultDispatcher: ScreenResultDispatcher,
 ) : BaseViewModel<ConversionEvent, ConversionState, ConversionReducer>(reducer) {
-    private val fromCurrencyCodeStateFlow: MutableStateFlow<String> = MutableStateFlow("USD")
-    private val toCurrencyCodeStateFlow: MutableStateFlow<String> = MutableStateFlow("EUR")
+    private val selectedConversionPairStateFlow: StateFlow<SelectedConversionPair> =
+        getSelectedConversionPairUseCase()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = SelectedConversionPair.DEFAULT,
+            )
 
     private var conversionCurrencySource: ConversionCurrencySource = ConversionCurrencySource.FROM
 
@@ -81,13 +91,13 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
-        combine(
-            fromCurrencyCodeStateFlow,
-            toCurrencyCodeStateFlow,
-        ) { fromCurrencyCode, toCurrencyCode ->
-            fromCurrencyCode to toCurrencyCode
-        }
-            .flatMapLatest { getConversionPairUseCase(it.first, it.second) }
+        selectedConversionPairStateFlow
+            .flatMapLatest { selectedConversionPair ->
+                getConversionPairUseCase(
+                    selectedConversionPair.fromCurrencyCode,
+                    selectedConversionPair.toCurrencyCode,
+                )
+            }
             .filterNotNull()
             .distinctUntilChanged()
             .onEach {
@@ -130,13 +140,18 @@ internal class ConversionViewModel(
     }
 
     private fun onListItemClick(conversionPair: Pair<String, String>) {
-        fromCurrencyCodeStateFlow.value = conversionPair.first
-        toCurrencyCodeStateFlow.value = conversionPair.second
+        updateSelectedConversionPair(
+            SelectedConversionPair(
+                fromCurrencyCode = conversionPair.first,
+                toCurrencyCode = conversionPair.second,
+            )
+        )
     }
 
     private fun toggleFavourites(currencyPair: Pair<String, String>? = null) {
+        val selectedConversionPair = selectedConversionPairStateFlow.value
         val conversionPair = currencyPair
-            ?: (fromCurrencyCodeStateFlow.value to toCurrencyCodeStateFlow.value)
+            ?: (selectedConversionPair.fromCurrencyCode to selectedConversionPair.toCurrencyCode)
         viewModelScope.launch {
             toggleConversionPairFavouriteUseCase(
                 conversionPair.first,
@@ -148,21 +163,28 @@ internal class ConversionViewModel(
     override fun getInitialState(): ConversionState = ConversionState()
 
     private fun onCurrencySelected(selectedCurrencyCode: String) {
-        when (conversionCurrencySource) {
-            ConversionCurrencySource.FROM -> fromCurrencyCodeStateFlow
-            ConversionCurrencySource.TO -> toCurrencyCodeStateFlow
+        val selectedConversionPair = selectedConversionPairStateFlow.value
+        val updatedPair = when (conversionCurrencySource) {
+            ConversionCurrencySource.FROM -> selectedConversionPair.copy(
+                fromCurrencyCode = selectedCurrencyCode,
+            )
+
+            ConversionCurrencySource.TO -> selectedConversionPair.copy(
+                toCurrencyCode = selectedCurrencyCode,
+            )
         }
-            .update { selectedCurrencyCode }
+        updateSelectedConversionPair(updatedPair)
         // todo maybe move it to reducer
 //        onFromCurrencyValueChange(state.value.conversionViewState.from?.conversionValue ?: return)
     }
 
     private fun onFromCurrencyValueChange(value: String) {
         viewModelScope.launch {
+            val selectedConversionPair = selectedConversionPairStateFlow.value
             runCatching {
                 convertCurrenciesUseCase(
-                    fromCurrencyCode = fromCurrencyCodeStateFlow.value,
-                    toCurrencyCode = toCurrencyCodeStateFlow.value,
+                    fromCurrencyCode = selectedConversionPair.fromCurrencyCode,
+                    toCurrencyCode = selectedConversionPair.toCurrencyCode,
                     amount = value.toDouble(),
                 )
             }
@@ -179,17 +201,22 @@ internal class ConversionViewModel(
     }
 
     private fun onSwitchButtonClick() {
-        val buffer = fromCurrencyCodeStateFlow.value
-        fromCurrencyCodeStateFlow.update { toCurrencyCodeStateFlow.value }
-        toCurrencyCodeStateFlow.update { buffer }
+        val selectedConversionPair = selectedConversionPairStateFlow.value
+        updateSelectedConversionPair(
+            SelectedConversionPair(
+                fromCurrencyCode = selectedConversionPair.toCurrencyCode,
+                toCurrencyCode = selectedConversionPair.fromCurrencyCode,
+            )
+        )
     }
 
     private fun onToCurrencyValueChange(value: String) {
         viewModelScope.launch {
+            val selectedConversionPair = selectedConversionPairStateFlow.value
             runCatching {
                 convertCurrenciesUseCase(
-                    fromCurrencyCode = toCurrencyCodeStateFlow.value,
-                    toCurrencyCode = fromCurrencyCodeStateFlow.value,
+                    fromCurrencyCode = selectedConversionPair.toCurrencyCode,
+                    toCurrencyCode = selectedConversionPair.fromCurrencyCode,
                     amount = value.toDouble(),
                 )
             }
@@ -207,6 +234,14 @@ internal class ConversionViewModel(
 
     private fun onBackPress() {
         navigator.navigateBack()
+    }
+
+    private fun updateSelectedConversionPair(selectedConversionPair: SelectedConversionPair) {
+        if (selectedConversionPair == selectedConversionPairStateFlow.value) return
+
+        viewModelScope.launch {
+            saveSelectedConversionPairUseCase(selectedConversionPair)
+        }
     }
 }
 

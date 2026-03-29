@@ -34,7 +34,9 @@ dependencyResolutionManagement {
 
 include(":androidApp")
 include(":composeApp")
+include(":core:coroutines")
 include(":core:database")
+include(":core:datastore")
 include(":core:entity")
 include(":core:navigation:api")
 include(":core:navigation:impl")

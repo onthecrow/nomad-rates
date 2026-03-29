@@ -10,7 +10,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":feature:currency:logic-api"))
+            implementation(projects.feature.currency.logicApi)
             implementation(libs.kotlinx.coroutines.core)
         }
     }

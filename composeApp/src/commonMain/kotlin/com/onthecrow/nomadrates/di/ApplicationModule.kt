@@ -3,9 +3,11 @@ package com.onthecrow.nomadrates.di
 import com.onthecrow.nomadrates.conversion.ConversionDestination
 import com.onthecrow.nomadrates.conversion.di.conversionLogicModule
 import com.onthecrow.nomadrates.conversion.di.conversionModule
+import com.onthecrow.nomadrates.coroutines.di.coroutinesModule
 import com.onthecrow.nomadrates.currency.di.currencyLogicModule
 import com.onthecrow.nomadrates.currency.di.currencyModule
 import com.onthecrow.nomadrates.database.di.databaseModule
+import com.onthecrow.nomadrates.datastore.di.datastoreModule
 import com.onthecrow.nomadrates.navigation.Destination
 import com.onthecrow.nomadrates.navigation.di.StartDestination
 import com.onthecrow.nomadrates.navigation.di.navigationModule
@@ -18,7 +20,9 @@ val applicationModule = module {
     single { Json { ignoreUnknownKeys = true } }
     single(StartDestination) { ConversionDestination } bind Destination::class
     includes(
+        coroutinesModule,
         databaseModule,
+        datastoreModule,
         navigationModule,
         remoteConfigModule,
         conversionModule,

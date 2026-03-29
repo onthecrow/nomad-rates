@@ -91,9 +91,9 @@ kotlin {
             implementation(libs.firebase.config)
         }
         commonMain.dependencies {
-            implementation(project(":core:database"))
-            implementation(project(":core:remoteconfig"))
-            implementation(project(":feature:currency:logic-api"))
+            implementation(projects.core.database)
+            implementation(projects.core.remoteconfig)
+            implementation(projects.feature.currency.logicApi)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
