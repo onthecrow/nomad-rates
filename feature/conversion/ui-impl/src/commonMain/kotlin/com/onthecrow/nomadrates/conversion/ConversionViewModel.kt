@@ -1,43 +1,43 @@
 package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
+import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
-import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
-import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
-import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.ObserveConversionDataUseCase
 import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
-import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
+import com.onthecrow.nomadrates.currency.domain.RefreshCurrenciesUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.runningReduce
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ConversionViewModel(
     private val navigator: Navigator,
-    private val getCurrencyUseCase: GetCurrencyUseCase,
     private val convertCurrenciesUseCase: ConvertCurrenciesUseCase,
-    private val getHistoricalRatesUseCase: GetHistoricalRatesUseCase,
-    private val getConversionPairUseCase: GetConversionPairUseCase,
-    private val getConversionPairsUseCase: GetConversionPairsUseCase,
+    private val observeConversionDataUseCase: ObserveConversionDataUseCase,
     private val getSelectedConversionPairUseCase: GetSelectedConversionPairUseCase,
+    private val refreshCurrenciesUseCase: RefreshCurrenciesUseCase,
     private val saveSelectedConversionPairUseCase: SaveSelectedConversionPairUseCase,
     private val toggleConversionPairFavouriteUseCase: ToggleConversionPairFavouriteUseCase,
     reducer: ConversionReducer,
@@ -51,12 +51,14 @@ internal class ConversionViewModel(
                 initialValue = SelectedConversionPair.DEFAULT,
             )
 
+    private val retryTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var conversionCurrencySource: ConversionCurrencySource = ConversionCurrencySource.FROM
 
     init {
         eventFlow.onEach { event ->
             when (event) {
                 is ConversionEvent.OnBackPress -> onBackPress()
+                is ConversionEvent.OnRetryClick -> retryTrigger.tryEmit(Unit)
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
@@ -78,36 +80,60 @@ internal class ConversionViewModel(
             }
             .launchIn(viewModelScope)
 
-        getConversionPairsUseCase().runningReduce { prevValue, newValue ->
-            // Check if the pair was added to favourites, to highlite it to the user
-            val diff = (newValue - prevValue.toSet())
-            if (diff.size == 1 && diff.first().isFavourite) {
-                scrollToItemAndHighlight(diff.first())
-            }
-            newValue
-        }
-            .onEach { conversionPairs ->
-                onEvent(ConversionEvent.OnConversionPairsReceived(conversionPairs))
-            }
-            .launchIn(viewModelScope)
-
-        selectedConversionPairStateFlow
-            .flatMapLatest { selectedConversionPair ->
-                getConversionPairUseCase(
-                    selectedConversionPair.fromCurrencyCode,
-                    selectedConversionPair.toCurrencyCode,
-                )
-            }
-            .filterNotNull()
-            .distinctUntilChanged()
-            .onEach {
-                onEvent(ConversionEvent.OnActiveConversionPairChanged(it))
-                val fromValue = state.value.conversionViewState.from?.conversionValue
-                if (!fromValue.isNullOrBlank()) {
-                    onEvent(ConversionEvent.OnFromValueChange(fromValue))
+        merge(
+            flowOf(false),
+            retryTrigger.map { true },
+        )
+            .onEach { shouldRefresh ->
+                if (shouldRefresh) {
+                    refreshCurrenciesUseCase()
                 }
             }
+            .flatMapLatest {
+                observeConversionDataUseCase()
+                    .runningFold(ConversionDataTransition()) { transition, current ->
+                        ConversionDataTransition(
+                            previous = transition.current,
+                            current = current,
+                        )
+                    }
+                    .drop(1)
+            }
+            .onEach(::handleConversionDataTransition)
             .launchIn(viewModelScope)
+    }
+
+    override fun getInitialState(): ConversionState = ConversionState.Content()
+
+    private fun handleConversionDataTransition(transition: ConversionDataTransition) {
+        val currentState = transition.current ?: return
+        val fromValue = (state.value as? ConversionState.Content)
+            ?.conversionViewState
+            ?.from
+            ?.conversionValue
+
+        onEvent(ConversionEvent.OnConversionDataChanged(currentState))
+
+        val previousContentState = transition.previous as? ConversionDataState.Content ?: return
+        val currentContentState = currentState as? ConversionDataState.Content ?: return
+
+        maybeHighlightNewFavourite(previousContentState, currentContentState)
+
+        if (previousContentState.activePair.identity() != currentContentState.activePair.identity() &&
+            !fromValue.isNullOrBlank()
+        ) {
+            onEvent(ConversionEvent.OnFromValueChange(fromValue))
+        }
+    }
+
+    private fun maybeHighlightNewFavourite(
+        previousContentState: ConversionDataState.Content,
+        newContentState: ConversionDataState.Content,
+    ) {
+        val diff = (newContentState.conversionPairs - previousContentState.conversionPairs.toSet())
+        if (diff.size == 1 && diff.first().isFavourite) {
+            scrollToItemAndHighlight(diff.first())
+        }
     }
 
     // todo refactor and maybe move this logic to compose
@@ -160,8 +186,6 @@ internal class ConversionViewModel(
         }
     }
 
-    override fun getInitialState(): ConversionState = ConversionState()
-
     private fun onCurrencySelected(selectedCurrencyCode: String) {
         val selectedConversionPair = selectedConversionPairStateFlow.value
         val updatedPair = when (conversionCurrencySource) {
@@ -174,8 +198,6 @@ internal class ConversionViewModel(
             )
         }
         updateSelectedConversionPair(updatedPair)
-        // todo maybe move it to reducer
-//        onFromCurrencyValueChange(state.value.conversionViewState.from?.conversionValue ?: return)
     }
 
     private fun onFromCurrencyValueChange(value: String) {
@@ -243,8 +265,17 @@ internal class ConversionViewModel(
             saveSelectedConversionPairUseCase(selectedConversionPair)
         }
     }
-}
 
-enum class ConversionCurrencySource {
-    FROM, TO
+    private fun ConversionPair.identity(): Pair<String, String> {
+        return fromCurrency.code to toCurrency.code
+    }
+
+    private data class ConversionDataTransition(
+        val previous: ConversionDataState? = null,
+        val current: ConversionDataState? = null,
+    )
+
+    private enum class ConversionCurrencySource {
+        FROM, TO
+    }
 }

@@ -36,17 +36,22 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
                 Log.e(javaClass.simpleName, error.message, error)
             }
         })
+
+        refresh()
+    }
+
+    override fun refreshRemoteConfig() {
         Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d(
                     "NomadRatesFirebase",
-                    "RemoteConfig initial fetch succeeded: lastFetchStatus=${remoteConfig.info.lastFetchStatus}"
+                    "RemoteConfig fetch succeeded: lastFetchStatus=${remoteConfig.info.lastFetchStatus}"
                 )
                 onConfigUpdated()
             } else {
                 Log.e(
                     "NomadRatesFirebase",
-                    "RemoteConfig initial fetch failed: lastFetchStatus=${remoteConfig.info.lastFetchStatus}, error=${task.exception?.message}",
+                    "RemoteConfig fetch failed: lastFetchStatus=${remoteConfig.info.lastFetchStatus}, error=${task.exception?.message}",
                     task.exception,
                 )
             }

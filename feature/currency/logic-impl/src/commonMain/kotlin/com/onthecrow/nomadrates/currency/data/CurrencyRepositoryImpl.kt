@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.currency.data
 
 import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
 import com.onthecrow.nomadrates.currency.model.Currency
+import com.onthecrow.nomadrates.remoteconfig.RemoteConfig
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteDataSource: CurrencyRemoteDataSource,
@@ -20,7 +22,8 @@ internal class CurrencyRepositoryImpl(
     init {
         combine(
             currencyRemoteDataSource.state,
-            remoteConfigProvider.getRemoteConfigFlow(),
+            remoteConfigProvider.getRemoteConfigFlow()
+                .onStart { emit(RemoteConfig(emptyList(), emptyList())) },
         ) { currenciesResponse, remoteConfig ->
 
             val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first()
@@ -73,6 +76,10 @@ internal class CurrencyRepositoryImpl(
                 rates = currenciesResponse.getOrNull()?.historical?.get(base) ?: emptyList(),
             )
         }.distinctUntilChanged()
+    }
+
+    override fun refreshCurrencies() {
+        currencyRemoteDataSource.refresh()
     }
 
     override suspend fun saveCurrency(currency: Currency) {

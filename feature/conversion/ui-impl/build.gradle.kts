@@ -39,6 +39,10 @@ kotlin {
             implementation(libs.coil.svg)
             implementation(libs.coil.compose)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
         androidMain.dependencies {
             implementation(libs.ui.tooling)
         }

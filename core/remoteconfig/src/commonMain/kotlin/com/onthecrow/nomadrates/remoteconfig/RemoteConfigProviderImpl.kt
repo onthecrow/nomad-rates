@@ -18,8 +18,13 @@ internal abstract class RemoteConfigProviderImpl : KoinComponent, RemoteConfigPr
             .distinctUntilChanged()
     }
 
+    override fun refresh() {
+        refreshRemoteConfig()
+    }
+
     protected abstract fun getString(key: String): String
     protected abstract fun startBackgroundSync()
+    protected abstract fun refreshRemoteConfig()
 
     protected fun initializeBackgroundSync() {
         if (isBackgroundSyncStarted) return

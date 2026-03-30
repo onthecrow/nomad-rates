@@ -8,5 +8,6 @@ interface CurrencyRepository {
     suspend fun getCurrency(currencyCode: String): Currency?
     fun getCurrencyFlow(currencyCode: String): Flow<Currency?>
     fun getBaseCurrency(): Flow<Currency?>
+    fun refreshCurrencies()
     suspend fun saveCurrency(currency: Currency)
 }

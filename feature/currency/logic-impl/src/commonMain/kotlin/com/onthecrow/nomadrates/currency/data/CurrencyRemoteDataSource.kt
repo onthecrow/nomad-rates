@@ -28,16 +28,21 @@ internal abstract class CurrencyRemoteDataSource : KoinComponent {
     private val _state = MutableStateFlow<Result<CurrencyConfigPayload>?>(null)
     val state: StateFlow<Result<CurrencyConfigPayload>?> = _state.asStateFlow()
 
+    protected fun emitState(value: Result<CurrencyConfigPayload>?) {
+        _state.value = value
+    }
+
     protected fun start() {
         startBackgroundSync(
             onActivated = { scope.launch { loadFromLocalAndEmit() } },
-            onError = { t ->  }
+            onError = { t -> emitState(Result.failure(t)) }
         )
 
-        scope.launch { refresh() }
+        refresh()
     }
 
     fun refresh() {
+        emitState(null)
         scope.launch { refreshInternal() }
     }
 
@@ -49,16 +54,16 @@ internal abstract class CurrencyRemoteDataSource : KoinComponent {
             }
             loadFromLocalAndEmit()
         }.onFailure { t ->
-            _state.value = Result.failure(t)
+            emitState(Result.failure(t))
         }
     }
 
     private suspend fun loadFromLocalAndEmit() {
         runCatching {
             val payload = readAndParsePayload()
-            _state.value = Result.success(payload)
+            emitState(Result.success(payload))
         }.onFailure { t ->
-            _state.value = Result.failure(t)
+            emitState(Result.failure(t))
         }
     }
 

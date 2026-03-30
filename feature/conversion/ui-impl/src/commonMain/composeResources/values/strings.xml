@@ -1,0 +1,4 @@
+<resources>
+    <string name="conversion_internet_required">Internet connection is required to load currency data.</string>
+    <string name="conversion_retry">Retry</string>
+</resources>

@@ -7,6 +7,7 @@ import com.onthecrow.nomadrates.conversion.GetConversionPairUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetConversionPairsUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetHistoricalRatesUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetSelectedConversionPairUseCaseImpl
+import com.onthecrow.nomadrates.conversion.ObserveConversionDataUseCaseImpl
 import com.onthecrow.nomadrates.conversion.SaveSelectedConversionPairUseCaseImpl
 import com.onthecrow.nomadrates.conversion.ToggleConversionPairFavouriteUseCaseImpl
 import com.onthecrow.nomadrates.conversion.data.ConversionRepository
@@ -21,6 +22,7 @@ import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.ObserveConversionDataUseCase
 import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.datastore.DataStoreFactory
@@ -38,6 +40,7 @@ val conversionLogicModule: Module = module {
     single<GetHistoricalRatesUseCase> { GetHistoricalRatesUseCaseImpl(get()) }
     single<GetConversionPairUseCase> { GetConversionPairUseCaseImpl(get(), get(), get()) }
     single<GetSelectedConversionPairUseCase> { GetSelectedConversionPairUseCaseImpl(get()) }
+    single<ObserveConversionDataUseCase> { ObserveConversionDataUseCaseImpl(get(), get(), get(), get()) }
     single<SaveSelectedConversionPairUseCase> { SaveSelectedConversionPairUseCaseImpl(get()) }
     single<ToggleConversionPairFavouriteUseCase> { ToggleConversionPairFavouriteUseCaseImpl(get()) }
     factory<GetConversionPairsUseCase> { GetConversionPairsUseCaseImpl(get(), get(), get()) }

@@ -39,9 +39,13 @@ internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
             }
         }
 
+        refresh()
+    }
+
+    override fun refreshRemoteConfig() {
         scope.launch {
-            val initialFetchSucceeded = remoteConfig.fetchAndActivateWithRetry()
-            if (initialFetchSucceeded) {
+            val fetchSucceeded = FIRRemoteConfig.remoteConfig().fetchAndActivateWithRetry()
+            if (fetchSucceeded) {
                 onConfigUpdated()
             }
         }

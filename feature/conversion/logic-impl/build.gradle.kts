@@ -28,6 +28,10 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.androidx.room.runtime)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
     }
 }
 
