@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,94 +38,187 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.util.shimmer
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_drop_down
 import org.jetbrains.compose.resources.vectorResource
 
+private val ConversionCurrencySelectorShape = RoundedCornerShape(100.dp)
+private val ConversionCurrencySelectorLoadingWidth = 124.dp
+private val ConversionCurrencyContainerShape = RoundedCornerShape(100.dp)
+
 @Composable
 internal fun ConversionCurrencyView(
-    currencyCode: String,
-    currencyIcon: String,
-    value: String,
+    state: ConversionCurrencyViewState,
     onCurrencyClick: () -> Unit = {},
     onValueChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    ConversionCurrencyContainer(modifier = modifier) {
+        when (state) {
+            ConversionCurrencyViewState.Loading -> ConversionCurrencyLoadingContent()
+            is ConversionCurrencyViewState.Content -> ConversionCurrencyContent(
+                state = state,
+                onCurrencyClick = onCurrencyClick,
+                onValueChange = onValueChange,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConversionCurrencyContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
+) {
     Row(
-        modifier = modifier.height(56.dp)
+        modifier = modifier
+            .height(56.dp)
             .background(
                 color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(100.dp),
+                shape = ConversionCurrencyContainerShape,
             ),
         verticalAlignment = Alignment.CenterVertically,
+        content = content,
+    )
+}
+
+@Composable
+private fun RowScope.ConversionCurrencyLoadingContent() {
+    ConversionCurrencyLoadingSelector()
+    Spacer(modifier = Modifier.weight(1f))
+}
+
+@Composable
+private fun ConversionCurrencyLoadingSelector(
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxHeight()
+            .padding(8.dp)
+            .width(ConversionCurrencySelectorLoadingWidth)
+            .clip(ConversionCurrencySelectorShape),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.fillMaxHeight()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(100.dp))
-                .clickable(enabled = true, onClick = onCurrencyClick),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxHeight()
-                    .aspectRatio(1f),
-                model = currencyIcon,
-                contentDescription = null,
-            )
-            Text(
-                text = currencyCode,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Icon(
-                modifier = Modifier.size(12.dp),
-                imageVector = vectorResource(Res.drawable.ic_drop_down),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-        }
-        BasicTextField(
-            modifier = Modifier.weight(1f)
-                .height(48.dp),
-            value = value,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            onValueChange = onValueChange,
-            visualTransformation = CurrencyAmountInputVisualTransformation(),
-            singleLine = true,
-            textStyle = TextStyle(
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                textAlign = TextAlign.End,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .padding(end = 24.dp)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    innerTextField()
-                    Box(
-                        modifier = Modifier.fillMaxHeight()
-                            .width(20.dp)
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.secondaryContainer, Color.Transparent
-                                    )
-                                )
-                            )
-                            .align(Alignment.CenterStart),
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .aspectRatio(1f)
+                .shimmer(CircleShape),
+        )
+        Box(
+            modifier = Modifier
+                .width(52.dp)
+                .height(18.dp)
+                .shimmer(RoundedCornerShape(10.dp)),
         )
     }
+}
+
+@Composable
+private fun RowScope.ConversionCurrencyContent(
+    state: ConversionCurrencyViewState.Content,
+    onCurrencyClick: () -> Unit,
+    onValueChange: (String) -> Unit,
+) {
+    ConversionCurrencySelector(
+        state = state,
+        onClick = onCurrencyClick,
+    )
+    ConversionCurrencyValueField(
+        value = state.conversionValue,
+        onValueChange = onValueChange,
+    )
+}
+
+@Composable
+private fun ConversionCurrencySelector(
+    state: ConversionCurrencyViewState.Content,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxHeight()
+            .padding(8.dp)
+            .clip(ConversionCurrencySelectorShape)
+            .clickable(enabled = true, onClick = onClick),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AsyncImage(
+            modifier = Modifier
+                .fillMaxHeight()
+                .aspectRatio(1f),
+            model = state.currencyIcon,
+            contentDescription = null,
+        )
+        Text(
+            text = state.currencyCode,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        Icon(
+            modifier = Modifier.size(12.dp),
+            imageVector = vectorResource(Res.drawable.ic_drop_down),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+    }
+}
+
+@Composable
+private fun RowScope.ConversionCurrencyValueField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BasicTextField(
+        modifier = modifier
+            .weight(1f)
+            .height(48.dp),
+        value = value,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        onValueChange = onValueChange,
+        visualTransformation = CurrencyAmountInputVisualTransformation(),
+        singleLine = true,
+        textStyle = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            textAlign = TextAlign.End,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .padding(end = 24.dp)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                innerTextField()
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(20.dp)
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    Color.Transparent,
+                                )
+                            )
+                        )
+                        .align(Alignment.CenterStart),
+                )
+            }
+        }
+    )
 }
 
 @Preview(
@@ -134,10 +229,31 @@ internal fun ConversionCurrencyView(
 private fun ConversionCurrencyViewPreview() {
     NomadRatesTheme(darkTheme = true) {
         ConversionCurrencyView(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            currencyIcon = "",
-            currencyCode = "",
-            value = "",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            state = ConversionCurrencyViewState.Content(
+                currencyIcon = "",
+                currencyCode = "EUR",
+                conversionRate = .0,
+                conversionValue = "",
+            ),
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    backgroundColor = 0xFF1C1B1F,
+)
+@Composable
+private fun ConversionCurrencyViewLoadingPreview() {
+    NomadRatesTheme(darkTheme = true) {
+        ConversionCurrencyView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            state = ConversionCurrencyViewState.Loading,
         )
     }
 }

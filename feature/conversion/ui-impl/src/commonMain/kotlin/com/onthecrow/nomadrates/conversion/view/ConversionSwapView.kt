@@ -26,6 +26,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 internal fun ConversionSwapView(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit = {},
 ) {
     val scale = remember { Animatable(1f) }
@@ -50,7 +51,7 @@ internal fun ConversionSwapView(
             .padding(4.dp)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = true, onClick = clickWithPop)
+            .clickable(enabled = enabled, onClick = clickWithPop)
             .padding(8.dp),
         imageVector = vectorResource(Res.drawable.ic_swap),
         contentDescription = null,

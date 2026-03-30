@@ -25,6 +25,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun LikeButtonView(
     isFavourite: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit = {},
 ) {
     AnimatedContent(
@@ -43,7 +44,7 @@ fun LikeButtonView(
     ) { vector ->
         Icon(
             modifier = Modifier.clip(CircleShape)
-                .clickable(enabled = true, onClick = onClick)
+                .clickable(enabled = enabled, onClick = onClick)
                 .padding(12.dp),
             imageVector = vector,
             contentDescription = null,

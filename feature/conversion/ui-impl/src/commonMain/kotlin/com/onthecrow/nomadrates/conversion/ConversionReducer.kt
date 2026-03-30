@@ -17,7 +17,7 @@ import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_inte
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     override suspend fun reduce(
         state: ConversionState,
-        event: ConversionEvent
+        event: ConversionEvent,
     ): ConversionState {
         return when (event) {
             is ConversionEvent.OnConversionDataChanged -> reduceConversionDataChanged(state, event)
@@ -46,9 +46,11 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         dataState: ConversionDataState.Content,
     ): ConversionState.Content {
         val previousContent = state as? ConversionState.Content
+        val previousViewState = previousContent?.conversionViewState
         val activePair = dataState.activePair
         val historicalRates = activePair.historicalRates
-        val chartColor = if (historicalRates.size >= 2 &&
+        val chartColor = if (
+            historicalRates.size >= 2 &&
             historicalRates.first() < historicalRates.last()
         ) {
             SageGreen
@@ -57,14 +59,14 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         }
 
         return ConversionState.Content(
-            conversionViewState = ConversionViewState(
+            conversionViewState = ConversionViewState.Content(
                 from = ConversionCurrencyStateMapper.fromCurrency(
                     activePair.fromCurrency,
-                    previousContent?.conversionViewState?.from?.conversionValue ?: "",
+                    previousViewState?.from?.conversionValue ?: "",
                 ),
                 to = ConversionCurrencyStateMapper.fromCurrency(
                     activePair.toCurrency,
-                    previousContent?.conversionViewState?.to?.conversionValue ?: "",
+                    previousViewState?.to?.conversionValue ?: "",
                 ),
                 isFavourite = activePair.isFavourite,
             ),
@@ -76,12 +78,13 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
 
     private fun reduceHighlightConversionPair(
         state: ConversionState,
-        event: ConversionEvent.HighlightConversionPair
+        event: ConversionEvent.HighlightConversionPair,
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
         val itemToHighlight = contentState.conversionListItems.map { listItem ->
             val listItemData = listItem as? ConversionListItem.Data
-            if (listItemData?.currencyPair == event.conversionPair &&
+            if (
+                listItemData?.currencyPair == event.conversionPair &&
                 listItem.listGroup == ListGroup.FAVOURITE
             ) {
                 listItemData.copy(highlighted = event.shouldHighlight)
@@ -96,34 +99,34 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
 
     private fun reduceFromValueConverted(
         state: ConversionState,
-        event: ConversionEvent.OnFromValueConverted
+        event: ConversionEvent.OnFromValueConverted,
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
-        val conversionCurrencyState = contentState.conversionViewState.from ?: return state
-        val newConversionViewStat = contentState.conversionViewState.copy(
+        val conversionViewState = contentState.conversionViewState ?: return state
+        val conversionCurrencyState = conversionViewState.from
+        val newConversionViewState = conversionViewState.copy(
             from = conversionCurrencyState.copy(
-                conversionValue = MoneyAmount(
-                    event.newValue
-                ).formatAdaptive(conversionCurrencyState.currencyCode)
+                conversionValue = MoneyAmount(event.newValue)
+                    .formatAdaptive(conversionCurrencyState.currencyCode)
             )
         )
-        return contentState.copy(conversionViewState = newConversionViewStat)
+        return contentState.copy(conversionViewState = newConversionViewState)
     }
 
     private fun reduceToValueConverted(
         state: ConversionState,
-        event: ConversionEvent.OnToValueConverted
+        event: ConversionEvent.OnToValueConverted,
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
-        val conversionCurrencyState = contentState.conversionViewState.to ?: return state
-        val newConversionViewStat = contentState.conversionViewState.copy(
+        val conversionViewState = contentState.conversionViewState ?: return state
+        val conversionCurrencyState = conversionViewState.to
+        val newConversionViewState = conversionViewState.copy(
             to = conversionCurrencyState.copy(
-                conversionValue = MoneyAmount(
-                    event.newValue
-                ).formatAdaptive(conversionCurrencyState.currencyCode)
+                conversionValue = MoneyAmount(event.newValue)
+                    .formatAdaptive(conversionCurrencyState.currencyCode)
             )
         )
-        return contentState.copy(conversionViewState = newConversionViewStat)
+        return contentState.copy(conversionViewState = newConversionViewState)
     }
 
     private fun reduceFromValueChange(
@@ -131,11 +134,11 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         event: ConversionEvent.OnFromValueChange,
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
+        val conversionViewState = contentState.conversionViewState ?: return state
         val newValue = event.value.filterAmountInput()
-        val conversionViewState = contentState.conversionViewState
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
-                from = conversionViewState.from?.copy(conversionValue = newValue)
+                from = conversionViewState.from.copy(conversionValue = newValue)
             ),
         )
     }
@@ -145,11 +148,11 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         event: ConversionEvent.OnToValueChange,
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
+        val conversionViewState = contentState.conversionViewState ?: return state
         val newValue = event.value.filterAmountInput()
-        val conversionViewState = contentState.conversionViewState
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
-                to = conversionViewState.to?.copy(conversionValue = newValue)
+                to = conversionViewState.to.copy(conversionValue = newValue)
             ),
         )
     }

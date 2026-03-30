@@ -15,7 +15,7 @@ internal sealed interface ConversionState : State {
     ) : ConversionState
 
     data class Content(
-        val conversionViewState: ConversionViewState = ConversionViewState(),
+        val conversionViewState: ConversionViewState.Content? = null,
         val chartColor: Color = SageGreen,
         val chartData: List<Double> = emptyList(),
         val conversionListItems: List<ConversionListItem> = emptyList(),

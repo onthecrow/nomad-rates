@@ -1,7 +1,11 @@
 package com.onthecrow.nomadrates.conversion.model
 
-internal data class ConversionViewState(
-    val from: ConversionCurrencyState? = null,
-    val to: ConversionCurrencyState? = null,
-    val isFavourite: Boolean = false,
-)
+internal sealed interface ConversionViewState {
+    data object Loading : ConversionViewState
+
+    data class Content(
+        val from: ConversionCurrencyViewState.Content,
+        val to: ConversionCurrencyViewState.Content,
+        val isFavourite: Boolean = false,
+    ) : ConversionViewState
+}

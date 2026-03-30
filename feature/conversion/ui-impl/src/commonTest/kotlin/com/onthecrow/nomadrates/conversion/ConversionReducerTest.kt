@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
+import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.currency.model.Currency
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -39,7 +40,8 @@ class ConversionReducerTest {
         assertEquals(ConversionState.Loading, loadingState)
         assertEquals(ConversionState.Error(Res.string.conversion_internet_required), errorState)
         assertIs<ConversionState.Content>(contentState)
-        assertEquals("USD", contentState.conversionViewState.from?.currencyCode)
+        val conversionViewState = assertIs<ConversionViewState.Content>(contentState.conversionViewState)
+        assertEquals("USD", conversionViewState.from.currencyCode)
         assertEquals(2, contentState.conversionListItems.size)
     }
 
@@ -73,7 +75,7 @@ class ConversionReducerTest {
             ),
         ) as ConversionState.Content
 
-        assertEquals("123.45", updatedContent.conversionViewState.from?.conversionValue)
+        assertEquals("123.45", updatedContent.conversionViewState?.from?.conversionValue)
     }
 
     private fun samplePair(

@@ -15,22 +15,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -38,16 +36,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
+import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.conversion.view.ConversionView
 import com.onthecrow.nomadrates.conversion.view.pair.ConversionListItemView
+import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_retry
 import org.jetbrains.compose.resources.stringResource
+
+private val FeaturedSkeletonTitleShape = RoundedCornerShape(14.dp)
+private val FeaturedSkeletonSubtitleShape = RoundedCornerShape(10.dp)
+private val FeaturedSkeletonTitleWidth = 132.dp
+private val FeaturedSkeletonSubtitleWidths = listOf(
+    118.dp,
+    126.dp,
+    121.dp,
+    130.dp,
+)
 
 @Composable
 internal fun ConversionScreen(
@@ -86,11 +97,121 @@ internal fun ConversionScreen(
 private fun LoadingState(
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    val contentPadding = rememberContentPadding()
+
+    Column(
         modifier = modifier,
-        contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator()
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        ) {
+            FeaturedLoadingSection(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(contentPadding),
+            )
+            Box(
+                modifier = Modifier
+                    .height(16.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.background,
+                            )
+                        )
+                    ),
+            )
+        }
+        ConversionView(
+            state = ConversionViewState.Loading,
+        )
+        Spacer(modifier = Modifier.height(116.dp))
+    }
+}
+
+@Composable
+private fun FeaturedLoadingSection(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text(
+            modifier = Modifier.padding(16.dp),
+            text = "Featured",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+        )
+        Column {
+            repeat(4) { index ->
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier.size(72.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.background,
+                                    shape = CircleShape,
+                                )
+                                .padding(4.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shimmer(CircleShape),
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 24.dp, top = 24.dp)
+                                .size(48.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.background,
+                                    shape = CircleShape,
+                                )
+                                .padding(4.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shimmer(CircleShape),
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(FeaturedSkeletonTitleWidth)
+                                .height(28.dp)
+                                .shimmer(FeaturedSkeletonTitleShape),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(FeaturedSkeletonSubtitleWidths[index])
+                                .height(20.dp)
+                                .shimmer(FeaturedSkeletonSubtitleShape),
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -122,22 +243,7 @@ private fun ContentState(
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
-    val layoutDirections = LocalLayoutDirection.current
-    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
-    var contentPadding by remember { mutableStateOf(PaddingValues()) }
-
-    LaunchedEffect(systemBarsPadding, layoutDirections) {
-        snapshotFlow { systemBarsPadding to layoutDirections }
-            .collect { (padding, directions) ->
-                contentPadding = PaddingValues(
-                    top = padding.calculateTopPadding(),
-                    bottom = 16.dp,
-                    start = padding.calculateStartPadding(directions),
-                    end = padding.calculateEndPadding(directions),
-                )
-            }
-    }
-
+    val contentPadding = rememberContentPadding()
     val lazyListState = rememberLazyListState()
 
     LaunchedEffect(state, eventFlow) {
@@ -153,7 +259,7 @@ private fun ContentState(
                     }
                 }
 
-                else -> {}
+                else -> Unit
             }
         }
     }
@@ -206,10 +312,9 @@ private fun ContentState(
                     ),
             )
         }
-        if (state.conversionViewState.to != null && state.conversionViewState.from != null) {
+        state.conversionViewState?.let { conversionViewState ->
             ConversionView(
-                modifier = Modifier,
-                state = state.conversionViewState,
+                state = conversionViewState,
                 onEvent = onEvent,
             )
             Spacer(modifier = Modifier.size(16.dp))
@@ -224,10 +329,30 @@ private fun ContentState(
     }
 }
 
+@Composable
+private fun rememberContentPadding(): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+    return PaddingValues(
+        top = systemBarsPadding.calculateTopPadding(),
+        bottom = 16.dp,
+        start = systemBarsPadding.calculateStartPadding(layoutDirection),
+        end = systemBarsPadding.calculateEndPadding(layoutDirection),
+    )
+}
+
 @Preview
 @Composable
 private fun ConversionScreenPreview() {
     MaterialTheme {
         ConversionScreen(state = ConversionState.Content())
+    }
+}
+
+@Preview
+@Composable
+private fun ConversionLoadingScreenPreview() {
+    MaterialTheme {
+        ConversionScreen(state = ConversionState.Loading)
     }
 }
