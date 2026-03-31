@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +50,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_retry
+import nomadrates.feature.conversion.ui_impl.generated.resources.ic_settings
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 private val FeaturedSkeletonTitleShape = RoundedCornerShape(14.dp)
 private val FeaturedSkeletonSubtitleShape = RoundedCornerShape(10.dp)
@@ -67,28 +71,56 @@ internal fun ConversionScreen(
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
-    when (state) {
-        ConversionState.Loading -> LoadingState(
-            modifier = modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding(),
-        )
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .imePadding(),
+    ) {
+        when (state) {
+            ConversionState.Loading -> LoadingState(
+                modifier = Modifier.fillMaxSize(),
+            )
 
-        is ConversionState.Error -> ErrorState(
-            modifier = modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding(),
-            message = stringResource(state.messageRes),
-            onRetryClick = { onEvent(ConversionEvent.OnRetryClick) },
-        )
+            is ConversionState.Error -> ErrorState(
+                modifier = Modifier.fillMaxSize(),
+                message = stringResource(state.messageRes),
+                onRetryClick = { onEvent(ConversionEvent.OnRetryClick) },
+            )
 
-        is ConversionState.Content -> ContentState(
-            state = state,
-            modifier = modifier,
-            eventFlow = eventFlow,
-            onEvent = onEvent,
+            is ConversionState.Content -> ContentState(
+                state = state,
+                modifier = Modifier.fillMaxSize(),
+                eventFlow = eventFlow,
+                onEvent = onEvent,
+            )
+        }
+
+        SettingsFab(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(32.dp),
+            onClick = { onEvent(ConversionEvent.OnSettingsClick) },
+        )
+    }
+}
+
+@Composable
+private fun SettingsFab(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    FloatingActionButton(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        shape = CircleShape,
+        onClick = onClick,
+    ) {
+        Icon(
+            modifier = Modifier.size(32.dp),
+            imageVector = vectorResource(Res.drawable.ic_settings),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
         )
     }
 }
@@ -265,9 +297,7 @@ private fun ContentState(
     }
 
     Column(
-        modifier = modifier
-            .navigationBarsPadding()
-            .imePadding(),
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier

@@ -14,6 +14,7 @@ import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.RefreshCurrenciesUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
+import com.onthecrow.nomadrates.settings.SettingsDestination
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -59,6 +60,7 @@ internal class ConversionViewModel(
             when (event) {
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnRetryClick -> retryTrigger.tryEmit(Unit)
+                is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()

@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
     androidLibrary {
-        namespace = "com.onthecrow.nomadrates.conversion"
+        namespace = "com.onthecrow.nomadrates.settings"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         androidResources.enable = true
@@ -18,27 +18,18 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.core.entity)
             implementation(projects.core.navigation.api)
             implementation(projects.core.ui)
             implementation(projects.core.uiCore)
-            implementation(projects.core.util)
-            implementation(projects.feature.conversion.logicApi)
-            implementation(projects.feature.conversion.uiApi)
-            implementation(projects.feature.currency.uiApi)
-            implementation(projects.feature.currency.logicApi)
             implementation(projects.feature.settings.uiApi)
             implementation(libs.runtime)
             implementation(libs.foundation)
             implementation(libs.material3)
             implementation(libs.ui)
-            implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)
-            implementation(libs.coil.svg)
-            implementation(libs.coil.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

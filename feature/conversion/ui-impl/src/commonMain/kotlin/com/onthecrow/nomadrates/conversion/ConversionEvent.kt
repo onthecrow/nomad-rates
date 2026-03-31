@@ -6,6 +6,7 @@ import com.onthecrow.nomadrates.uicore.Event
 internal sealed interface ConversionEvent : Event {
     data object OnBackPress : ConversionEvent
     data object OnRetryClick : ConversionEvent
+    data object OnSettingsClick : ConversionEvent
     data object OnFromCurrencyClick : ConversionEvent
     data object OnToCurrencyClick : ConversionEvent
     data object OnSwitchButtonPress : ConversionEvent
