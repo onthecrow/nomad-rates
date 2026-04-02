@@ -12,7 +12,6 @@ internal class SettingsReducer : Reducer<SettingsState, SettingsEvent> {
         SettingsEvent.OnDefaultPairFromClick,
         SettingsEvent.OnDefaultPairToClick,
         SettingsEvent.OnThemeClick,
-        SettingsEvent.OnPrivacyPolicyClick,
         SettingsEvent.OnAboutDataSourceClick,
         SettingsEvent.OnRefreshClick -> state
 
@@ -31,5 +30,9 @@ internal class SettingsReducer : Reducer<SettingsState, SettingsEvent> {
         is SettingsEvent.OnLastRatesFreshnessChanged -> state.copy(lastRatesFreshness = event.freshness)
         is SettingsEvent.OnLastRatesTimestampChanged -> state.copy(lastRatesTimestamp = event.timestamp)
         is SettingsEvent.OnRefreshStateChanged -> state.copy(isRefreshing = event.isRefreshing)
+        is SettingsEvent.OnSettingsLinksChanged -> state.copy(
+            privacyPolicyUrl = event.privacyPolicyUrl,
+            dataSourceUrl = event.dataSourceUrl,
+        )
     }
 }

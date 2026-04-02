@@ -15,6 +15,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.datastore)
+            implementation(projects.core.remoteconfig)
             implementation(projects.core.util)
             implementation(projects.feature.conversion.logicApi)
             implementation(projects.feature.settings.logicApi)

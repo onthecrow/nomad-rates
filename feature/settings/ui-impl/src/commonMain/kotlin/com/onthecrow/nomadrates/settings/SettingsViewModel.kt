@@ -11,6 +11,7 @@ import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.settings.domain.ObserveDefaultPairUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveLaunchPairModeUseCase
+import com.onthecrow.nomadrates.settings.domain.ObserveSettingsLinksUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveThemeModeUseCase
@@ -32,6 +33,7 @@ internal class SettingsViewModel(
     private val observeLastRatesTimestampUseCase: ObserveLastRatesTimestampUseCase,
     private val observeDefaultPairUseCase: ObserveDefaultPairUseCase,
     private val observeLaunchPairModeUseCase: ObserveLaunchPairModeUseCase,
+    private val observeSettingsLinksUseCase: ObserveSettingsLinksUseCase,
     private val observeShowFeaturedPairsUseCase: ObserveShowFeaturedPairsUseCase,
     private val observeShowFeaturedCurrenciesUseCase: ObserveShowFeaturedCurrenciesUseCase,
     private val observeThemeModeUseCase: ObserveThemeModeUseCase,
@@ -48,6 +50,7 @@ internal class SettingsViewModel(
         bindEventHandlers()
         observeRatesTimestamp()
         observeSettingsState()
+        observeSettingsLinks()
         observeScreenResults()
         loadAppVersion()
     }
@@ -65,7 +68,6 @@ internal class SettingsViewModel(
             SettingsEvent.OnDefaultPairFromClick -> openCurrencySelector(CurrencySelectionSource.SettingsDefaultFrom)
             SettingsEvent.OnDefaultPairToClick -> openCurrencySelector(CurrencySelectionSource.SettingsDefaultTo)
             SettingsEvent.OnThemeClick -> openThemePicker()
-            SettingsEvent.OnPrivacyPolicyClick -> Unit
             SettingsEvent.OnAboutDataSourceClick -> Unit
             SettingsEvent.OnRefreshClick -> handleRefreshClick()
             is SettingsEvent.OnLaunchPairModeSelected -> applyLaunchPairMode(event.mode)
@@ -81,7 +83,8 @@ internal class SettingsViewModel(
             is SettingsEvent.OnDialogStateChanged,
             is SettingsEvent.OnLastRatesFreshnessChanged,
             is SettingsEvent.OnLastRatesTimestampChanged,
-            is SettingsEvent.OnRefreshStateChanged -> Unit
+            is SettingsEvent.OnRefreshStateChanged,
+            is SettingsEvent.OnSettingsLinksChanged -> Unit
         }
     }
 
@@ -115,6 +118,19 @@ internal class SettingsViewModel(
             .launchIn(viewModelScope)
         observeThemeModeUseCase()
             .onEach { mode -> onEvent(SettingsEvent.OnThemeModeChanged(mode)) }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeSettingsLinks() {
+        observeSettingsLinksUseCase()
+            .onEach { links ->
+                onEvent(
+                    SettingsEvent.OnSettingsLinksChanged(
+                        privacyPolicyUrl = links.privacyPolicyUrl,
+                        dataSourceUrl = links.dataSourceUrl,
+                    )
+                )
+            }
             .launchIn(viewModelScope)
     }
 

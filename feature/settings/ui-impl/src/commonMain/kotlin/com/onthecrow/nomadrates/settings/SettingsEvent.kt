@@ -12,7 +12,6 @@ internal sealed interface SettingsEvent : Event {
     data object OnDefaultPairFromClick : SettingsEvent
     data object OnDefaultPairToClick : SettingsEvent
     data object OnThemeClick : SettingsEvent
-    data object OnPrivacyPolicyClick : SettingsEvent
     data object OnAboutDataSourceClick : SettingsEvent
     data class OnLaunchPairModeSelected(val mode: LaunchPairMode) : SettingsEvent
     data class OnDefaultPairChanged(val pair: SelectedConversionPair) : SettingsEvent
@@ -28,4 +27,8 @@ internal sealed interface SettingsEvent : Event {
     data class OnLastRatesFreshnessChanged(val freshness: SettingsRatesFreshness) : SettingsEvent
     data class OnAppVersionLoaded(val version: String) : SettingsEvent
     data class OnRefreshStateChanged(val isRefreshing: Boolean) : SettingsEvent
+    data class OnSettingsLinksChanged(
+        val privacyPolicyUrl: String,
+        val dataSourceUrl: String,
+    ) : SettingsEvent
 }

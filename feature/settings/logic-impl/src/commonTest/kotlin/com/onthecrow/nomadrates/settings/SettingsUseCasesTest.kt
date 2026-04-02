@@ -1,7 +1,10 @@
 package com.onthecrow.nomadrates.settings
 
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.remoteconfig.RemoteConfig
+import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
 import com.onthecrow.nomadrates.settings.data.SettingsRepository
+import com.onthecrow.nomadrates.settings.domain.SettingsLinks
 import com.onthecrow.nomadrates.settings.domain.LaunchPairMode
 import com.onthecrow.nomadrates.util.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +16,7 @@ import kotlin.test.assertEquals
 
 class SettingsUseCasesTest {
     private val repository = FakeSettingsRepository()
+    private val remoteConfigProvider = FakeRemoteConfigProvider()
 
     @Test
     fun `observe use cases emit default values`() = runTest {
@@ -35,6 +39,13 @@ class SettingsUseCasesTest {
         assertEquals(
             SelectedConversionPair.DEFAULT,
             ObserveDefaultPairUseCaseImpl(repository).invoke().value(),
+        )
+        assertEquals(
+            SettingsLinks(
+                privacyPolicyUrl = RemoteConfig.DEFAULT_PRIVACY_POLICY_URL,
+                dataSourceUrl = RemoteConfig.DEFAULT_DATA_SOURCE_URL,
+            ),
+            ObserveSettingsLinksUseCaseImpl(remoteConfigProvider).invoke().value(),
         )
     }
 
@@ -92,4 +103,17 @@ private class FakeSettingsRepository : SettingsRepository {
     override suspend fun setThemeMode(mode: ThemeMode) {
         themeMode.value = mode
     }
+}
+
+private class FakeRemoteConfigProvider : RemoteConfigProvider {
+    private val flow = MutableStateFlow(
+        RemoteConfig(
+            featuredCurrencies = emptyList(),
+            featuredConversions = emptyList(),
+        )
+    )
+
+    override fun getRemoteConfigFlow(): Flow<RemoteConfig> = flow
+
+    override fun refresh() = Unit
 }

@@ -85,7 +85,7 @@ internal fun SettingsScreen(
         AppBarTitleView(
             modifier = Modifier
                 .systemBarsPadding()
-                .padding(top = 16.dp),
+                .padding(top = 8.dp),
             title = stringResource(Res.string.settings_title),
             onBackPress = { onEvent(SettingsEvent.OnBackPress) },
         )
@@ -95,8 +95,7 @@ internal fun SettingsScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(top = 16.dp),
+                    .verticalScroll(rememberScrollState()),
             ) {
                 SettingsRatesRowView(
                     label = stringResource(Res.string.settings_rates_last_updated_label),
@@ -144,13 +143,21 @@ internal fun SettingsScreen(
                 SettingsValueRowView(
                     minHeight = privacyMinHeight,
                     title = stringResource(Res.string.settings_privacy_policy),
-                    onClick = { onEvent(SettingsEvent.OnPrivacyPolicyClick) },
+                    onClick = {
+                        state.privacyPolicyUrl
+                            .takeIf { it.isNotBlank() }
+                            ?.let(uriHandler::openUri)
+                    },
                 )
                 SettingsValueRowView(
                     title = stringResource(Res.string.settings_data_source_title),
                     subtitle = stringResource(Res.string.settings_data_source_value),
                     showChevron = false,
-                    onClick = { uriHandler.openUri("https://openexchangerates.org/") },
+                    onClick = {
+                        state.dataSourceUrl
+                            .takeIf { it.isNotBlank() }
+                            ?.let(uriHandler::openUri)
+                    },
                 )
             }
 

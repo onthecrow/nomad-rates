@@ -22,4 +22,6 @@ internal data class SettingsState(
     val dialogState: SettingsDialogState? = null,
     val isRefreshing: Boolean = false,
     val appVersion: String = "",
+    val privacyPolicyUrl: String = "",
+    val dataSourceUrl: String = "",
 ) : State

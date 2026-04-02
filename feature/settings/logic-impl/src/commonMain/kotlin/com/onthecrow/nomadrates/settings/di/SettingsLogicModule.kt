@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.settings.di
 import com.onthecrow.nomadrates.datastore.DataStoreFactory
 import com.onthecrow.nomadrates.settings.ObserveDefaultPairUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveLaunchPairModeUseCaseImpl
+import com.onthecrow.nomadrates.settings.ObserveSettingsLinksUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveShowFeaturedCurrenciesUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveShowFeaturedPairsUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveThemeModeUseCaseImpl
@@ -16,6 +17,7 @@ import com.onthecrow.nomadrates.settings.data.SettingsRepositoryImpl
 import com.onthecrow.nomadrates.settings.data.datastore.SettingsPreferencesDataSource
 import com.onthecrow.nomadrates.settings.domain.ObserveDefaultPairUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveLaunchPairModeUseCase
+import com.onthecrow.nomadrates.settings.domain.ObserveSettingsLinksUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveThemeModeUseCase
@@ -33,6 +35,7 @@ val settingsLogicModule = module {
     single<ObserveLaunchPairModeUseCase> { ObserveLaunchPairModeUseCaseImpl(get()) }
     single<SetLaunchPairModeUseCase> { SetLaunchPairModeUseCaseImpl(get()) }
     single<ObserveDefaultPairUseCase> { ObserveDefaultPairUseCaseImpl(get()) }
+    single<ObserveSettingsLinksUseCase> { ObserveSettingsLinksUseCaseImpl(get()) }
     single<SetDefaultPairUseCase> { SetDefaultPairUseCaseImpl(get()) }
     single<ObserveShowFeaturedPairsUseCase> { ObserveShowFeaturedPairsUseCaseImpl(get()) }
     single<SetShowFeaturedPairsUseCase> { SetShowFeaturedPairsUseCaseImpl(get()) }
