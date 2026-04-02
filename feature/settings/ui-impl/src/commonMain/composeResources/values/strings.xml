@@ -1,7 +1,21 @@
 <resources>
     <string name="settings_title">Settings</string>
     <string name="settings_refresh">Refresh</string>
+    <string name="settings_on_launch">On launch</string>
+    <string name="settings_on_launch_remember_last_pair">Remember last pair</string>
+    <string name="settings_on_launch_use_default_pair">Use default pair</string>
+    <string name="settings_default_pair_title">Default pair</string>
+    <string name="settings_show_featured_pairs_title">Show featured pairs</string>
+    <string name="settings_show_featured_pairs_subtitle">Show curated pairs on the home screen</string>
+    <string name="settings_show_featured_currencies_title">Show featured currencies</string>
+    <string name="settings_show_featured_currencies_subtitle">Show curated currencies in the currency picker</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_data_source_title">Data source:</string>
+    <string name="settings_data_source_value">Open Exchange Rates</string>
     <string name="settings_rates_last_updated_label">Rates were last updated on</string>
     <string name="settings_footer_developed_prefix">Developed with ❤️ by </string>
     <string name="settings_footer_handle">@onthecrow</string>

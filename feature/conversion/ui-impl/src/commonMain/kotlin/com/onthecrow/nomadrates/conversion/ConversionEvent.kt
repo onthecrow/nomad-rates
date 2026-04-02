@@ -15,7 +15,9 @@ internal sealed interface ConversionEvent : Event {
     data class OnFromValueChange(val value: String) : ConversionEvent
     data class OnToValueConverted(val newValue: String) : ConversionEvent
     data class OnToValueChange(val value: String) : ConversionEvent
-    data class OnConversionDataChanged(val dataState: ConversionDataState) : ConversionEvent
+    data class OnConversionDataChanged(
+        val dataState: ConversionDataState,
+    ) : ConversionEvent
     data class OnConversionViewClick(val conversionPair: Pair<String, String>) : ConversionEvent
     data class OnConversionPairFavouritesClick(
         // todo replace with a class or proper id

@@ -67,6 +67,7 @@ private val FeaturedSkeletonSubtitleWidths = listOf(
 @Composable
 internal fun ConversionScreen(
     state: ConversionState,
+    showFeaturedPairs: Boolean,
     modifier: Modifier = Modifier,
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
@@ -76,9 +77,10 @@ internal fun ConversionScreen(
             .fillMaxSize()
             .navigationBarsPadding()
             .imePadding(),
-    ) {
+        ) {
         when (state) {
-            ConversionState.Loading -> LoadingState(
+            is ConversionState.Loading -> LoadingState(
+                showFeaturedPairs = showFeaturedPairs,
                 modifier = Modifier.fillMaxSize(),
             )
 
@@ -127,6 +129,7 @@ private fun SettingsFab(
 
 @Composable
 private fun LoadingState(
+    showFeaturedPairs: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val contentPadding = rememberContentPadding()
@@ -139,12 +142,14 @@ private fun LoadingState(
                 .weight(1f)
                 .fillMaxWidth(),
         ) {
-            FeaturedLoadingSection(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(contentPadding),
-            )
+            if (showFeaturedPairs) {
+                FeaturedLoadingSection(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .padding(contentPadding),
+                )
+            }
             Box(
                 modifier = Modifier
                     .height(16.dp)
@@ -375,7 +380,10 @@ private fun rememberContentPadding(): PaddingValues {
 @Composable
 private fun ConversionScreenPreview() {
     MaterialTheme {
-        ConversionScreen(state = ConversionState.Content())
+        ConversionScreen(
+            state = ConversionState.Content(),
+            showFeaturedPairs = true,
+        )
     }
 }
 
@@ -383,6 +391,9 @@ private fun ConversionScreenPreview() {
 @Composable
 private fun ConversionLoadingScreenPreview() {
     MaterialTheme {
-        ConversionScreen(state = ConversionState.Loading)
+        ConversionScreen(
+            state = ConversionState.Loading,
+            showFeaturedPairs = true,
+        )
     }
 }

@@ -17,12 +17,17 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.core.util)
+            implementation(libs.coil.compose)
             implementation(libs.runtime)
             implementation(libs.foundation)
             implementation(libs.material3)
             implementation(libs.ui)
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
         androidMain.dependencies {
             implementation(libs.ui.tooling)

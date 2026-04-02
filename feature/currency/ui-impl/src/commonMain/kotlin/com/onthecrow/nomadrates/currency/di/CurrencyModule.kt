@@ -8,16 +8,29 @@ import com.onthecrow.nomadrates.currency.CurrencyListScreen
 import com.onthecrow.nomadrates.currency.CurrencyListViewModel
 import com.onthecrow.nomadrates.navigation.registerScreen
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
 val currencyModule = module {
     single { CurrencyListReducer() }
 
-    viewModelOf(::CurrencyListViewModel)
+    viewModel { (selectionSource: com.onthecrow.nomadrates.currency.CurrencySelectionSource) ->
+        CurrencyListViewModel(
+            navigator = get(),
+            screenResultDispatcher = get(),
+            toggleCurrencyFavoriteUseCase = get(),
+            observeShowFeaturedCurrenciesUseCase = get(),
+            getCurrencyListUseCase = get(),
+            reducer = get(),
+            selectionSource = selectionSource,
+        )
+    }
 
-    registerScreen<CurrencyListDestination> { _, modifier ->
-        val viewModel: CurrencyListViewModel = koinViewModel()
+    registerScreen<CurrencyListDestination> { destination, modifier ->
+        val viewModel: CurrencyListViewModel = koinViewModel(
+            parameters = { parametersOf(destination.source) }
+        )
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         CurrencyListScreen(

@@ -37,15 +37,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.util.shimmer
-import nomadrates.feature.conversion.ui_impl.generated.resources.Res
-import nomadrates.feature.conversion.ui_impl.generated.resources.ic_drop_down
-import org.jetbrains.compose.resources.vectorResource
+import com.onthecrow.nomadrates.ui.view.CurrencySelectorView
 
-private val ConversionCurrencySelectorShape = RoundedCornerShape(100.dp)
 private val ConversionCurrencySelectorLoadingWidth = 124.dp
 private val ConversionCurrencyContainerShape = RoundedCornerShape(100.dp)
 
@@ -100,7 +96,7 @@ private fun ConversionCurrencyLoadingSelector(
             .fillMaxHeight()
             .padding(8.dp)
             .width(ConversionCurrencySelectorLoadingWidth)
-            .clip(ConversionCurrencySelectorShape),
+            .clip(RoundedCornerShape(100.dp)),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -141,34 +137,15 @@ private fun ConversionCurrencySelector(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    CurrencySelectorView(
         modifier = modifier
             .fillMaxHeight()
-            .padding(8.dp)
-            .clip(ConversionCurrencySelectorShape)
-            .clickable(enabled = true, onClick = onClick),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxHeight()
-                .aspectRatio(1f),
-            model = state.currencyIcon,
-            contentDescription = null,
-        )
-        Text(
-            text = state.currencyCode,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-        Icon(
-            modifier = Modifier.size(12.dp),
-            imageVector = vectorResource(Res.drawable.ic_drop_down),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-        Spacer(modifier = Modifier.size(4.dp))
-    }
+            .clip(RoundedCornerShape(100.dp)),
+        currencyCode = state.currencyCode,
+        currencyIcon = state.currencyIcon,
+        onClick = onClick,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
 }
 
 @Composable

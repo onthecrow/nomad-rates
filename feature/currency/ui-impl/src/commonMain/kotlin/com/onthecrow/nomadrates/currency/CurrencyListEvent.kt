@@ -9,6 +9,9 @@ internal sealed interface CurrencyListEvent: Event {
     data object OnScrollToTop : CurrencyListEvent
     data class OnAddToFavouriteClick(val currencyCode: String) : CurrencyListEvent
     data class OnCurrencyClick(val currencyCode: String) : CurrencyListEvent
-    data class OnCurrencyListUpdate(val currencies: List<Currency>) : CurrencyListEvent
+    data class OnCurrencyListUpdate(
+        val currencies: List<Currency>,
+        val showFeaturedCurrencies: Boolean,
+    ) : CurrencyListEvent
     data class OnSearchValueChange(val value: String) : CurrencyListEvent
 }

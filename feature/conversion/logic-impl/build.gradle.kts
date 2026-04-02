@@ -23,6 +23,7 @@ kotlin {
             implementation(projects.core.remoteconfig)
             implementation(projects.feature.conversion.logicApi)
             implementation(projects.feature.currency.logicApi)
+            implementation(projects.feature.settings.logicApi)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)

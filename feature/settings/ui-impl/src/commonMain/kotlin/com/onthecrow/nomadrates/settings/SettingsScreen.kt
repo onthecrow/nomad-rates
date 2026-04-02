@@ -1,11 +1,12 @@
 package com.onthecrow.nomadrates.settings
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -22,23 +23,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.settings.domain.LaunchPairMode
+import com.onthecrow.nomadrates.settings.view.SettingsDefaultPairRowView
+import com.onthecrow.nomadrates.settings.view.SettingsDialogOption
+import com.onthecrow.nomadrates.settings.view.SettingsRatesRowView
+import com.onthecrow.nomadrates.settings.view.SettingsSingleChoiceDialogView
+import com.onthecrow.nomadrates.settings.view.SettingsSwitchRowView
+import com.onthecrow.nomadrates.settings.view.SettingsValueRowView
 import com.onthecrow.nomadrates.settings.view.SignatureFooterView
-import com.onthecrow.nomadrates.ui.PaleEmerald
-import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.ui.view.AppBarTitleView
-import com.onthecrow.nomadrates.ui.view.RefreshButtonView
 import com.onthecrow.nomadrates.util.DateUtils
+import com.onthecrow.nomadrates.util.theme.ThemeMode
 import nomadrates.feature.settings.ui_impl.generated.resources.Res
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_data_source_title
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_data_source_value
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_default_pair_title
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_on_launch
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_on_launch_remember_last_pair
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_on_launch_use_default_pair
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_privacy_policy
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_rates_last_updated_label
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_refresh
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_show_featured_currencies_subtitle
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_show_featured_currencies_title
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_show_featured_pairs_subtitle
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_show_featured_pairs_title
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_dark
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_light
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_system
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_title
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_title
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_unknown_value
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_version
@@ -50,12 +68,11 @@ internal fun SettingsScreen(
     modifier: Modifier = Modifier,
     onEvent: (SettingsEvent) -> Unit = {},
 ) {
+    val uriHandler = LocalUriHandler.current
     val lastUpdatedText = remember(state.lastRatesTimestamp) {
         state.lastRatesTimestamp?.let(DateUtils::formatDateTime)
     }
     val unknownValue = stringResource(Res.string.settings_unknown_value)
-    val ratesUpdatedLabel = stringResource(Res.string.settings_rates_last_updated_label)
-    val refreshLabel = stringResource(Res.string.settings_refresh)
     val density = LocalDensity.current
     var ratesRowHeightPx by remember { mutableIntStateOf(0) }
     val privacyMinHeight = with(density) {
@@ -80,22 +97,60 @@ internal fun SettingsScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                SettingsRatesRow(
-                    label = ratesUpdatedLabel,
+                SettingsRatesRowView(
+                    label = stringResource(Res.string.settings_rates_last_updated_label),
                     value = lastUpdatedText ?: unknownValue,
                     freshness = state.lastRatesFreshness,
-                    refreshText = refreshLabel,
+                    refreshText = stringResource(Res.string.settings_refresh),
                     isRefreshing = state.isRefreshing,
                     onRefreshClick = { onEvent(SettingsEvent.OnRefreshClick) },
                     onMeasured = { ratesRowHeightPx = it },
                 )
-
-                PrivacyPolicyRow(
+                SettingsValueRowView(
+                    title = stringResource(Res.string.settings_on_launch),
+                    subtitle = state.launchPairMode.toLabel(),
+                    onClick = { onEvent(SettingsEvent.OnLaunchPairModeClick) },
+                )
+                AnimatedVisibility(
+                    visible = state.launchPairMode == LaunchPairMode.USE_DEFAULT_PAIR,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically(),
+                ) {
+                    SettingsDefaultPairRowView(
+                        pair = state.defaultPair,
+                        title = stringResource(Res.string.settings_default_pair_title),
+                        onFromClick = { onEvent(SettingsEvent.OnDefaultPairFromClick) },
+                        onToClick = { onEvent(SettingsEvent.OnDefaultPairToClick) },
+                    )
+                }
+                SettingsSwitchRowView(
+                    title = stringResource(Res.string.settings_show_featured_pairs_title),
+                    subtitle = stringResource(Res.string.settings_show_featured_pairs_subtitle),
+                    checked = state.showFeaturedPairs,
+                    onCheckedChange = { onEvent(SettingsEvent.OnShowFeaturedPairsToggle(it)) },
+                )
+                SettingsSwitchRowView(
+                    title = stringResource(Res.string.settings_show_featured_currencies_title),
+                    subtitle = stringResource(Res.string.settings_show_featured_currencies_subtitle),
+                    checked = state.showFeaturedCurrencies,
+                    onCheckedChange = { onEvent(SettingsEvent.OnShowFeaturedCurrenciesToggle(it)) },
+                )
+                SettingsValueRowView(
+                    title = stringResource(Res.string.settings_theme_title),
+                    subtitle = state.themeMode.toLabel(),
+                    onClick = { onEvent(SettingsEvent.OnThemeClick) },
+                )
+                SettingsValueRowView(
                     minHeight = privacyMinHeight,
-                    text = stringResource(Res.string.settings_privacy_policy),
+                    title = stringResource(Res.string.settings_privacy_policy),
                     onClick = { onEvent(SettingsEvent.OnPrivacyPolicyClick) },
+                )
+                SettingsValueRowView(
+                    title = stringResource(Res.string.settings_data_source_title),
+                    subtitle = stringResource(Res.string.settings_data_source_value),
+                    showChevron = false,
+                    onClick = { uriHandler.openUri("https://openexchangerates.org/") },
                 )
             }
 
@@ -103,15 +158,15 @@ internal fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(bottom = 16.dp),
+                    .padding(top = 16.dp, bottom = 16.dp),
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     SignatureFooterView()
                     Text(
+                        modifier = Modifier.padding(top = 12.dp),
                         text = stringResource(
                             Res.string.settings_version,
                             state.appVersion.ifBlank { unknownValue },
@@ -123,95 +178,79 @@ internal fun SettingsScreen(
             }
         }
     }
+
+    SettingsDialogHost(
+        state = state,
+        onEvent = onEvent,
+    )
 }
 
 @Composable
-private fun SettingsRatesRow(
-    label: String,
-    value: String,
-    freshness: SettingsRatesFreshness,
-    refreshText: String,
-    isRefreshing: Boolean,
-    onRefreshClick: () -> Unit,
-    onMeasured: (Int) -> Unit,
+private fun SettingsDialogHost(
+    state: SettingsState,
+    onEvent: (SettingsEvent) -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp)
-            .onGloballyPositioned { onMeasured(it.size.height) },
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = freshness.toDateColor(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            RefreshButtonView(
-                text = refreshText,
-                isLoading = isRefreshing,
-                onClick = onRefreshClick,
+    when (state.dialogState) {
+        SettingsDialogState.LaunchPairModePicker -> {
+            SettingsSingleChoiceDialogView(
+                title = stringResource(Res.string.settings_on_launch),
+                selectedOption = state.launchPairMode,
+                options = listOf(
+                    SettingsDialogOption(
+                        value = LaunchPairMode.REMEMBER_LAST_PAIR,
+                        label = stringResource(Res.string.settings_on_launch_remember_last_pair),
+                    ),
+                    SettingsDialogOption(
+                        value = LaunchPairMode.USE_DEFAULT_PAIR,
+                        label = stringResource(Res.string.settings_on_launch_use_default_pair),
+                    ),
+                ),
+                onOptionSelected = { onEvent(SettingsEvent.OnLaunchPairModeSelected(it)) },
+                onDismissRequest = { onEvent(SettingsEvent.OnDialogStateChanged(null)) },
             )
         }
-    }
-}
 
-@Composable
-private fun PrivacyPolicyRow(
-    minHeight: Dp,
-    text: String,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = minHeight)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
-private fun SettingsRatesFreshness.toDateColor() = when (this) {
-    SettingsRatesFreshness.Fresh -> {
-        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-            PaleEmerald
-        } else {
-            SageGreen
+        SettingsDialogState.ThemePicker -> {
+            SettingsSingleChoiceDialogView(
+                title = stringResource(Res.string.settings_theme_title),
+                selectedOption = state.themeMode,
+                options = listOf(
+                    SettingsDialogOption(
+                        value = ThemeMode.SYSTEM,
+                        label = stringResource(Res.string.settings_theme_system),
+                    ),
+                    SettingsDialogOption(
+                        value = ThemeMode.LIGHT,
+                        label = stringResource(Res.string.settings_theme_light),
+                    ),
+                    SettingsDialogOption(
+                        value = ThemeMode.DARK,
+                        label = stringResource(Res.string.settings_theme_dark),
+                    ),
+                ),
+                onOptionSelected = { onEvent(SettingsEvent.OnThemeModeSelected(it)) },
+                onDismissRequest = { onEvent(SettingsEvent.OnDialogStateChanged(null)) },
+            )
         }
+
+        null -> Unit
     }
-    SettingsRatesFreshness.Stale -> MaterialTheme.colorScheme.error
-    SettingsRatesFreshness.Unknown -> MaterialTheme.colorScheme.onBackground
+}
+
+@Composable
+private fun LaunchPairMode.toLabel(): String = when (this) {
+    LaunchPairMode.REMEMBER_LAST_PAIR ->
+        stringResource(Res.string.settings_on_launch_remember_last_pair)
+
+    LaunchPairMode.USE_DEFAULT_PAIR ->
+        stringResource(Res.string.settings_on_launch_use_default_pair)
+}
+
+@Composable
+private fun ThemeMode.toLabel(): String = when (this) {
+    ThemeMode.SYSTEM -> stringResource(Res.string.settings_theme_system)
+    ThemeMode.LIGHT -> stringResource(Res.string.settings_theme_light)
+    ThemeMode.DARK -> stringResource(Res.string.settings_theme_dark)
 }
 
 @Preview
@@ -222,6 +261,11 @@ private fun SettingsScreenPreview() {
             state = SettingsState(
                 lastRatesTimestamp = 1_743_387_600L,
                 lastRatesFreshness = SettingsRatesFreshness.Fresh,
+                launchPairMode = LaunchPairMode.USE_DEFAULT_PAIR,
+                defaultPair = SelectedConversionPair("GBP", "JPY"),
+                showFeaturedPairs = true,
+                showFeaturedCurrencies = true,
+                themeMode = ThemeMode.SYSTEM,
                 appVersion = "1.0",
             )
         )

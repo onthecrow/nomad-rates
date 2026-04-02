@@ -21,19 +21,23 @@ class ConversionReducerTest {
 
         val loadingState = reducer.reduce(
             state = ConversionState.Content(),
-            event = ConversionEvent.OnConversionDataChanged(ConversionDataState.Loading),
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Loading,
+            ),
         )
         val errorState = reducer.reduce(
             state = ConversionState.Loading,
-            event = ConversionEvent.OnConversionDataChanged(ConversionDataState.Error),
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Error,
+            ),
         )
         val contentState = reducer.reduce(
             state = ConversionState.Loading,
             event = ConversionEvent.OnConversionDataChanged(
-                ConversionDataState.Content(
+                dataState = ConversionDataState.Content(
                     activePair = pair,
                     conversionPairs = listOf(pair),
-                )
+                ),
             ),
         )
 
@@ -53,10 +57,10 @@ class ConversionReducerTest {
         val initialContent = reducer.reduce(
             state = ConversionState.Loading,
             event = ConversionEvent.OnConversionDataChanged(
-                ConversionDataState.Content(
+                dataState = ConversionDataState.Content(
                     activePair = initialPair,
                     conversionPairs = listOf(initialPair),
-                )
+                ),
             ),
         ) as ConversionState.Content
 
@@ -68,10 +72,10 @@ class ConversionReducerTest {
         val updatedContent = reducer.reduce(
             state = withInput,
             event = ConversionEvent.OnConversionDataChanged(
-                ConversionDataState.Content(
+                dataState = ConversionDataState.Content(
                     activePair = updatedPair,
                     conversionPairs = listOf(updatedPair),
-                )
+                ),
             ),
         ) as ConversionState.Content
 

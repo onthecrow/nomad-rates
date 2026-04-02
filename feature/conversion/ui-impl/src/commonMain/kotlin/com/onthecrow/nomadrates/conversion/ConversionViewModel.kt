@@ -9,18 +9,21 @@ import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseC
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.currency.CurrencySelectionSource
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
 import com.onthecrow.nomadrates.currency.domain.RefreshCurrenciesUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.settings.SettingsDestination
+import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -37,6 +40,7 @@ internal class ConversionViewModel(
     private val navigator: Navigator,
     private val convertCurrenciesUseCase: ConvertCurrenciesUseCase,
     private val observeConversionDataUseCase: ObserveConversionDataUseCase,
+    private val observeShowFeaturedPairsUseCase: ObserveShowFeaturedPairsUseCase,
     private val getSelectedConversionPairUseCase: GetSelectedConversionPairUseCase,
     private val refreshCurrenciesUseCase: RefreshCurrenciesUseCase,
     private val saveSelectedConversionPairUseCase: SaveSelectedConversionPairUseCase,
@@ -51,9 +55,15 @@ internal class ConversionViewModel(
                 started = SharingStarted.Eagerly,
                 initialValue = SelectedConversionPair.DEFAULT,
             )
+    internal val showFeaturedPairsStateFlow: StateFlow<Boolean> =
+        observeShowFeaturedPairsUseCase()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = true,
+            )
 
     private val retryTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private var conversionCurrencySource: ConversionCurrencySource = ConversionCurrencySource.FROM
 
     init {
         eventFlow.onEach { event ->
@@ -77,7 +87,7 @@ internal class ConversionViewModel(
         screenResultDispatcher.resultFlow
             .onEach { screenResult ->
                 when (screenResult) {
-                    is CurrencyListScreenResult -> onCurrencySelected(screenResult.selectedCurrencyCode)
+                    is CurrencyListScreenResult -> onCurrencySelected(screenResult)
                 }
             }
             .launchIn(viewModelScope)
@@ -93,6 +103,9 @@ internal class ConversionViewModel(
             }
             .flatMapLatest {
                 observeConversionDataUseCase()
+                    .combine(showFeaturedPairsStateFlow) { dataState, showFeaturedPairs ->
+                        dataState.filtered(showFeaturedPairs)
+                    }
                     .runningFold(ConversionDataTransition()) { transition, current ->
                         ConversionDataTransition(
                             previous = transition.current,
@@ -114,7 +127,11 @@ internal class ConversionViewModel(
             ?.from
             ?.conversionValue
 
-        onEvent(ConversionEvent.OnConversionDataChanged(currentState))
+        onEvent(
+            ConversionEvent.OnConversionDataChanged(
+                dataState = currentState,
+            )
+        )
 
         val previousContentState = transition.previous as? ConversionDataState.Content ?: return
         val currentContentState = currentState as? ConversionDataState.Content ?: return
@@ -188,16 +205,19 @@ internal class ConversionViewModel(
         }
     }
 
-    private fun onCurrencySelected(selectedCurrencyCode: String) {
+    private fun onCurrencySelected(result: CurrencyListScreenResult) {
         val selectedConversionPair = selectedConversionPairStateFlow.value
-        val updatedPair = when (conversionCurrencySource) {
-            ConversionCurrencySource.FROM -> selectedConversionPair.copy(
-                fromCurrencyCode = selectedCurrencyCode,
+        val updatedPair = when (result.source) {
+            CurrencySelectionSource.ConversionFrom -> selectedConversionPair.copy(
+                fromCurrencyCode = result.selectedCurrencyCode,
             )
 
-            ConversionCurrencySource.TO -> selectedConversionPair.copy(
-                toCurrencyCode = selectedCurrencyCode,
+            CurrencySelectionSource.ConversionTo -> selectedConversionPair.copy(
+                toCurrencyCode = result.selectedCurrencyCode,
             )
+
+            CurrencySelectionSource.SettingsDefaultFrom,
+            CurrencySelectionSource.SettingsDefaultTo -> return
         }
         updateSelectedConversionPair(updatedPair)
     }
@@ -220,8 +240,7 @@ internal class ConversionViewModel(
     }
 
     private fun onFromCurrencyChangeClick() {
-        conversionCurrencySource = ConversionCurrencySource.FROM
-        navigator.navigate(CurrencyListDestination)
+        navigator.navigate(CurrencyListDestination(CurrencySelectionSource.ConversionFrom))
     }
 
     private fun onSwitchButtonClick() {
@@ -252,8 +271,7 @@ internal class ConversionViewModel(
     }
 
     private fun onToCurrencyChangeClick() {
-        conversionCurrencySource = ConversionCurrencySource.TO
-        navigator.navigate(CurrencyListDestination)
+        navigator.navigate(CurrencyListDestination(CurrencySelectionSource.ConversionTo))
     }
 
     private fun onBackPress() {
@@ -272,12 +290,23 @@ internal class ConversionViewModel(
         return fromCurrency.code to toCurrency.code
     }
 
+    private fun ConversionDataState.filtered(showFeaturedPairs: Boolean): ConversionDataState {
+        return when (this) {
+            is ConversionDataState.Content -> copy(
+                conversionPairs = if (showFeaturedPairs) {
+                    conversionPairs
+                } else {
+                    conversionPairs.filterNot { conversionPair -> conversionPair.isFeatured }
+                }
+            )
+
+            ConversionDataState.Error,
+            ConversionDataState.Loading -> this
+        }
+    }
+
     private data class ConversionDataTransition(
         val previous: ConversionDataState? = null,
         val current: ConversionDataState? = null,
     )
-
-    private enum class ConversionCurrencySource {
-        FROM, TO
-    }
 }

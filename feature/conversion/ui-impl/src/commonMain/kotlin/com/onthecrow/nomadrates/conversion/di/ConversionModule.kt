@@ -19,9 +19,11 @@ val conversionModule = module {
     registerScreen<ConversionDestination> { _, modifier ->
         val viewModel: ConversionViewModel = koinViewModel()
         val state by viewModel.state.collectAsStateWithLifecycle()
+        val showFeaturedPairs by viewModel.showFeaturedPairsStateFlow.collectAsStateWithLifecycle()
 
         ConversionScreen(
             state = state,
+            showFeaturedPairs = showFeaturedPairs,
             modifier = modifier,
             eventFlow = viewModel.eventFlow,
             onEvent = viewModel::onEvent,

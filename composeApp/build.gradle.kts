@@ -117,6 +117,8 @@ kotlin {
             implementation(projects.feature.currency.uiImpl)
             implementation(projects.feature.currency.logicApi)
             implementation(projects.feature.currency.logicImpl)
+            implementation(projects.feature.settings.logicApi)
+            implementation(projects.feature.settings.logicImpl)
             implementation(projects.feature.settings.uiApi)
             implementation(projects.feature.settings.uiImpl)
             implementation(libs.runtime)

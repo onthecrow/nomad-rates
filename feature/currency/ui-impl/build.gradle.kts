@@ -22,6 +22,7 @@ kotlin {
             implementation(projects.core.ui)
             implementation(projects.core.uiCore)
             implementation(projects.core.util)
+            implementation(projects.feature.settings.logicApi)
             implementation(projects.feature.currency.uiApi)
             implementation(projects.feature.currency.logicApi)
             implementation(libs.runtime)

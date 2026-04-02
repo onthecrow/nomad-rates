@@ -12,8 +12,14 @@ import nomadrates.feature.currency.ui_impl.generated.resources.currency_list_fav
 import nomadrates.feature.currency.ui_impl.generated.resources.currency_list_featured_header
 import org.jetbrains.compose.resources.getString
 
-internal suspend fun List<Currency>.toUi(): List<CurrencyListItem> {
-    val featuredCurrencies = this.filter { it.isFeatured }
+internal suspend fun List<Currency>.toUi(
+    showFeaturedCurrencies: Boolean = true,
+): List<CurrencyListItem> {
+    val featuredCurrencies = if (showFeaturedCurrencies) {
+        this.filter { it.isFeatured }
+    } else {
+        emptyList()
+    }
     val favouriteCurrencies = this.filter { it.isFavourite }
     return buildList {
         if (favouriteCurrencies.isNotEmpty()) {

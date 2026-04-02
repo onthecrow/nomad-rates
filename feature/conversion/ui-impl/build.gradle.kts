@@ -27,6 +27,7 @@ kotlin {
             implementation(projects.feature.conversion.uiApi)
             implementation(projects.feature.currency.uiApi)
             implementation(projects.feature.currency.logicApi)
+            implementation(projects.feature.settings.logicApi)
             implementation(projects.feature.settings.uiApi)
             implementation(libs.runtime)
             implementation(libs.foundation)

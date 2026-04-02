@@ -5,7 +5,9 @@ import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.domain.ToggleCurrencyFavoriteUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
+import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.uicore.BaseViewModel
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -15,15 +17,25 @@ internal class CurrencyListViewModel(
     private val navigator: Navigator,
     private val screenResultDispatcher: ScreenResultDispatcher,
     private val toggleCurrencyFavoriteUseCase: ToggleCurrencyFavoriteUseCase,
+    observeShowFeaturedCurrenciesUseCase: ObserveShowFeaturedCurrenciesUseCase,
     getCurrencyListUseCase: GetCurrencyListUseCase,
     reducer: CurrencyListReducer,
+    private val selectionSource: CurrencySelectionSource,
 ) : BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
 
     init {
         getCurrencyListUseCase()
             .filterNotNull()
-            .onEach { currencies ->
-                onEvent(CurrencyListEvent.OnCurrencyListUpdate(currencies))
+            .combine(observeShowFeaturedCurrenciesUseCase()) { currencies, showFeaturedCurrencies ->
+                currencies to showFeaturedCurrencies
+            }
+            .onEach { (currencies, showFeaturedCurrencies) ->
+                onEvent(
+                    CurrencyListEvent.OnCurrencyListUpdate(
+                        currencies = currencies,
+                        showFeaturedCurrencies = showFeaturedCurrencies,
+                    )
+                )
             }
             .launchIn(viewModelScope)
         eventFlow.onEach { event ->
@@ -52,7 +64,10 @@ internal class CurrencyListViewModel(
 
     private fun onCurrencyClick(currencyCode: String) {
         screenResultDispatcher.dispatch(
-            CurrencyListScreenResult(currencyCode)
+            CurrencyListScreenResult(
+                selectedCurrencyCode = currencyCode,
+                source = selectionSource,
+            )
         )
         navigator.navigateBack()
     }

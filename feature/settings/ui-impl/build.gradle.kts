@@ -18,7 +18,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.feature.conversion.logicApi)
             implementation(projects.feature.currency.logicApi)
+            implementation(projects.feature.currency.uiApi)
+            implementation(projects.feature.settings.logicApi)
             implementation(projects.core.navigation.api)
             implementation(projects.core.ui)
             implementation(projects.core.uiCore)

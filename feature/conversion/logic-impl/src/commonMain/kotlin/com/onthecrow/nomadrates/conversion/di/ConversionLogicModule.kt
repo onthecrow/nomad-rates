@@ -12,6 +12,7 @@ import com.onthecrow.nomadrates.conversion.SaveSelectedConversionPairUseCaseImpl
 import com.onthecrow.nomadrates.conversion.ToggleConversionPairFavouriteUseCaseImpl
 import com.onthecrow.nomadrates.conversion.data.ConversionRepository
 import com.onthecrow.nomadrates.conversion.data.ConversionSelectionRepository
+import com.onthecrow.nomadrates.conversion.data.ConversionSelectionSessionStore
 import com.onthecrow.nomadrates.conversion.data.database.ConversionDao
 import com.onthecrow.nomadrates.conversion.data.database.ConversionDatabase
 import com.onthecrow.nomadrates.conversion.data.database.ConversionDatabaseConstructor
@@ -39,13 +40,14 @@ val conversionLogicModule: Module = module {
     single<ConvertCurrenciesUseCase> { ConvertCurrenciesUseCaseImpl(get()) }
     single<GetHistoricalRatesUseCase> { GetHistoricalRatesUseCaseImpl(get()) }
     single<GetConversionPairUseCase> { GetConversionPairUseCaseImpl(get(), get(), get()) }
-    single<GetSelectedConversionPairUseCase> { GetSelectedConversionPairUseCaseImpl(get()) }
+    single<GetSelectedConversionPairUseCase> { GetSelectedConversionPairUseCaseImpl(get(), get(), get()) }
     single<ObserveConversionDataUseCase> { ObserveConversionDataUseCaseImpl(get(), get(), get(), get()) }
     single<SaveSelectedConversionPairUseCase> { SaveSelectedConversionPairUseCaseImpl(get()) }
     single<ToggleConversionPairFavouriteUseCase> { ToggleConversionPairFavouriteUseCaseImpl(get()) }
     factory<GetConversionPairsUseCase> { GetConversionPairsUseCaseImpl(get(), get(), get()) }
     single { ConversionRepository(get(), get()) }
-    single<ConversionSelectionRepository> { ConversionSelectionRepository(get()) }
+    single { ConversionSelectionSessionStore() }
+    single<ConversionSelectionRepository> { ConversionSelectionRepository(get(), get()) }
     single<DataStore<Preferences>>(named(CONVERSION_PREFERENCES_DATA_STORE_QUALIFIER)) {
         get<DataStoreFactory>().createPreferencesDataStore(CONVERSION_PREFERENCES_DATA_STORE_NAME)
     }

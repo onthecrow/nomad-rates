@@ -4,6 +4,7 @@ plugins {
 }
 
 kotlin {
+    jvm()
     androidLibrary {
         namespace = "com.onthecrow.nomadrates.util"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
