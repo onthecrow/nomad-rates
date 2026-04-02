@@ -1,23 +1,28 @@
 package com.onthecrow.nomadrates.remoteconfig
 
 import android.util.Log
-import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.ConfigUpdate
 import com.google.firebase.remoteconfig.ConfigUpdateListener
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
-import com.google.firebase.remoteconfig.remoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import org.koin.core.component.inject
 
 internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
 
-    // TODO to di
-    private val remoteConfig = Firebase.remoteConfig
+    private val remoteConfig: FirebaseRemoteConfig by inject()
 
     init {
+        remoteConfig.setConfigSettingsAsync(
+            FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(MIN_REMOTE_CONFIG_FETCH_WINDOW.inWholeSeconds)
+                .build()
+        )
         initializeBackgroundSync()
     }
 
     override fun startBackgroundSync() {
-        Firebase.remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
+        remoteConfig.addOnConfigUpdateListener(object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {
                 remoteConfig.activate().addOnCompleteListener {
                     Log.d(
@@ -41,7 +46,7 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
     }
 
     override fun refreshRemoteConfig() {
-        Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d(
                     "NomadRatesFirebase",
@@ -59,6 +64,6 @@ internal class AndroidRemoteConfigProvider : RemoteConfigProviderImpl() {
     }
 
     override fun getString(key: String): String {
-        return Firebase.remoteConfig.getString(key)
+        return remoteConfig.getString(key)
     }
 }

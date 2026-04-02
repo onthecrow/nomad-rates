@@ -1,8 +1,10 @@
 package com.onthecrow.nomadrates.currency.data
 
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.onthecrow.nomadrates.currency.data.database.CurrencyDao
 import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
 import com.onthecrow.nomadrates.currency.data.database.CurrencyEntity
+import com.onthecrow.nomadrates.currency.data.datastore.CurrencyRatesMetadataDataSource
 import com.onthecrow.nomadrates.currency.model.CurrenciesResponse
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfig
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.encodeToString
@@ -19,6 +22,8 @@ import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import okio.Path.Companion.toPath
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -34,6 +39,7 @@ class CurrencyRepositoryImplTest {
             val repository = CurrencyRepositoryImpl(
                 currencyRemoteDataSource = SuccessfulCurrencyRemoteDataSource(samplePayload()),
                 currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
+                currencyRatesMetadataDataSource = createMetadataDataSource(),
                 remoteConfigProvider = TestRemoteConfigProvider(),
             )
 
@@ -59,6 +65,7 @@ class CurrencyRepositoryImplTest {
             val repository = CurrencyRepositoryImpl(
                 currencyRemoteDataSource = SuccessfulCurrencyRemoteDataSource(samplePayload()),
                 currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
+                currencyRatesMetadataDataSource = createMetadataDataSource(),
                 remoteConfigProvider = TestRemoteConfigProvider(remoteConfigFlow),
             )
 
@@ -87,6 +94,31 @@ class CurrencyRepositoryImplTest {
         }
     }
 
+    @Test
+    fun `newer backend timestamp is saved`() = runTest {
+        startTestKoin()
+
+        try {
+            val metadataDataSource = createMetadataDataSource()
+            val repository = CurrencyRepositoryImpl(
+                currencyRemoteDataSource = SuccessfulCurrencyRemoteDataSource(samplePayload()),
+                currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
+                currencyRatesMetadataDataSource = metadataDataSource,
+                remoteConfigProvider = TestRemoteConfigProvider(),
+            )
+
+            withTimeout(5_000) {
+                repository.getCurrencyList()
+                    .map { it.orEmpty() }
+                    .first { it.isNotEmpty() }
+            }
+
+            assertEquals(1_000L, metadataDataSource.observeLastRatesTimestamp().first())
+        } finally {
+            stopKoin()
+        }
+    }
+
     private fun startTestKoin() {
         stopKoin()
         startKoin {
@@ -100,6 +132,15 @@ class CurrencyRepositoryImplTest {
                 },
             )
         }
+    }
+
+    private fun createMetadataDataSource(): CurrencyRatesMetadataDataSource {
+        return CurrencyRatesMetadataDataSource(
+            PreferenceDataStoreFactory.createWithPath(
+                scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.Default),
+                produceFile = { "/tmp/currency_repo_${Random.nextInt()}.preferences_pb".toPath() },
+            )
+        )
     }
 
     private class TestRemoteConfigProvider(

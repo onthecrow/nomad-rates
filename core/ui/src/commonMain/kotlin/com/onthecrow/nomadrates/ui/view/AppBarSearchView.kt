@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,12 +38,12 @@ fun AppBarSearchView(
     onValueChange: (String) -> Unit = {},
     onClearClick: () -> Unit = {},
 ) {
-    Row(
+    AppBarLayout(
         modifier = modifier,
+        onBackPress = onBackPress,
     ) {
-        BackButtonView(onClick = onBackPress)
         BasicTextField(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.fillMaxWidth()
                 .height(48.dp)
                 .shadow(
                     elevation = 6.dp,
@@ -101,7 +100,6 @@ fun AppBarSearchView(
                 }
             }
         )
-        Spacer(modifier = Modifier.size(48.dp))
     }
 }
 

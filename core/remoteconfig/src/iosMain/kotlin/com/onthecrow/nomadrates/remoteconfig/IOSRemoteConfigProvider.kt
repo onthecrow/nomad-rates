@@ -9,21 +9,26 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Firebase.FIRRemoteConfig
 import platform.Firebase.FIRRemoteConfigFetchAndActivateStatus
+import platform.Firebase.FIRRemoteConfigSettings
 import platform.Firebase.FIRRemoteConfigUpdate
 import platform.Foundation.NSError
 import platform.Foundation.NSLog
+import org.koin.core.component.inject
 import kotlin.coroutines.resume
 
 @OptIn(ExperimentalForeignApi::class)
 internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val remoteConfig: FIRRemoteConfig by inject()
 
     init {
+        remoteConfig.configSettings = FIRRemoteConfigSettings().apply {
+            minimumFetchInterval = MIN_REMOTE_CONFIG_FETCH_WINDOW.inWholeSeconds.toDouble()
+        }
         initializeBackgroundSync()
     }
 
     override fun startBackgroundSync() {
-        val remoteConfig = FIRRemoteConfig.remoteConfig()
         remoteConfig.addOnConfigUpdateListener { configUpdate, error ->
             if (error != null) {
                 logError("Real-time Error", error.localizedDescription)
@@ -44,7 +49,7 @@ internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
 
     override fun refreshRemoteConfig() {
         scope.launch {
-            val fetchSucceeded = FIRRemoteConfig.remoteConfig().fetchAndActivateWithRetry()
+            val fetchSucceeded = remoteConfig.fetchAndActivateWithRetry()
             if (fetchSucceeded) {
                 onConfigUpdated()
             }
@@ -62,7 +67,7 @@ internal class IOSRemoteConfigProvider : RemoteConfigProviderImpl() {
     }
 
     override fun getString(key: String): String {
-        return FIRRemoteConfig.remoteConfig().configValueForKey(key).stringValue
+        return remoteConfig.configValueForKey(key).stringValue
     }
 
     private suspend fun FIRRemoteConfig.fetchAndActivateWithRetry(): Boolean {

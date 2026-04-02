@@ -92,7 +92,9 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.database)
+            implementation(projects.core.datastore)
             implementation(projects.core.remoteconfig)
+            implementation(projects.core.util)
             implementation(projects.feature.currency.logicApi)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project.dependencies.platform(libs.koin.bom))

@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.currency.data
 
 import com.onthecrow.nomadrates.currency.data.database.CurrencyDatabaseDataSource
+import com.onthecrow.nomadrates.currency.data.datastore.CurrencyRatesMetadataDataSource
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfig
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.onStart
 internal class CurrencyRepositoryImpl(
     private val currencyRemoteDataSource: CurrencyRemoteDataSource,
     private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
+    private val currencyRatesMetadataDataSource: CurrencyRatesMetadataDataSource,
     remoteConfigProvider: RemoteConfigProvider,
 ) : CurrencyRepository {
 
@@ -28,6 +30,7 @@ internal class CurrencyRepositoryImpl(
 
             val localCurrenciesMap = currencyDatabaseDataSource.getCurrencies().first()
                 .associateBy { currency -> currency.code }
+            val timestamp = currenciesResponse?.getOrNull()?.config?.timestamp
             val historical = currenciesResponse?.getOrNull()?.historical
             val currencies = currenciesResponse?.getOrNull()?.config?.rates?.map { (code, rate) ->
                 val localCurrency = localCurrenciesMap[code]
@@ -42,6 +45,9 @@ internal class CurrencyRepositoryImpl(
 
             if (currencies != null) {
                 currencyDatabaseDataSource.saveCurrencies(currencies)
+                if (timestamp != null) {
+                    currencyRatesMetadataDataSource.saveLastRatesTimestampIfNewer(timestamp)
+                }
             }
         }
             .launchIn(MainScope())

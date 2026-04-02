@@ -1,0 +1,11 @@
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_refresh">Refresh</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_rates_last_updated_label">Rates were last updated on</string>
+    <string name="settings_footer_developed_prefix">Developed with ❤️ by </string>
+    <string name="settings_footer_handle">@onthecrow</string>
+    <string name="settings_footer_questions">Feel free to reach me if you have any questions</string>
+    <string name="settings_unknown_value">—</string>
+    <string name="settings_version">Version: %1$s</string>
+</resources>
