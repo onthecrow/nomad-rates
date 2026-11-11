@@ -1,7 +1,8 @@
 package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
-import com.onthecrow.nomadrates.conversion.batch.BatchConversionAmountResult
+import com.onthecrow.nomadrates.batch.BatchConversionAmountResult
+import com.onthecrow.nomadrates.batch.BatchConversionDestination
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
@@ -10,7 +11,7 @@ import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseC
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
-import com.onthecrow.nomadrates.conversion.mapper.normalizeFormattedAmount
+import com.onthecrow.nomadrates.util.normalizeFormattedAmount
 import com.onthecrow.nomadrates.currency.CurrencySelectionSource
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult

@@ -1,5 +1,7 @@
 package com.onthecrow.nomadrates.conversion
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +35,8 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -42,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.conversion.model.ListGroup
@@ -53,6 +58,7 @@ import com.onthecrow.nomadrates.ui.view.CurrencyChart
 import com.onthecrow.nomadrates.ui.view.RefreshButtonView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_batch_button_description
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_body
@@ -63,6 +69,8 @@ import nomadrates.feature.conversion.ui_impl.generated.resources.ic_list
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_settings
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+
+private const val SWAP_BUTTON_HIDE_DURATION_MILLIS = 150
 
 private val FeaturedSkeletonTitleShape = RoundedCornerShape(14.dp)
 private val FeaturedSkeletonSubtitleShape = RoundedCornerShape(10.dp)
@@ -82,6 +90,15 @@ internal fun ConversionScreen(
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
+    val scope = rememberCoroutineScope()
+    // The amount field flies over the swap button on the way to the batch conversion screen, so the
+    // button shrinks away first and the transition starts after that.
+    val swapButtonScale = remember { Animatable(1f) }
+    LifecycleResumeEffect(swapButtonScale) {
+        scope.launch { swapButtonScale.snapTo(1f) }
+        onPauseOrDispose { }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -103,6 +120,7 @@ internal fun ConversionScreen(
             is ConversionState.Content -> ContentState(
                 state = state,
                 modifier = Modifier.fillMaxSize(),
+                swapButtonScale = { swapButtonScale.value },
                 eventFlow = eventFlow,
                 onEvent = onEvent,
             )
@@ -116,7 +134,12 @@ internal fun ConversionScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BatchConversionFab(
-                onClick = { onEvent(ConversionEvent.OnBatchConversionClick) },
+                onClick = {
+                    scope.launch {
+                        swapButtonScale.animateTo(0f, tween(SWAP_BUTTON_HIDE_DURATION_MILLIS))
+                        onEvent(ConversionEvent.OnBatchConversionClick)
+                    }
+                },
             )
             SettingsFab(
                 onClick = { onEvent(ConversionEvent.OnSettingsClick) },
@@ -353,6 +376,7 @@ private fun ErrorState(
 private fun ContentState(
     state: ConversionState.Content,
     modifier: Modifier = Modifier,
+    swapButtonScale: () -> Float = { 1f },
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
@@ -426,6 +450,7 @@ private fun ContentState(
         state.conversionViewState?.let { conversionViewState ->
             ConversionView(
                 state = conversionViewState,
+                swapButtonScale = swapButtonScale,
                 onEvent = onEvent,
             )
             Spacer(modifier = Modifier.size(16.dp))

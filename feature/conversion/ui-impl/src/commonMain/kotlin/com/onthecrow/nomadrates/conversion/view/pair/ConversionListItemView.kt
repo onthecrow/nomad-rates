@@ -33,6 +33,7 @@ import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.view.toColor
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.highlightOverlay
+import com.onthecrow.nomadrates.ui.view.SectionHeaderView
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
@@ -63,11 +64,9 @@ private fun ConversionListItemHeaderView(
     state: ConversionListItem.Header,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        modifier = modifier.padding(16.dp),
-        text = state.title,
-        color = MaterialTheme.colorScheme.onBackground,
-        style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+    SectionHeaderView(
+        modifier = modifier,
+        title = state.title,
     )
 }
 

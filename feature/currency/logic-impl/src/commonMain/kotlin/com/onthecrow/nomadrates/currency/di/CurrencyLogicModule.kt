@@ -1,7 +1,7 @@
 package com.onthecrow.nomadrates.currency.di
 
-import com.onthecrow.nomadrates.currency.AddCurrencyToFavoritesUseCaseImpl
-import com.onthecrow.nomadrates.currency.domain.AddCurrencyToFavoritesUseCase
+import com.onthecrow.nomadrates.currency.SetCurrencyFavoriteUseCaseImpl
+import com.onthecrow.nomadrates.currency.domain.SetCurrencyFavoriteUseCase
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.GetCurrencyListUseCaseImpl
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyUseCase
@@ -39,7 +39,7 @@ val currencyLogicModule: Module = module {
     single<ObserveLastRatesTimestampUseCase> { ObserveLastRatesTimestampUseCaseImpl(get()) }
     single<RefreshRatesManuallyUseCase> { RefreshRatesManuallyUseCaseImpl(get(), get(), get()) }
     single<ToggleCurrencyFavoriteUseCase> { ToggleCurrencyFavoriteUseCaseImpl(get()) }
-    single<AddCurrencyToFavoritesUseCase> { AddCurrencyToFavoritesUseCaseImpl(get()) }
+    single<SetCurrencyFavoriteUseCase> { SetCurrencyFavoriteUseCaseImpl(get()) }
     single<CurrencyRatesMetadataDataSource> {
         CurrencyRatesMetadataDataSource(
             get<DataStoreFactory>().createPreferencesDataStore(name = "currency_metadata.preferences_pb")
