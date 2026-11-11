@@ -46,7 +46,10 @@ private val LabelExitDistance = 24.dp
  * [com.onthecrow.nomadrates.ui.view.RoundIconButton]. In between, the plus moves to the center
  * and the label slides out to the right. Pressing it plays the same "pop" as the round button.
  *
- * @param outlineColor color of the surface the round button sits on; only shows in the round state.
+ * In both shapes the button has an outline of [outlineColor], so when it overlaps the amount field
+ * it looks cut into the field.
+ *
+ * @param outlineColor color of the surface the button sits on.
  */
 @Composable
 internal fun AddCurrencyButtonView(
@@ -72,8 +75,9 @@ internal fun AddCurrencyButtonView(
     }
 
     val roundSize = RoundIconButtonDefaults.Size
-    val pillWidth = PillStartPadding + PillIconSize + PillIconTextGap + labelWidth + PillEndPadding
-    val outlineWidth = lerp(0.dp, RoundIconButtonDefaults.OutlineWidth, progress)
+    val outlineWidth = RoundIconButtonDefaults.OutlineWidth
+    val pillWidth = PillStartPadding + PillIconSize + PillIconTextGap + labelWidth + PillEndPadding +
+        outlineWidth * 2
     val width = lerp(pillWidth, roundSize, progress)
     val innerWidth = width - outlineWidth * 2
     val iconSize = lerp(PillIconSize, RoundIconButtonDefaults.IconSize, progress)
@@ -99,7 +103,7 @@ internal fun AddCurrencyButtonView(
                 scaleY = popScale.scale
             }
             .size(width = width, height = roundSize)
-            .background(outlineColor.copy(alpha = outlineColor.alpha * progress), CircleShape)
+            .background(outlineColor, CircleShape)
             .padding(outlineWidth)
             .clip(CircleShape)
             .background(containerColor)
