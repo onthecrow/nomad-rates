@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -28,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,10 +54,12 @@ import com.onthecrow.nomadrates.ui.view.RefreshButtonView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
+import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_batch_button_description
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_body
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_title
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_retry
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_cloud_off
+import nomadrates.feature.conversion.ui_impl.generated.resources.ic_list
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_settings
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -104,11 +108,39 @@ internal fun ConversionScreen(
             )
         }
 
-        SettingsFab(
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(32.dp),
-            onClick = { onEvent(ConversionEvent.OnSettingsClick) },
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            BatchConversionFab(
+                onClick = { onEvent(ConversionEvent.OnBatchConversionClick) },
+            )
+            SettingsFab(
+                onClick = { onEvent(ConversionEvent.OnSettingsClick) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun BatchConversionFab(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    SmallFloatingActionButton(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        shape = CircleShape,
+        onClick = onClick,
+    ) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = vectorResource(Res.drawable.ic_list),
+            contentDescription = stringResource(Res.string.conversion_batch_button_description),
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
         )
     }
 }
@@ -193,7 +225,7 @@ private fun FeaturedLoadingSection(
         )
         Column {
             repeat(4) { index ->
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp),

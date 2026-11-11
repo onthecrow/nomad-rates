@@ -228,7 +228,9 @@ internal class SettingsViewModel(
             )
 
             CurrencySelectionSource.ConversionFrom,
-            CurrencySelectionSource.ConversionTo -> return
+            CurrencySelectionSource.ConversionTo,
+            CurrencySelectionSource.BatchConversionBase,
+            CurrencySelectionSource.BatchConversionAddFavourite -> return
         }
 
         if (updatedPair == state.value.defaultPair) return

@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
+import com.onthecrow.nomadrates.conversion.mapper.filterAmountInput
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.conversion.model.toChartTrend
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
@@ -155,19 +156,5 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 to = conversionViewState.to.copy(conversionValue = newValue)
             ),
         )
-    }
-
-    private fun String.filterAmountInput(): String {
-        return buildString {
-            var hasDot = false
-            for (char in this@filterAmountInput) {
-                if (char.isDigit()) {
-                    append(char)
-                } else if (!hasDot && (char == '.' || char == ',')) {
-                    append('.')
-                    hasDot = true
-                }
-            }
-        }
     }
 }

@@ -72,6 +72,7 @@ internal class ConversionViewModel(
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnRetryClick -> onRetryClick()
                 is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
+                is ConversionEvent.OnBatchConversionClick -> navigator.navigate(BatchConversionDestination)
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
@@ -238,7 +239,9 @@ internal class ConversionViewModel(
             )
 
             CurrencySelectionSource.SettingsDefaultFrom,
-            CurrencySelectionSource.SettingsDefaultTo -> return
+            CurrencySelectionSource.SettingsDefaultTo,
+            CurrencySelectionSource.BatchConversionBase,
+            CurrencySelectionSource.BatchConversionAddFavourite -> return
         }
         updateSelectedConversionPair(updatedPair)
     }
