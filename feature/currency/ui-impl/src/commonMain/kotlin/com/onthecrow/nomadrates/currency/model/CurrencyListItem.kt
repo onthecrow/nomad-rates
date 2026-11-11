@@ -14,6 +14,7 @@ internal sealed interface CurrencyListItem {
         val flagIcon: String,
         val currencyCode: String,
         val currencyName: String,
+        val alternateCurrencyName: String,
         val isFavourite: Boolean,
         val isFeatured: Boolean,
         val listGroup: ListGroup,

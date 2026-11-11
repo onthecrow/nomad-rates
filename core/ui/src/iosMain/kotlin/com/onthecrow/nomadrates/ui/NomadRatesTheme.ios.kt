@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.ui
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 
 @androidx.compose.runtime.Composable
 actual fun NomadRatesTheme(
@@ -9,9 +10,12 @@ actual fun NomadRatesTheme(
     content: @androidx.compose.runtime.Composable (() -> Unit)
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val semanticColors = if (darkTheme) DarkSemanticColors else LightSemanticColors
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalNomadRatesSemanticColors provides semanticColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

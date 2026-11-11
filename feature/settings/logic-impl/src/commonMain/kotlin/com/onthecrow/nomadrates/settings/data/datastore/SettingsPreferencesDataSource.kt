@@ -68,6 +68,18 @@ internal class SettingsPreferencesDataSource(
         }
     }
 
+    fun observeUseEnglishCurrencyNames(): Flow<Boolean> {
+        return dataStore.data.map { preferences ->
+            preferences[USE_ENGLISH_CURRENCY_NAMES_KEY] ?: true
+        }
+    }
+
+    suspend fun saveUseEnglishCurrencyNames(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[USE_ENGLISH_CURRENCY_NAMES_KEY] = isEnabled
+        }
+    }
+
     fun observeThemeMode(): Flow<ThemeMode> {
         return dataStore.data.map { preferences ->
             preferences[THEME_MODE_KEY].toEnumOrDefault(ThemeMode.SYSTEM)
@@ -86,6 +98,7 @@ internal class SettingsPreferencesDataSource(
         val DEFAULT_TO_CURRENCY_CODE_KEY = stringPreferencesKey("default_to_currency_code")
         val SHOW_FEATURED_PAIRS_KEY = booleanPreferencesKey("show_featured_pairs")
         val SHOW_FEATURED_CURRENCIES_KEY = booleanPreferencesKey("show_featured_currencies")
+        val USE_ENGLISH_CURRENCY_NAMES_KEY = booleanPreferencesKey("use_english_currency_names")
         val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
     }
 }

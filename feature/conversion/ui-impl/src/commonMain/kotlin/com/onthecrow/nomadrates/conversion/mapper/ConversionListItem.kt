@@ -3,12 +3,11 @@ package com.onthecrow.nomadrates.conversion.mapper
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.model.ListGroup
+import com.onthecrow.nomadrates.conversion.model.toChartTrend
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
-import com.onthecrow.nomadrates.ui.MutedClay
-import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.ui.util.toFlagResourceUri
-import com.onthecrow.nomadrates.util.toIsoCountryCode
+import com.onthecrow.nomadrates.util.toFlagAssetKey
 
 internal fun List<ConversionPair>.toConversionListItems(): List<ConversionListItem> {
     val featuredPairs = this.filter { conversionPair -> conversionPair.isFeatured }
@@ -34,12 +33,12 @@ private fun ConversionPair.toConversionPair(group: ListGroup): ConversionListIte
     // TODO use this entity across whole app
     val rate = MoneyAmount(this.conversionRate)
     return ConversionListItem.Data(
-        fromIcon = fromCurrency.code.toIsoCountryCode().toFlagResourceUri(),
-        toIcon = toCurrency.code.toIsoCountryCode().toFlagResourceUri(),
+        fromIcon = fromCurrency.code.toFlagAssetKey().toFlagResourceUri(),
+        toIcon = toCurrency.code.toFlagAssetKey().toFlagResourceUri(),
         title = "${fromCurrency.code} — ${toCurrency.code}",
         subtitle = "1 ${fromCurrency.code} = ${rate.formatAdaptive(toCurrency.code)} ${toCurrency.code}",
         chartData = historicalRates,
-        chartColor = if (historicalRates.size >= 2 && historicalRates.first() > historicalRates.last()) MutedClay else SageGreen,
+        chartTrend = historicalRates.toChartTrend(),
         currencyPair = fromCurrency.code to toCurrency.code,
         isFavourite = isFavourite,
         listGroup = group,

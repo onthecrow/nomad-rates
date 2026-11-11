@@ -59,6 +59,8 @@ import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_sy
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_theme_title
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_title
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_unknown_value
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_use_english_currency_names_subtitle
+import nomadrates.feature.settings.ui_impl.generated.resources.settings_use_english_currency_names_title
 import nomadrates.feature.settings.ui_impl.generated.resources.settings_version
 import org.jetbrains.compose.resources.stringResource
 
@@ -134,6 +136,12 @@ internal fun SettingsScreen(
                     subtitle = stringResource(Res.string.settings_show_featured_currencies_subtitle),
                     checked = state.showFeaturedCurrencies,
                     onCheckedChange = { onEvent(SettingsEvent.OnShowFeaturedCurrenciesToggle(it)) },
+                )
+                SettingsSwitchRowView(
+                    title = stringResource(Res.string.settings_use_english_currency_names_title),
+                    subtitle = stringResource(Res.string.settings_use_english_currency_names_subtitle),
+                    checked = state.useEnglishCurrencyNames,
+                    onCheckedChange = { onEvent(SettingsEvent.OnUseEnglishCurrencyNamesToggle(it)) },
                 )
                 SettingsValueRowView(
                     title = stringResource(Res.string.settings_theme_title),
@@ -272,6 +280,7 @@ private fun SettingsScreenPreview() {
                 defaultPair = SelectedConversionPair("GBP", "JPY"),
                 showFeaturedPairs = true,
                 showFeaturedCurrencies = true,
+                useEnglishCurrencyNames = true,
                 themeMode = ThemeMode.SYSTEM,
                 appVersion = "1.0",
             )

@@ -1,6 +1,32 @@
 package com.onthecrow.nomadrates.util
 
-expect fun String.toCurrencyName(): String
+fun String.toCurrencyName(useEnglishName: Boolean): String {
+    return toPlatformCurrencyName(useEnglishName).capitalizeWords()
+}
+
+internal expect fun String.toPlatformCurrencyName(useEnglishName: Boolean): String
+
+internal fun String.capitalizeWords(): String {
+    return buildString(length) {
+        var isWordStart = true
+        for (char in this@capitalizeWords) {
+            append(if (isWordStart) char.titlecase() else char)
+            isWordStart = char.isWhitespace() || (isWordStart && !char.isLetterOrDigit())
+        }
+    }
+}
+
+fun String.toFlagAssetKey(): String? {
+    return when (this.uppercase()) {
+        "BTC" -> "btc"
+        "XAG" -> "xag"
+        "XAU" -> "xau"
+        "XDR" -> "xdr"
+        "XPD" -> "xpd"
+        "XPT" -> "xpt"
+        else -> toIsoCountryCode()
+    }
+}
 
 fun String.toIsoCountryCode(): String? {
     return when (this.uppercase()) {

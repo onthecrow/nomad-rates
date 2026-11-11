@@ -33,6 +33,10 @@ class SettingsUseCasesTest {
             ObserveShowFeaturedCurrenciesUseCaseImpl(repository).invoke().value(),
         )
         assertEquals(
+            true,
+            ObserveUseEnglishCurrencyNamesUseCaseImpl(repository).invoke().value(),
+        )
+        assertEquals(
             ThemeMode.SYSTEM,
             ObserveThemeModeUseCaseImpl(repository).invoke().value(),
         )
@@ -55,12 +59,14 @@ class SettingsUseCasesTest {
         SetDefaultPairUseCaseImpl(repository).invoke(SelectedConversionPair("GBP", "JPY"))
         SetShowFeaturedPairsUseCaseImpl(repository).invoke(false)
         SetShowFeaturedCurrenciesUseCaseImpl(repository).invoke(false)
+        SetUseEnglishCurrencyNamesUseCaseImpl(repository).invoke(false)
         SetThemeModeUseCaseImpl(repository).invoke(ThemeMode.DARK)
 
         assertEquals(LaunchPairMode.USE_DEFAULT_PAIR, repository.launchPairMode.value)
         assertEquals(SelectedConversionPair("GBP", "JPY"), repository.defaultPair.value)
         assertEquals(false, repository.showFeaturedPairs.value)
         assertEquals(false, repository.showFeaturedCurrencies.value)
+        assertEquals(false, repository.useEnglishCurrencyNames.value)
         assertEquals(ThemeMode.DARK, repository.themeMode.value)
     }
 }
@@ -72,6 +78,7 @@ private class FakeSettingsRepository : SettingsRepository {
     val defaultPair = MutableStateFlow(SelectedConversionPair.DEFAULT)
     val showFeaturedPairs = MutableStateFlow(true)
     val showFeaturedCurrencies = MutableStateFlow(true)
+    val useEnglishCurrencyNames = MutableStateFlow(true)
     val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
 
     override fun observeLaunchPairMode(): Flow<LaunchPairMode> = launchPairMode
@@ -96,6 +103,12 @@ private class FakeSettingsRepository : SettingsRepository {
 
     override suspend fun setShowFeaturedCurrencies(isEnabled: Boolean) {
         showFeaturedCurrencies.value = isEnabled
+    }
+
+    override fun observeUseEnglishCurrencyNames(): Flow<Boolean> = useEnglishCurrencyNames
+
+    override suspend fun setUseEnglishCurrencyNames(isEnabled: Boolean) {
+        useEnglishCurrencyNames.value = isEnabled
     }
 
     override fun observeThemeMode(): Flow<ThemeMode> = themeMode

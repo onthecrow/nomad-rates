@@ -9,6 +9,8 @@
     <string name="settings_show_featured_pairs_subtitle">Show curated pairs on the home screen</string>
     <string name="settings_show_featured_currencies_title">Show featured currencies</string>
     <string name="settings_show_featured_currencies_subtitle">Show curated currencies in the currency picker</string>
+    <string name="settings_use_english_currency_names_title">English currency names</string>
+    <string name="settings_use_english_currency_names_subtitle">Show currency names in English instead of the device language</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>

@@ -22,6 +22,10 @@ internal interface SettingsRepository {
 
     suspend fun setShowFeaturedCurrencies(isEnabled: Boolean)
 
+    fun observeUseEnglishCurrencyNames(): Flow<Boolean>
+
+    suspend fun setUseEnglishCurrencyNames(isEnabled: Boolean)
+
     fun observeThemeMode(): Flow<ThemeMode>
 
     suspend fun setThemeMode(mode: ThemeMode)

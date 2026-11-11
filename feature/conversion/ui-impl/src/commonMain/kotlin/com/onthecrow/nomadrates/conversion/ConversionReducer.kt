@@ -3,16 +3,13 @@ package com.onthecrow.nomadrates.conversion
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
+import com.onthecrow.nomadrates.conversion.model.toChartTrend
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
-import com.onthecrow.nomadrates.ui.MutedClay
-import com.onthecrow.nomadrates.ui.SageGreen
 import com.onthecrow.nomadrates.uicore.Reducer
-import nomadrates.feature.conversion.ui_impl.generated.resources.Res
-import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_internet_required
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     override suspend fun reduce(
@@ -21,6 +18,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         return when (event) {
             is ConversionEvent.OnConversionDataChanged -> reduceConversionDataChanged(state, event)
+            is ConversionEvent.OnRetryStateChanged -> reduceRetryStateChanged(state, event)
             is ConversionEvent.OnFromValueChange -> reduceFromValueChange(state, event)
             is ConversionEvent.OnToValueChange -> reduceToValueChange(state, event)
             is ConversionEvent.OnToValueConverted -> reduceToValueConverted(state, event)
@@ -35,10 +33,20 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         event: ConversionEvent.OnConversionDataChanged,
     ): ConversionState {
         return when (val dataState = event.dataState) {
-            ConversionDataState.Loading -> ConversionState.Loading
-            ConversionDataState.Error -> ConversionState.Error(Res.string.conversion_internet_required)
+            ConversionDataState.Loading -> {
+                if (state is ConversionState.Error && state.isRetrying) state else ConversionState.Loading
+            }
+            ConversionDataState.Error -> ConversionState.Error()
             is ConversionDataState.Content -> mapToContentState(state, dataState)
         }
+    }
+
+    private fun reduceRetryStateChanged(
+        state: ConversionState,
+        event: ConversionEvent.OnRetryStateChanged,
+    ): ConversionState {
+        val errorState = state as? ConversionState.Error ?: return state
+        return errorState.copy(isRetrying = event.isRetrying)
     }
 
     private fun mapToContentState(
@@ -49,14 +57,6 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         val previousViewState = previousContent?.conversionViewState
         val activePair = dataState.activePair
         val historicalRates = activePair.historicalRates
-        val chartColor = if (
-            historicalRates.size >= 2 &&
-            historicalRates.first() < historicalRates.last()
-        ) {
-            SageGreen
-        } else {
-            MutedClay
-        }
 
         return ConversionState.Content(
             conversionViewState = ConversionViewState.Content(
@@ -70,7 +70,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                 ),
                 isFavourite = activePair.isFavourite,
             ),
-            chartColor = chartColor,
+            chartTrend = historicalRates.toChartTrend(),
             chartData = historicalRates,
             conversionListItems = dataState.conversionPairs.toConversionListItems(),
         )

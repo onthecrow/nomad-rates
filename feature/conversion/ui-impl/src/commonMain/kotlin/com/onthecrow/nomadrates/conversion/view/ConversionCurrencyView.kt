@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +46,11 @@ import com.onthecrow.nomadrates.ui.view.CurrencySelectorView
 private val ConversionCurrencySelectorLoadingWidth = 124.dp
 private val ConversionCurrencyContainerShape = RoundedCornerShape(100.dp)
 
+private data class ConversionCurrencyContainerColors(
+    val background: Color,
+    val content: Color,
+)
+
 @Composable
 internal fun ConversionCurrencyView(
     state: ConversionCurrencyViewState,
@@ -52,10 +58,16 @@ internal fun ConversionCurrencyView(
     onValueChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    ConversionCurrencyContainer(modifier = modifier) {
+    val colors = conversionCurrencyContainerColors()
+
+    ConversionCurrencyContainer(
+        modifier = modifier,
+        colors = colors,
+    ) {
         when (state) {
-            ConversionCurrencyViewState.Loading -> ConversionCurrencyLoadingContent()
+            ConversionCurrencyViewState.Loading -> ConversionCurrencyLoadingContent(colors)
             is ConversionCurrencyViewState.Content -> ConversionCurrencyContent(
+                colors = colors,
                 state = state,
                 onCurrencyClick = onCurrencyClick,
                 onValueChange = onValueChange,
@@ -67,13 +79,14 @@ internal fun ConversionCurrencyView(
 @Composable
 private fun ConversionCurrencyContainer(
     modifier: Modifier = Modifier,
+    colors: ConversionCurrencyContainerColors,
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
         modifier = modifier
             .height(56.dp)
             .background(
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = colors.background,
                 shape = ConversionCurrencyContainerShape,
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -82,13 +95,16 @@ private fun ConversionCurrencyContainer(
 }
 
 @Composable
-private fun RowScope.ConversionCurrencyLoadingContent() {
-    ConversionCurrencyLoadingSelector()
+private fun RowScope.ConversionCurrencyLoadingContent(
+    colors: ConversionCurrencyContainerColors,
+) {
+    ConversionCurrencyLoadingSelector(colors)
     Spacer(modifier = Modifier.weight(1f))
 }
 
 @Composable
 private fun ConversionCurrencyLoadingSelector(
+    colors: ConversionCurrencyContainerColors,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -117,15 +133,18 @@ private fun ConversionCurrencyLoadingSelector(
 
 @Composable
 private fun RowScope.ConversionCurrencyContent(
+    colors: ConversionCurrencyContainerColors,
     state: ConversionCurrencyViewState.Content,
     onCurrencyClick: () -> Unit,
     onValueChange: (String) -> Unit,
 ) {
     ConversionCurrencySelector(
+        colors = colors,
         state = state,
         onClick = onCurrencyClick,
     )
     ConversionCurrencyValueField(
+        colors = colors,
         value = state.conversionValue,
         onValueChange = onValueChange,
     )
@@ -133,6 +152,7 @@ private fun RowScope.ConversionCurrencyContent(
 
 @Composable
 private fun ConversionCurrencySelector(
+    colors: ConversionCurrencyContainerColors,
     state: ConversionCurrencyViewState.Content,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -144,12 +164,13 @@ private fun ConversionCurrencySelector(
         currencyCode = state.currencyCode,
         currencyIcon = state.currencyIcon,
         onClick = onClick,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        contentColor = colors.content,
     )
 }
 
 @Composable
 private fun RowScope.ConversionCurrencyValueField(
+    colors: ConversionCurrencyContainerColors,
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -168,9 +189,9 @@ private fun RowScope.ConversionCurrencyValueField(
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             textAlign = TextAlign.End,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = colors.content,
         ),
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSecondaryContainer),
+        cursorBrush = SolidColor(colors.content),
         decorationBox = { innerTextField ->
             Box(
                 modifier = Modifier
@@ -186,7 +207,7 @@ private fun RowScope.ConversionCurrencyValueField(
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    colors.background,
                                     Color.Transparent,
                                 )
                             )
@@ -196,6 +217,24 @@ private fun RowScope.ConversionCurrencyValueField(
             }
         }
     )
+}
+
+@Composable
+private fun conversionCurrencyContainerColors(): ConversionCurrencyContainerColors {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDarkTheme = colorScheme.background.luminance() < 0.5f
+
+    return if (isDarkTheme) {
+        ConversionCurrencyContainerColors(
+            background = colorScheme.secondaryContainer,
+            content = colorScheme.onSecondaryContainer,
+        )
+    } else {
+        ConversionCurrencyContainerColors(
+            background = colorScheme.surfaceContainerHighest,
+            content = colorScheme.onSecondaryContainer,
+        )
+    }
 }
 
 @Preview(

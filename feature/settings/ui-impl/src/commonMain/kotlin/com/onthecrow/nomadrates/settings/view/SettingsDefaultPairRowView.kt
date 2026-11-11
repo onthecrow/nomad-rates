@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
 import com.onthecrow.nomadrates.ui.util.toFlagResourceUri
 import com.onthecrow.nomadrates.ui.view.CurrencySelectorView
-import com.onthecrow.nomadrates.util.toIsoCountryCode
+import com.onthecrow.nomadrates.util.toFlagAssetKey
 
 @Composable
 internal fun SettingsDefaultPairRowView(
@@ -101,7 +101,7 @@ private fun DefaultPairSelectorRowView(
     ) {
         CurrencySelectorView(
             currencyCode = pair.fromCurrencyCode,
-            currencyIcon = pair.fromCurrencyCode.toIsoCountryCode().toFlagResourceUri(),
+            currencyIcon = pair.fromCurrencyCode.toFlagAssetKey().toFlagResourceUri(),
             onClick = onFromClick,
             flagSize = 24.dp,
         )
@@ -112,7 +112,7 @@ private fun DefaultPairSelectorRowView(
         )
         CurrencySelectorView(
             currencyCode = pair.toCurrencyCode,
-            currencyIcon = pair.toCurrencyCode.toIsoCountryCode().toFlagResourceUri(),
+            currencyIcon = pair.toCurrencyCode.toFlagAssetKey().toFlagResourceUri(),
             onClick = onToClick,
             flagSize = 24.dp,
         )

@@ -3,8 +3,9 @@ package com.onthecrow.nomadrates.util
 import java.util.Currency
 import java.util.Locale
 
-actual fun String.toCurrencyName(): String {
+internal actual fun String.toPlatformCurrencyName(useEnglishName: Boolean): String {
+    val locale = if (useEnglishName) Locale.ENGLISH else Locale.getDefault()
     return runCatching {
-        Currency.getInstance(this).getDisplayName(Locale.getDefault())
+        Currency.getInstance(this).getDisplayName(locale)
     }.getOrDefault(this)
 }
