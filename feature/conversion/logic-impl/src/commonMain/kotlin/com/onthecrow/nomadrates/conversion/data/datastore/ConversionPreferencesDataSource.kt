@@ -34,8 +34,19 @@ internal class ConversionPreferencesDataSource(
         }
     }
 
+    fun getBatchBaseCurrencyCode(): Flow<String?> {
+        return dataStore.data.map { preferences -> preferences[BATCH_BASE_CURRENCY_CODE_KEY] }
+    }
+
+    suspend fun saveBatchBaseCurrencyCode(currencyCode: String) {
+        dataStore.edit { preferences ->
+            preferences[BATCH_BASE_CURRENCY_CODE_KEY] = currencyCode
+        }
+    }
+
     private companion object {
         val FROM_CURRENCY_CODE_KEY = stringPreferencesKey("from_currency_code")
         val TO_CURRENCY_CODE_KEY = stringPreferencesKey("to_currency_code")
+        val BATCH_BASE_CURRENCY_CODE_KEY = stringPreferencesKey("batch_base_currency_code")
     }
 }

@@ -7,8 +7,10 @@ import com.onthecrow.nomadrates.conversion.GetConversionPairUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetConversionPairsUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetHistoricalRatesUseCaseImpl
 import com.onthecrow.nomadrates.conversion.GetSelectedConversionPairUseCaseImpl
+import com.onthecrow.nomadrates.conversion.ObserveBatchConversionUseCaseImpl
 import com.onthecrow.nomadrates.conversion.ObserveConversionDataUseCaseImpl
 import com.onthecrow.nomadrates.conversion.SaveSelectedConversionPairUseCaseImpl
+import com.onthecrow.nomadrates.conversion.SetBatchConversionBaseCurrencyUseCaseImpl
 import com.onthecrow.nomadrates.conversion.ToggleConversionPairFavouriteUseCaseImpl
 import com.onthecrow.nomadrates.conversion.data.ConversionRepository
 import com.onthecrow.nomadrates.conversion.data.ConversionSelectionRepository
@@ -23,8 +25,10 @@ import com.onthecrow.nomadrates.conversion.domain.GetConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetConversionPairsUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetHistoricalRatesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.ObserveBatchConversionUseCase
 import com.onthecrow.nomadrates.conversion.domain.ObserveConversionDataUseCase
 import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.SetBatchConversionBaseCurrencyUseCase
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.datastore.DataStoreFactory
 import com.onthecrow.nomadrates.database.RoomFactory
@@ -44,6 +48,8 @@ val conversionLogicModule: Module = module {
     single<ObserveConversionDataUseCase> { ObserveConversionDataUseCaseImpl(get(), get(), get(), get()) }
     single<SaveSelectedConversionPairUseCase> { SaveSelectedConversionPairUseCaseImpl(get()) }
     single<ToggleConversionPairFavouriteUseCase> { ToggleConversionPairFavouriteUseCaseImpl(get()) }
+    single<ObserveBatchConversionUseCase> { ObserveBatchConversionUseCaseImpl(get(), get()) }
+    single<SetBatchConversionBaseCurrencyUseCase> { SetBatchConversionBaseCurrencyUseCaseImpl(get()) }
     factory<GetConversionPairsUseCase> { GetConversionPairsUseCaseImpl(get(), get(), get()) }
     single { ConversionRepository(get(), get()) }
     single { ConversionSelectionSessionStore() }
