@@ -1,8 +1,10 @@
 package com.onthecrow.nomadrates.batch
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,12 +43,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.batch.model.BatchConversionListItem
 import com.onthecrow.nomadrates.batch.view.AddCurrencyButtonView
 import com.onthecrow.nomadrates.navigation.sharedNavElement
+import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.ui.positiveAccent
@@ -75,11 +85,14 @@ import nomadrates.feature.batch.ui_impl.generated.resources.ic_delete
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 private const val LOADING_ROWS_COUNT = 3
 private const val HEADER_KEY = "batch_header"
 private const val EMPTY_KEY = "batch_empty"
 private const val ADD_BUTTON_KEY = "batch_add"
+
+private const val ADD_BUTTON_HIDE_DURATION_MILLIS = 150
 
 /** Space between the last row of the list and the "Add currency" button. */
 private val AddButtonGap = 16.dp
@@ -103,13 +116,24 @@ internal fun BatchConversionScreen(
     onEvent: (BatchConversionEvent) -> Unit = {},
 ) {
     val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     // Rendered by the layer that holds both the list and the "Add currency" button, so the button
     // bounces together with the list instead of coming apart from it.
     val overscrollEffect = rememberOverscrollEffect()
+    val listBounce = remember(overscrollEffect) { ListBounce(overscrollEffect) }
     var bodyHeight by remember { mutableIntStateOf(0) }
     var fieldAreaHeight by remember { mutableIntStateOf(0) }
     val fieldAreaHeightDp = with(density) { fieldAreaHeight.toDp() }
+    // The amount field flies over the "Add currency" button on the way back to the conversion
+    // screen, so the button shrinks away first and the transition starts after that.
+    val addButtonScale = remember { Animatable(1f) }
+    val onBackPress: () -> Unit = {
+        scope.launch {
+            addButtonScale.animateTo(0f, tween(ADD_BUTTON_HIDE_DURATION_MILLIS))
+            onEvent(BatchConversionEvent.OnBackPress)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -120,15 +144,16 @@ internal fun BatchConversionScreen(
         AppBarTitleView(
             modifier = Modifier.padding(top = 8.dp),
             title = stringResource(Res.string.batch_conversion_title),
-            onBackPress = { onEvent(BatchConversionEvent.OnBackPress) },
+            onBackPress = onBackPress,
         )
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                // The list and the button may bounce over the amount field, but not into the app bar.
+                // The button may reach into the amount field, but nothing goes into the app bar.
                 .clipToBounds()
-                .onSizeChanged { size -> bodyHeight = size.height },
+                .onSizeChanged { size -> bodyHeight = size.height }
+                .onPlaced(listBounce::onBodyPlaced),
         ) {
             CurrencyAmountView(
                 modifier = Modifier
@@ -140,23 +165,26 @@ internal fun BatchConversionScreen(
                 onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
                 onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
             )
-            val addButton = if (state is BatchConversionState.Content && bodyHeight > 0 && fieldAreaHeight > 0) {
-                rememberAddButtonPlacement(
-                    listState = listState,
-                    listBottom = (bodyHeight - fieldAreaHeight).toFloat(),
-                )
-            } else {
-                null
-            }
+            // Moves with the list when it bounces at its start or end. Everything in it that must
+            // stay in place (the edge of the list, the pinned button) is moved back by the bounce.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .overscroll(overscrollEffect),
+                    .overscroll(overscrollEffect)
+                    .onPlaced(listBounce::onLayerPlaced),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = fieldAreaHeightDp),
+                        .padding(bottom = fieldAreaHeightDp)
+                        // The list goes under the amount field: rows are cut at a line that does
+                        // not move with the bounce.
+                        .drawWithContent {
+                            val bounce = listBounce.offset()
+                            clipRect(bottom = size.height - bounce) {
+                                this@drawWithContent.drawContent()
+                            }
+                        },
                 ) {
                     when (state) {
                         is BatchConversionState.Loading -> FavouritesLoading(
@@ -175,9 +203,10 @@ internal fun BatchConversionScreen(
                     }
                     Box(
                         modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .offset { IntOffset(x = 0, y = -listBounce.offset().roundToInt()) }
                             .height(16.dp)
                             .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
@@ -188,27 +217,66 @@ internal fun BatchConversionScreen(
                             ),
                     )
                 }
-                if (addButton != null && !addButton.isPinned) {
-                    AddCurrencyButton(
+                if (state is BatchConversionState.Content && bodyHeight > 0 && fieldAreaHeight > 0) {
+                    val addButton = rememberAddButtonPlacement(
+                        listState = listState,
+                        listBottom = (bodyHeight - fieldAreaHeight).toFloat(),
+                    )
+                    AddCurrencyButtonView(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .offset { IntOffset(x = 0, y = addButton.listTop().roundToInt()) },
+                            .offset {
+                                // In the list the button moves with the bounce; pinned to the
+                                // field it stays where it is.
+                                val top = if (addButton.isPinned) {
+                                    addButton.pinnedTop - listBounce.offset()
+                                } else {
+                                    addButton.listTop()
+                                }
+                                IntOffset(x = 0, y = top.roundToInt())
+                            }
+                            .shrinkDuringSharedTransition()
+                            .graphicsLayer {
+                                scaleX = addButtonScale.value
+                                scaleY = addButtonScale.value
+                            },
+                        text = stringResource(Res.string.batch_conversion_add_currency),
                         morphProgress = addButton.morphProgress,
+                        outlineColor = MaterialTheme.colorScheme.background,
                         onClick = { onEvent(BatchConversionEvent.OnAddCurrencyClick) },
                     )
                 }
             }
-            // Outside of the bouncing layer: while the list moves, this one stays on the field.
-            if (addButton != null && addButton.isPinned) {
-                AddCurrencyButton(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset { IntOffset(x = 0, y = addButton.pinnedTop.roundToInt()) },
-                    morphProgress = addButton.morphProgress,
-                    onClick = { onEvent(BatchConversionEvent.OnAddCurrencyClick) },
-                )
-            }
         }
+    }
+}
+
+/**
+ * How far the list layer is moved by the bounce at the start or end of the list (iOS moves the
+ * content, other platforms only stretch it, so there it is always 0). Reading [offset] during
+ * layout or drawing updates the reader whenever the bounce changes.
+ */
+@Stable
+private class ListBounce(
+    private val overscrollEffect: OverscrollEffect?,
+) {
+    private var bodyCoordinates: LayoutCoordinates? = null
+    private var layerCoordinates: LayoutCoordinates? = null
+
+    fun onBodyPlaced(coordinates: LayoutCoordinates) {
+        bodyCoordinates = coordinates
+    }
+
+    fun onLayerPlaced(coordinates: LayoutCoordinates) {
+        layerCoordinates = coordinates
+    }
+
+    fun offset(): Float {
+        // Only to subscribe the reader to bounce changes; the value itself comes from the layout.
+        overscrollEffect?.isInProgress
+        val body = bodyCoordinates?.takeIf { it.isAttached } ?: return 0f
+        val layer = layerCoordinates?.takeIf { it.isAttached } ?: return 0f
+        return body.localPositionOf(layer, Offset.Zero).y
     }
 }
 
@@ -228,7 +296,7 @@ private class AddButtonPlacement(
     private val pinThreshold: Float,
 ) {
     /** Top of the button at its place in the list, or null if that place is below the visible part. */
-    fun listTopOrNull(): Float? = listState.layoutInfo.visibleItemsInfo
+    private fun listTopOrNull(): Float? = listState.layoutInfo.visibleItemsInfo
         .firstOrNull { item -> item.key == ADD_BUTTON_KEY }
         ?.let { item -> item.offset + gap }
 
@@ -266,21 +334,6 @@ private fun rememberAddButtonPlacement(
         label = "add_currency_morph",
     ).value
     return placement
-}
-
-@Composable
-private fun AddCurrencyButton(
-    morphProgress: Float,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AddCurrencyButtonView(
-        modifier = modifier,
-        text = stringResource(Res.string.batch_conversion_add_currency),
-        morphProgress = morphProgress,
-        outlineColor = MaterialTheme.colorScheme.background,
-        onClick = onClick,
-    )
 }
 
 @Composable
