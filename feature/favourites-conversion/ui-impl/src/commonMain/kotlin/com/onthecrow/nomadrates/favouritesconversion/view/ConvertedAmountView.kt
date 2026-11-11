@@ -15,11 +15,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.onthecrow.nomadrates.favouritesconversion.model.CompactAmount
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.positiveAccent
+import com.onthecrow.nomadrates.ui.view.RollingText
 
 /**
  * Part of a list row the converted amount may take; the rest stays for the currency name.
@@ -36,8 +36,8 @@ private const val EXPONENT_FONT_SIZE_EM = 0.7f
 private const val EXPONENT_RAISE = 0.9f
 
 /**
- * A converted amount at the end of a list row. When [amount] is too wide for the row, the
- * [compactAmount] is shown instead ("2,16 × 10²¹"), and if even that does not fit, it is ellipsized.
+ * A converted amount at the end of a list row; its digits roll when it changes. When [amount] is
+ * too wide for the row, the [compactAmount] is shown instead ("2,16 × 10²¹").
  */
 @Composable
 internal fun ConvertedAmountView(
@@ -70,13 +70,11 @@ internal fun ConvertedAmountView(
                 color = color,
             )
         } else {
-            Text(
+            RollingText(
                 modifier = maxWidthModifier,
                 text = amount,
                 style = style,
                 color = color,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -97,17 +95,15 @@ private fun CompactAmountView(
     val exponentRaisePx = with(LocalDensity.current) { (exponentStyle.fontSize * EXPONENT_RAISE).toPx() }
 
     Row(modifier = modifier) {
-        Text(
+        RollingText(
             modifier = Modifier
                 .weight(1f, fill = false)
                 .alignByBaseline(),
             text = "${compactAmount.mantissa} × 10",
             style = style,
             color = color,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
         )
-        Text(
+        RollingText(
             modifier = Modifier
                 .alignByBaseline()
                 // Moved in drawing only: a layout offset would be undone by the baseline alignment.
@@ -115,8 +111,6 @@ private fun CompactAmountView(
             text = compactAmount.exponent.toString(),
             style = exponentStyle,
             color = color,
-            maxLines = 1,
-            softWrap = false,
         )
     }
 }
