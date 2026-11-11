@@ -19,6 +19,7 @@ import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.navigation.sharedNavElement
+import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
@@ -72,7 +73,10 @@ internal fun ConversionView(
             }
         }
         ConversionSwapView(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                // The "from" field flies over this button on the way to the batch conversion screen.
+                .shrinkDuringSharedTransition(),
             enabled = state is ConversionViewState.Content,
             onClick = { onEvent(ConversionEvent.OnSwitchButtonPress) },
         )
