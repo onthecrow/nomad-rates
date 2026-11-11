@@ -1,8 +1,8 @@
 package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
-import com.onthecrow.nomadrates.batch.BatchConversionAmountResult
-import com.onthecrow.nomadrates.batch.BatchConversionDestination
+import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionAmountResult
+import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionDestination
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
@@ -75,7 +75,7 @@ internal class ConversionViewModel(
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnRetryClick -> onRetryClick()
                 is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
-                is ConversionEvent.OnBatchConversionClick -> onBatchConversionClick()
+                is ConversionEvent.OnFavouritesConversionClick -> onFavouritesConversionClick()
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
@@ -93,7 +93,7 @@ internal class ConversionViewModel(
             .onEach { screenResult ->
                 when (screenResult) {
                     is CurrencyListScreenResult -> onCurrencySelected(screenResult)
-                    is BatchConversionAmountResult -> onEvent(ConversionEvent.OnFromValueChange(screenResult.amount))
+                    is FavouritesConversionAmountResult -> onEvent(ConversionEvent.OnFromValueChange(screenResult.amount))
                 }
             }
             .launchIn(viewModelScope)
@@ -244,8 +244,8 @@ internal class ConversionViewModel(
 
             CurrencySelectionSource.SettingsDefaultFrom,
             CurrencySelectionSource.SettingsDefaultTo,
-            CurrencySelectionSource.BatchConversionBase,
-            CurrencySelectionSource.BatchConversionAddFavourite -> return
+            CurrencySelectionSource.FavouritesConversionBase,
+            CurrencySelectionSource.FavouritesConversionAddFavourite -> return
         }
         updateSelectedConversionPair(updatedPair)
     }
@@ -267,10 +267,10 @@ internal class ConversionViewModel(
         }
     }
 
-    private fun onBatchConversionClick() {
+    private fun onFavouritesConversionClick() {
         val from = (state.value as? ConversionState.Content)?.conversionViewState?.from
         navigator.navigate(
-            BatchConversionDestination(
+            FavouritesConversionDestination(
                 baseCurrencyCode = from?.currencyCode.orEmpty(),
                 amount = from?.conversionValue.orEmpty().normalizeFormattedAmount(),
             )

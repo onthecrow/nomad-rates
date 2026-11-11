@@ -19,7 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.entity)
-            implementation(projects.feature.batch.uiApi)
+            implementation(projects.feature.favouritesConversion.uiApi)
             implementation(projects.core.navigation.api)
             implementation(projects.core.ui)
             implementation(projects.core.uiCore)

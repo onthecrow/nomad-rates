@@ -8,6 +8,6 @@ enum class CurrencySelectionSource {
     ConversionTo,
     SettingsDefaultFrom,
     SettingsDefaultTo,
-    BatchConversionBase,
-    BatchConversionAddFavourite,
+    FavouritesConversionBase,
+    FavouritesConversionAddFavourite,
 }

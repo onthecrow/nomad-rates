@@ -1,7 +1,7 @@
 package com.onthecrow.nomadrates.di
 
-import com.onthecrow.nomadrates.batch.di.batchLogicModule
-import com.onthecrow.nomadrates.batch.di.batchModule
+import com.onthecrow.nomadrates.favouritesconversion.di.favouritesConversionLogicModule
+import com.onthecrow.nomadrates.favouritesconversion.di.favouritesConversionModule
 import com.onthecrow.nomadrates.conversion.ConversionDestination
 import com.onthecrow.nomadrates.conversion.di.conversionLogicModule
 import com.onthecrow.nomadrates.conversion.di.conversionModule
@@ -29,8 +29,8 @@ val applicationModule = module {
         datastoreModule,
         navigationModule,
         remoteConfigModule,
-        batchModule,
-        batchLogicModule,
+        favouritesConversionModule,
+        favouritesConversionLogicModule,
         conversionModule,
         conversionLogicModule,
         currencyModule,
