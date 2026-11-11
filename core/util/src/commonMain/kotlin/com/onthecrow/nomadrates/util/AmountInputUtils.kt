@@ -17,6 +17,34 @@ fun String.filterAmountInput(): String {
     }
 }
 
+/** What an amount field shows when everything in it was deleted. */
+const val EMPTY_AMOUNT_FIELD_VALUE: String = "0"
+
+/**
+ * The value of an amount field after an edit: [this] is the field's text after the edit, [previous]
+ * is the text before it. The field is never empty and has no leading zeros:
+ * - deleting everything leaves "0";
+ * - typing into a field with only "0" replaces the zero, wherever the cursor is: "0" and "5" give
+ *   "5" (not "05" or "50"), "0" and "0" stay "0", "0" and "." give "0.";
+ * - leading zeros are dropped ("007" gives "7") and a missing one is added (".5" gives "0.5").
+ * Otherwise it keeps digits and the first decimal separator, like [filterAmountInput].
+ */
+fun String.toAmountFieldValue(previous: String): String {
+    var amount = filterAmountInput()
+    if (previous == EMPTY_AMOUNT_FIELD_VALUE && amount.length == previous.length + 1) {
+        // One character was typed next to the lone zero: it replaces the zero.
+        val zeroIndex = amount.indexOf('0')
+        if (zeroIndex >= 0) {
+            amount = amount.removeRange(zeroIndex, zeroIndex + 1)
+        }
+    }
+    val separatorIndex = amount.indexOf('.')
+    val integerPart = (if (separatorIndex >= 0) amount.substring(0, separatorIndex) else amount)
+        .trimStart('0')
+        .ifEmpty { EMPTY_AMOUNT_FIELD_VALUE }
+    return if (separatorIndex >= 0) integerPart + amount.substring(separatorIndex) else integerPart
+}
+
 /**
  * Turns an amount shown in a field back into raw input like "1234.5". Unlike [filterAmountInput],
  * it also understands locale-formatted values such as "1,234.50" or "1 234,50": when both `.` and

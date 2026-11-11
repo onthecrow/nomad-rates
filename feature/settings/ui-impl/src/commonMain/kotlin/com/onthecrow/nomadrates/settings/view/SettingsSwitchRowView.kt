@@ -45,14 +45,14 @@ internal fun SettingsSwitchRowView(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                maxLines = 2,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
         }

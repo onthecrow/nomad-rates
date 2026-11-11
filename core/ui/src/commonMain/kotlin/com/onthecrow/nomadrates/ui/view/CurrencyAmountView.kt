@@ -23,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +35,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,6 +45,8 @@ import androidx.compose.ui.unit.sp
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.util.shimmer
+import com.onthecrow.nomadrates.util.EMPTY_AMOUNT_FIELD_VALUE
+import com.onthecrow.nomadrates.util.toAmountFieldValue
 
 private val CurrencyAmountSelectorLoadingWidth = 124.dp
 private val CurrencyAmountContainerShape = RoundedCornerShape(100.dp)
@@ -177,13 +183,34 @@ private fun RowScope.CurrencyAmountValueField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val fieldValueState = remember { mutableStateOf(value.toFieldValueWithCursorAtEnd()) }
+    // The amount can change from outside (a conversion, the other screen); the cursor goes to the end.
+    remember(value) {
+        if (fieldValueState.value.text != value) {
+            fieldValueState.value = value.toFieldValueWithCursorAtEnd()
+        }
+    }
+    val fieldValue = fieldValueState.value
+
     BasicTextField(
         modifier = modifier
             .weight(1f)
             .height(48.dp),
-        value = value,
+        value = fieldValue,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        onValueChange = onValueChange,
+        onValueChange = { editedValue ->
+            val amount = editedValue.text.toAmountFieldValue(previous = fieldValue.text)
+            // When the input rules changed what was typed, or only "0" is left, the cursor goes to
+            // the end, so the next digit replaces the zero right where the user expects it.
+            fieldValueState.value = if (amount == editedValue.text && amount != EMPTY_AMOUNT_FIELD_VALUE) {
+                editedValue
+            } else {
+                amount.toFieldValueWithCursorAtEnd()
+            }
+            if (amount != fieldValue.text) {
+                onValueChange(amount)
+            }
+        },
         visualTransformation = CurrencyAmountInputVisualTransformation(),
         singleLine = true,
         textStyle = TextStyle(
@@ -220,6 +247,9 @@ private fun RowScope.CurrencyAmountValueField(
         }
     )
 }
+
+private fun String.toFieldValueWithCursorAtEnd(): TextFieldValue =
+    TextFieldValue(text = this, selection = TextRange(length))
 
 @Composable
 private fun conversionCurrencyContainerColors(): CurrencyAmountContainerColors {

@@ -5,6 +5,7 @@ import com.onthecrow.nomadrates.favouritesconversion.mapper.withAmount
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.uicore.Reducer
 import com.onthecrow.nomadrates.util.filterAmountInput
+import com.onthecrow.nomadrates.util.toAmountFieldValue
 
 internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, FavouritesConversionEvent> {
     override suspend fun reduce(
@@ -13,7 +14,10 @@ internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, 
     ): FavouritesConversionState = when (event) {
         is FavouritesConversionEvent.OnFavouritesConversionChanged -> reduceFavouritesConversionChanged(state, event)
         is FavouritesConversionEvent.OnOpened -> reduceOpened(state, event)
-        is FavouritesConversionEvent.OnAmountChange -> reduceAmountChange(state, event.value.filterAmountInput())
+        is FavouritesConversionEvent.OnAmountChange -> reduceAmountChange(
+            state = state,
+            amount = event.value.toAmountFieldValue(previous = state.amount),
+        )
         is FavouritesConversionEvent.OnRemoveCurrency -> reduceRemoveCurrency(state, event)
         FavouritesConversionEvent.OnBackPress,
         FavouritesConversionEvent.OnBaseCurrencyClick,
@@ -48,7 +52,11 @@ internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, 
         val loadingState = state as? FavouritesConversionState.Loading ?: return state
 
         return loadingState.copy(
-            amount = event.amount.filterAmountInput().ifEmpty { loadingState.amount },
+            amount = if (event.amount.filterAmountInput().isEmpty()) {
+                loadingState.amount
+            } else {
+                event.amount.toAmountFieldValue(previous = "")
+            },
             baseCurrencyCode = event.baseCurrencyCode.ifBlank { null },
         )
     }

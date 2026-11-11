@@ -51,14 +51,14 @@ internal fun SettingsRatesRowView(
                     text = label,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = value,
                     style = MaterialTheme.typography.bodyLarge,
                     color = freshness.toDateColor(),
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

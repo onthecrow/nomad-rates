@@ -33,4 +33,38 @@ class AmountInputUtilsTest {
         assertEquals("1234.50", "1 234,50".normalizeFormattedAmount())
         assertEquals("1234567", "1,234,567".normalizeFormattedAmount())
     }
+
+    @Test
+    fun `deleting everything leaves zero`() {
+        assertEquals("0", "".toAmountFieldValue(previous = "5"))
+        assertEquals("0", "".toAmountFieldValue(previous = "0"))
+    }
+
+    @Test
+    fun `typing next to a lone zero replaces it`() {
+        assertEquals("5", "05".toAmountFieldValue(previous = "0"))
+        assertEquals("5", "50".toAmountFieldValue(previous = "0"))
+        assertEquals("0", "00".toAmountFieldValue(previous = "0"))
+        assertEquals("0.", "0.".toAmountFieldValue(previous = "0"))
+        assertEquals("0.", ".0".toAmountFieldValue(previous = "0"))
+        assertEquals("0.", "0,".toAmountFieldValue(previous = "0"))
+    }
+
+    @Test
+    fun `leading zeros are dropped and a missing one is added`() {
+        assertEquals("7", "007".toAmountFieldValue(previous = "07"))
+        assertEquals("0", "00".toAmountFieldValue(previous = "100"))
+        assertEquals("5", "05".toAmountFieldValue(previous = "105"))
+        assertEquals("0.5", ".5".toAmountFieldValue(previous = "0.5"))
+        assertEquals("0.50", "000.50".toAmountFieldValue(previous = "1"))
+    }
+
+    @Test
+    fun `ordinary edits are kept`() {
+        assertEquals("10", "10".toAmountFieldValue(previous = "1"))
+        assertEquals("100", "100".toAmountFieldValue(previous = "10"))
+        assertEquals("12.", "12.".toAmountFieldValue(previous = "12"))
+        assertEquals("1.05", "1.05".toAmountFieldValue(previous = "1.0"))
+        assertEquals("1", "1a".toAmountFieldValue(previous = "1"))
+    }
 }

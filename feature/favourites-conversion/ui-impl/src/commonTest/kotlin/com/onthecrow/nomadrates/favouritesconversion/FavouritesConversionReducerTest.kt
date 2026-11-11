@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.favouritesconversion
 
 import com.onthecrow.nomadrates.favouritesconversion.domain.model.FavouritesConversion
 import com.onthecrow.nomadrates.favouritesconversion.domain.model.FavouritesConversionTarget
+import com.onthecrow.nomadrates.favouritesconversion.model.CompactAmount
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
@@ -92,10 +93,48 @@ class FavouritesConversionReducerTest {
         assertIs<FavouritesConversionState.Content>(empty)
         assertIs<FavouritesConversionState.Content>(separatorOnly)
         assertIs<FavouritesConversionState.Content>(trailingSeparator)
+        assertEquals("0", empty.baseCurrency.conversionValue)
         assertEquals(formatted("0", "EUR"), empty.favourites.single().convertedAmount)
+        assertEquals("0.", separatorOnly.baseCurrency.conversionValue)
         assertEquals(formatted("0", "EUR"), separatorOnly.favourites.single().convertedAmount)
         assertEquals("12.", trailingSeparator.baseCurrency.conversionValue)
         assertEquals(formatted("6", "EUR"), trailingSeparator.favourites.single().convertedAmount)
+    }
+
+    @Test
+    fun `typing next to the lone zero replaces it`() = runTest {
+        val content = reduceData(
+            state = FavouritesConversionState.Loading(),
+            favouritesConversion = favouritesConversion(base = usd, targets = listOf(eur)),
+        )
+        val zero = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange(""))
+
+        val typedAfter = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("05"))
+        val typedBefore = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("50"))
+        val typedZero = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("00"))
+
+        assertEquals("5", typedAfter.amount)
+        assertEquals("5", typedBefore.amount)
+        assertEquals("0", typedZero.amount)
+    }
+
+    @Test
+    fun `huge amounts also get a compact form`() = runTest {
+        val content = reduceData(
+            state = FavouritesConversionState.Loading(),
+            favouritesConversion = favouritesConversion(base = usd, targets = listOf(eur)),
+        )
+
+        val small = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange("1000"))
+        val huge = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange("4320000000000000000000"))
+
+        assertIs<FavouritesConversionState.Content>(small)
+        assertIs<FavouritesConversionState.Content>(huge)
+        assertEquals(null, small.favourites.single().compactAmount)
+        assertEquals(
+            CompactAmount(mantissa = formatted("2.16", "EUR"), exponent = 21),
+            huge.favourites.single().compactAmount,
+        )
     }
 
     @Test

@@ -57,6 +57,8 @@ fun CurrencySelectorView(
         Text(
             text = currencyCode,
             color = contentColor,
+            maxLines = 1,
+            softWrap = false,
         )
         Icon(
             modifier = Modifier.size(12.dp),
