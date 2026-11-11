@@ -1,25 +1,23 @@
 package com.onthecrow.nomadrates.favouritesconversion.view
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import com.onthecrow.nomadrates.favouritesconversion.model.CompactAmount
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.positiveAccent
 import com.onthecrow.nomadrates.ui.view.RollingText
+import kotlin.math.roundToInt
 
 /**
  * Part of a list row the converted amount may take; the rest stays for the currency name.
@@ -38,6 +36,9 @@ private const val EXPONENT_RAISE = 0.9f
 /**
  * A converted amount at the end of a list row; its digits roll when it changes. When [amount] is
  * too wide for the row, the [compactAmount] is shown instead ("2,16 × 10²¹").
+ *
+ * The choice is made while laying out, not with BoxWithConstraints: that one subcomposes, which is
+ * too slow for every row of a list that changes on each typed digit.
  */
 @Composable
 internal fun ConvertedAmountView(
@@ -47,35 +48,39 @@ internal fun ConvertedAmountView(
 ) {
     val style: TextStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     val color = MaterialTheme.colorScheme.positiveAccent
-    val textMeasurer = rememberTextMeasurer()
-    val density = LocalDensity.current
 
-    BoxWithConstraints(modifier = modifier) {
-        val maxAmountWidth = (constraints.maxWidth * MAX_WIDTH_FRACTION).toInt()
-        val showCompact = remember(amount, compactAmount, style, maxAmountWidth, textMeasurer) {
-            compactAmount != null && textMeasurer.measure(
-                text = AnnotatedString(amount),
-                style = style,
-                maxLines = 1,
-                softWrap = false,
-            ).size.width > maxAmountWidth
-        }
-        val maxWidthModifier = Modifier.widthIn(max = with(density) { maxAmountWidth.toDp() })
-
-        if (showCompact && compactAmount != null) {
-            CompactAmountView(
-                modifier = maxWidthModifier,
-                compactAmount = compactAmount,
-                style = style,
-                color = color,
-            )
-        } else {
+    Layout(
+        modifier = modifier.clipToBounds(),
+        content = {
             RollingText(
-                modifier = maxWidthModifier,
                 text = amount,
                 style = style,
                 color = color,
             )
+            if (compactAmount != null) {
+                CompactAmountView(
+                    compactAmount = compactAmount,
+                    style = style,
+                    color = color,
+                )
+            }
+        },
+    ) { measurables, constraints ->
+        val maxAmountWidth = if (constraints.hasBoundedWidth) {
+            (constraints.maxWidth * MAX_WIDTH_FRACTION).roundToInt()
+        } else {
+            Constraints.Infinity
+        }
+        val full = measurables[0].measure(Constraints())
+        val shown = if (full.width <= maxAmountWidth || measurables.size < 2) {
+            full
+        } else {
+            measurables[1].measure(Constraints(maxWidth = maxAmountWidth))
+        }
+        val width = minOf(shown.width, maxAmountWidth).coerceAtLeast(constraints.minWidth)
+        layout(width, shown.height) {
+            // Aligned to the end; what does not fit is cut off at the start.
+            shown.placeRelative(x = width - shown.width, y = 0)
         }
     }
 }
