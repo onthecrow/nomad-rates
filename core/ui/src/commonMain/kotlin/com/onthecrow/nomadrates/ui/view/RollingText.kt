@@ -1,43 +1,45 @@
 package com.onthecrow.nomadrates.ui.view
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.key
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.util.lerp
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import kotlin.math.roundToInt
 
 private const val ROLL_DURATION_MILLIS = 220
 
 /**
  * Text for numbers whose characters roll like an odometer when they change: a digit that grows
  * comes in from below, one that gets smaller comes in from above. Characters are matched from the
- * end, so when a number gets longer, the digits keep their places and the new leading ones appear.
+ * end, so digits keep their places: when a number gets longer, the new leading digits roll in from
+ * below, and when it gets shorter, the extra ones roll out downwards while the text narrows.
  *
- * It is one line and does not ellipsize; give it room or clip its parent.
+ * The text is one line, drawn from its right edge: when it is wider than the space it gets, its
+ * start is cut off.
+ *
+ * All characters are drawn by one layout node and the animation only re-lays out and redraws it,
+ * so long lists of these stay cheap.
  */
 @Composable
 fun RollingText(
@@ -46,61 +48,108 @@ fun RollingText(
     color: Color,
     modifier: Modifier = Modifier,
 ) {
-    // Characters that appear later than the first composition fade and widen in; the ones shown
-    // from the start are just there.
-    val firstComposition = remember { FirstCompositionFlag() }
-    SideEffect { firstComposition.isDone = true }
+    val textMeasurer = rememberTextMeasurer()
+    val glyphs = remember(textMeasurer, style) { GlyphCache(textMeasurer, style) }
+    val lastText = remember { LastText(text) }
+    // A new change starts from the text the previous change was going to.
+    val roll = remember(text) {
+        Roll(from = lastText.value, to = text).also { lastText.value = text }
+    }
+    val progress = remember(roll) { Animatable(if (roll.from == roll.to) 1f else 0f) }
+    LaunchedEffect(progress) {
+        progress.animateTo(1f, tween(ROLL_DURATION_MILLIS, easing = FastOutSlowInEasing))
+    }
 
-    Row(
+    Layout(
         modifier = modifier
             .clipToBounds()
-            .clearAndSetSemantics { contentDescription = text },
-    ) {
-        text.forEachIndexed { index, char ->
-            key(text.length - index) {
-                val appearance = remember {
-                    MutableTransitionState(initialState = !firstComposition.isDone).apply { targetState = true }
-                }
-                AnimatedVisibility(
-                    visibleState = appearance,
-                    enter = expandHorizontally(
-                        animationSpec = tween(ROLL_DURATION_MILLIS),
-                        expandFrom = Alignment.End,
-                    ) + fadeIn(tween(ROLL_DURATION_MILLIS)),
-                ) {
-                    AnimatedContent(
-                        targetState = char,
-                        transitionSpec = { rollTransform() },
-                        label = "rolling_char",
-                    ) { targetChar ->
-                        Text(
-                            text = targetChar.toString(),
-                            style = style,
-                            color = color,
-                            maxLines = 1,
-                            softWrap = false,
-                        )
-                    }
-                }
-            }
-        }
+            .semantics { contentDescription = text }
+            .drawBehind { drawRoll(roll, glyphs, color, progress.value) },
+    ) { _, constraints ->
+        val fromWidth = glyphs.widthOf(roll.from)
+        val toWidth = glyphs.widthOf(roll.to)
+        val width = lerp(fromWidth, toWidth, progress.value).roundToInt()
+            .coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = glyphs.lineHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height, mapOf(FirstBaseline to glyphs.baseline)) {}
     }
 }
 
-private class FirstCompositionFlag {
-    var isDone: Boolean = false
+private class LastText(var value: String)
+
+private class Roll(val from: String, val to: String)
+
+private class GlyphCache(
+    private val textMeasurer: TextMeasurer,
+    private val style: TextStyle,
+) {
+    private val glyphs = mutableMapOf<Char, TextLayoutResult>()
+    private val sample = glyph('0')
+
+    val lineHeight: Int = sample.size.height
+    val baseline: Int = sample.firstBaseline.roundToInt()
+
+    fun glyph(char: Char): TextLayoutResult = glyphs.getOrPut(char) {
+        textMeasurer.measure(text = char.toString(), style = style, maxLines = 1, softWrap = false)
+    }
+
+    fun widthOf(text: String): Float = text.sumOf { char -> glyph(char).size.width }.toFloat()
 }
 
-private fun AnimatedContentTransitionScope<Char>.rollTransform(): ContentTransform {
-    val rollsUp = !initialState.isDigit() || !targetState.isDigit() || targetState > initialState
-    val direction = if (rollsUp) 1 else -1
-    return (
-        slideInVertically(tween(ROLL_DURATION_MILLIS)) { height -> height * direction } +
-            fadeIn(tween(ROLL_DURATION_MILLIS))
-        ) togetherWith (
-        slideOutVertically(tween(ROLL_DURATION_MILLIS)) { height -> -height * direction } +
-            fadeOut(tween(ROLL_DURATION_MILLIS))
-        ) using SizeTransform(clip = false) { _, _ -> tween(ROLL_DURATION_MILLIS) }
+/**
+ * Draws [roll] at [progress] (0 is [Roll.from], 1 is [Roll.to]), from the right edge leftwards.
+ * Characters at the same place from the end move between their old and new positions; when they
+ * differ, the old one rolls out and the new one rolls in.
+ */
+private fun DrawScope.drawRoll(roll: Roll, glyphs: GlyphCache, color: Color, progress: Float) {
+    val from = roll.from
+    val to = roll.to
+    val lineHeight = glyphs.lineHeight.toFloat()
+    var fromRight = size.width
+    var toRight = size.width
+
+    for (placeFromEnd in 1..maxOf(from.length, to.length)) {
+        val fromChar = from.getOrNull(from.length - placeFromEnd)
+        val toChar = to.getOrNull(to.length - placeFromEnd)
+        val fromGlyph = fromChar?.let(glyphs::glyph)
+        val toGlyph = toChar?.let(glyphs::glyph)
+        val fromLeft = fromRight - (fromGlyph?.size?.width ?: 0)
+        val toLeft = toRight - (toGlyph?.size?.width ?: 0)
+
+        when {
+            fromGlyph != null && toGlyph != null && fromChar == toChar -> {
+                drawGlyph(toGlyph, color, x = lerp(fromLeft, toLeft, progress), y = 0f, alpha = 1f)
+            }
+
+            else -> {
+                // Up when a digit grows or a new one appears; down when it gets smaller or goes away.
+                val direction = when {
+                    fromChar == null -> 1f
+                    toChar == null -> -1f
+                    fromChar.isDigit() && toChar.isDigit() && toChar < fromChar -> -1f
+                    else -> 1f
+                }
+                val x = when {
+                    fromGlyph == null -> toLeft
+                    toGlyph == null -> fromLeft
+                    else -> lerp(fromLeft, toLeft, progress)
+                }
+                if (fromGlyph != null) {
+                    drawGlyph(fromGlyph, color, x = x, y = -direction * progress * lineHeight, alpha = 1f - progress)
+                }
+                if (toGlyph != null) {
+                    drawGlyph(toGlyph, color, x = x, y = direction * (1f - progress) * lineHeight, alpha = progress)
+                }
+            }
+        }
+        fromRight = fromLeft
+        toRight = toLeft
+    }
+}
+
+private fun DrawScope.drawGlyph(glyph: TextLayoutResult, color: Color, x: Float, y: Float, alpha: Float) {
+    if (alpha <= 0f) return
+    drawText(textLayoutResult = glyph, color = color, topLeft = Offset(x, y), alpha = alpha)
 }
 
 @Preview(
