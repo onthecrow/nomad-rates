@@ -3,12 +3,11 @@ package com.onthecrow.nomadrates.batch
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +23,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.withoutVisualEffect
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
@@ -33,19 +35,19 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +74,6 @@ import nomadrates.feature.batch.ui_impl.generated.resources.batch_conversion_tit
 import nomadrates.feature.batch.ui_impl.generated.resources.ic_delete
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val LOADING_ROWS_COUNT = 3
@@ -80,11 +81,20 @@ private const val HEADER_KEY = "batch_header"
 private const val EMPTY_KEY = "batch_empty"
 private const val ADD_BUTTON_KEY = "batch_add"
 
-/** Space around the "Add currency" button in the list. */
-private val AddButtonItemPadding = 16.dp
+/** Space between the last row of the list and the "Add currency" button. */
+private val AddButtonGap = 16.dp
 
-/** How far the round "Add currency" button reaches into the amount field from above. */
+/** How far the "Add currency" button reaches into the amount field from above. */
 private val AddButtonFieldOverlap = 12.dp
+
+/** Space around the amount field. */
+private val AmountFieldPadding = 16.dp
+
+/**
+ * The part of the "Add currency" button that is above the amount field area when the button
+ * reaches into the field; the rest of it hangs over the field.
+ */
+private val AddButtonAboveFieldArea = RoundIconButtonDefaults.Size - AddButtonFieldOverlap - AmountFieldPadding
 
 @Composable
 internal fun BatchConversionScreen(
@@ -92,9 +102,14 @@ internal fun BatchConversionScreen(
     modifier: Modifier = Modifier,
     onEvent: (BatchConversionEvent) -> Unit = {},
 ) {
+    val density = LocalDensity.current
     val listState = rememberLazyListState()
-    var bodyTop by remember { mutableStateOf<Float?>(null) }
-    var fieldTop by remember { mutableStateOf<Float?>(null) }
+    // Rendered by the layer that holds both the list and the "Add currency" button, so the button
+    // bounces together with the list instead of coming apart from it.
+    val overscrollEffect = rememberOverscrollEffect()
+    var bodyHeight by remember { mutableIntStateOf(0) }
+    var fieldAreaHeight by remember { mutableIntStateOf(0) }
+    val fieldAreaHeightDp = with(density) { fieldAreaHeight.toDp() }
 
     Column(
         modifier = modifier
@@ -111,17 +126,37 @@ internal fun BatchConversionScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                // The "Add currency" button may reach into the amount field, but not into the app bar.
+                // The list and the button may bounce over the amount field, but not into the app bar.
                 .clipToBounds()
-                .onGloballyPositioned { coordinates -> bodyTop = coordinates.positionInRoot().y },
+                .onSizeChanged { size -> bodyHeight = size.height },
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
+            CurrencyAmountView(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onSizeChanged { size -> fieldAreaHeight = size.height }
+                    .padding(AmountFieldPadding)
+                    .sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
+                state = state.amountField,
+                onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
+                onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
+            )
+            val addButton = if (state is BatchConversionState.Content && bodyHeight > 0 && fieldAreaHeight > 0) {
+                rememberAddButtonPlacement(
+                    listState = listState,
+                    listBottom = (bodyHeight - fieldAreaHeight).toFloat(),
+                )
+            } else {
+                null
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overscroll(overscrollEffect),
             ) {
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                        .fillMaxSize()
+                        .padding(bottom = fieldAreaHeightDp),
                 ) {
                     when (state) {
                         is BatchConversionState.Loading -> FavouritesLoading(
@@ -131,6 +166,7 @@ internal fun BatchConversionScreen(
                         is BatchConversionState.Content -> FavouritesList(
                             favourites = state.favourites,
                             listState = listState,
+                            overscrollEffect = overscrollEffect?.withoutVisualEffect(),
                             modifier = Modifier.fillMaxSize(),
                             onRemoveCurrency = { currencyCode ->
                                 onEvent(BatchConversionEvent.OnRemoveCurrency(currencyCode))
@@ -152,22 +188,23 @@ internal fun BatchConversionScreen(
                             ),
                     )
                 }
-                CurrencyAmountView(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .onGloballyPositioned { coordinates -> fieldTop = coordinates.positionInRoot().y }
-                        .sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
-                    state = state.amountField,
-                    onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
-                    onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
-                )
+                if (addButton != null && !addButton.isPinned) {
+                    AddCurrencyButton(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset { IntOffset(x = 0, y = addButton.listTop().roundToInt()) },
+                        morphProgress = addButton.morphProgress,
+                        onClick = { onEvent(BatchConversionEvent.OnAddCurrencyClick) },
+                    )
+                }
             }
-            val currentBodyTop = bodyTop
-            val currentFieldTop = fieldTop
-            if (state is BatchConversionState.Content && currentBodyTop != null && currentFieldTop != null) {
+            // Outside of the bouncing layer: while the list moves, this one stays on the field.
+            if (addButton != null && addButton.isPinned) {
                 AddCurrencyButton(
-                    listState = listState,
-                    fieldTop = currentFieldTop - currentBodyTop,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset { IntOffset(x = 0, y = addButton.pinnedTop.roundToInt()) },
+                    morphProgress = addButton.morphProgress,
                     onClick = { onEvent(BatchConversionEvent.OnAddCurrencyClick) },
                 )
             }
@@ -176,47 +213,69 @@ internal fun BatchConversionScreen(
 }
 
 /**
- * The "Add currency" button follows its place at the end of the list. When that place moves down
- * to the amount field (or below it), the button stays on top of the field as a round plus button.
- * When the list is scrolled back up, the list "picks the button up" again and it turns back into
- * the pill.
- *
- * @param fieldTop top of the amount field, relative to this box.
+ * Where the "Add currency" button is. It follows its place at the end of the list, and when the
+ * list is scrolled to the end, that place is right on top of the amount field: the button reaches
+ * into the field there. When the list is scrolled up from the end, the place moves down below the
+ * field, so the button stays on the field ("pinned") as a round plus button. Scrolling back to the
+ * end, the list "picks the button up" again and it turns back into the pill.
+ */
+@Stable
+private class AddButtonPlacement(
+    private val listState: LazyListState,
+    private val gap: Float,
+    /** Top of the button when it is pinned to the amount field. */
+    val pinnedTop: Float,
+    private val pinThreshold: Float,
+) {
+    /** Top of the button at its place in the list, or null if that place is below the visible part. */
+    fun listTopOrNull(): Float? = listState.layoutInfo.visibleItemsInfo
+        .firstOrNull { item -> item.key == ADD_BUTTON_KEY }
+        ?.let { item -> item.offset + gap }
+
+    fun listTop(): Float = listTopOrNull() ?: pinnedTop
+
+    val isPinned: Boolean by derivedStateOf {
+        listTopOrNull()?.let { top -> top > pinnedTop + pinThreshold } ?: true
+    }
+
+    var morphProgress: Float by mutableFloatStateOf(0f)
+}
+
+/**
+ * @param listBottom bottom of the list viewport, relative to the screen body.
  */
 @Composable
-private fun BoxScope.AddCurrencyButton(
+private fun rememberAddButtonPlacement(
     listState: LazyListState,
-    fieldTop: Float,
-    onClick: () -> Unit,
-) {
+    listBottom: Float,
+): AddButtonPlacement {
     val density = LocalDensity.current
-    val itemPadding = with(density) { AddButtonItemPadding.toPx() }
-    val pinnedTop = with(density) {
-        fieldTop - RoundIconButtonDefaults.Size.toPx() + AddButtonFieldOverlap.toPx()
+    val placement = remember(listState, listBottom, density) {
+        with(density) {
+            AddButtonPlacement(
+                listState = listState,
+                gap = AddButtonGap.toPx(),
+                pinnedTop = listBottom - AddButtonAboveFieldArea.toPx(),
+                pinThreshold = 1.dp.toPx(),
+            )
+        }
     }
-    val currentPinnedTop by rememberUpdatedState(pinnedTop)
-
-    // Top of the button at its place in the list, or null if that place is below the visible part.
-    fun listTop(): Float? = listState.layoutInfo.visibleItemsInfo
-        .firstOrNull { item -> item.key == ADD_BUTTON_KEY }
-        ?.let { item -> item.offset + itemPadding }
-
-    val isPinned by remember(listState) {
-        derivedStateOf { listTop()?.let { top -> top >= currentPinnedTop } ?: true }
-    }
-    val morphProgress by animateFloatAsState(
-        targetValue = if (isPinned) 1f else 0f,
+    placement.morphProgress = animateFloatAsState(
+        targetValue = if (placement.isPinned) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "add_currency_morph",
-    )
+    ).value
+    return placement
+}
 
+@Composable
+private fun AddCurrencyButton(
+    morphProgress: Float,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     AddCurrencyButtonView(
-        modifier = Modifier
-            .align(Alignment.TopCenter)
-            .offset {
-                val top = listTop()?.let { min(it, currentPinnedTop) } ?: currentPinnedTop
-                IntOffset(x = 0, y = top.roundToInt())
-            },
+        modifier = modifier,
         text = stringResource(Res.string.batch_conversion_add_currency),
         morphProgress = morphProgress,
         outlineColor = MaterialTheme.colorScheme.background,
@@ -228,13 +287,14 @@ private fun BoxScope.AddCurrencyButton(
 private fun FavouritesList(
     favourites: List<BatchConversionListItem>,
     listState: LazyListState,
+    overscrollEffect: OverscrollEffect?,
     onRemoveCurrency: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
         state = listState,
-        contentPadding = PaddingValues(bottom = 16.dp),
+        overscrollEffect = overscrollEffect,
     ) {
         item(key = HEADER_KEY) {
             SectionHeaderView(
@@ -283,12 +343,13 @@ private fun FavouritesList(
                 }
             }
         }
-        // The button itself is drawn above the list (see AddCurrencyButton); this keeps its place.
+        // The button itself is drawn above the list (see AddButtonPlacement); this keeps its place.
+        // Only the part of the button above the field area takes space, the rest hangs over the field.
         item(key = ADD_BUTTON_KEY) {
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(RoundIconButtonDefaults.Size + AddButtonItemPadding * 2),
+                    .height(AddButtonGap + AddButtonAboveFieldArea),
             )
         }
     }
