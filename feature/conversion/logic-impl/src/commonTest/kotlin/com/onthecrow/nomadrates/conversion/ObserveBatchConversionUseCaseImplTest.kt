@@ -1,18 +1,15 @@
 package com.onthecrow.nomadrates.conversion
 
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.onthecrow.nomadrates.conversion.data.datastore.ConversionPreferencesDataSource
+import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
+import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.model.Currency
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import okio.Path.Companion.toPath
 
 class ObserveBatchConversionUseCaseImplTest {
 
@@ -22,9 +19,11 @@ class ObserveBatchConversionUseCaseImplTest {
     private val jpy = currency("JPY", rate = 150.0)
 
     @Test
-    fun `defaults to usd base and converts into favourites sorted by code`() = runTest {
+    fun `uses from currency as base and converts into favourites sorted by code`() = runTest {
         val useCase = ObserveBatchConversionUseCaseImpl(
-            conversionPreferencesDataSource = createPreferencesDataSource(backgroundScope),
+            getSelectedConversionPairUseCase = FakeGetSelectedConversionPairUseCase(
+                MutableStateFlow(SelectedConversionPair(fromCurrencyCode = "USD", toCurrencyCode = "EUR")),
+            ),
             getCurrencyListUseCase = FakeGetCurrencyListUseCase(
                 MutableStateFlow(listOf(usd, jpy, gbp, eur)),
             ),
@@ -38,16 +37,16 @@ class ObserveBatchConversionUseCaseImplTest {
     }
 
     @Test
-    fun `saved base currency is used for rates`() = runTest {
-        val dataSource = createPreferencesDataSource(backgroundScope)
-        dataSource.saveBatchBaseCurrencyCode("EUR")
+    fun `follows changes of the from currency`() = runTest {
+        val selectedPair = MutableStateFlow(SelectedConversionPair(fromCurrencyCode = "USD", toCurrencyCode = "EUR"))
         val useCase = ObserveBatchConversionUseCaseImpl(
-            conversionPreferencesDataSource = dataSource,
+            getSelectedConversionPairUseCase = FakeGetSelectedConversionPairUseCase(selectedPair),
             getCurrencyListUseCase = FakeGetCurrencyListUseCase(
                 MutableStateFlow(listOf(usd, eur, gbp)),
             ),
         )
 
+        selectedPair.value = SelectedConversionPair(fromCurrencyCode = "EUR", toCurrencyCode = "GBP")
         val batchConversion = useCase().first()
 
         assertEquals(eur, batchConversion.baseCurrency)
@@ -58,7 +57,9 @@ class ObserveBatchConversionUseCaseImplTest {
     fun `new favourite appears in targets`() = runTest {
         val currencies = MutableStateFlow(listOf(usd, eur, jpy))
         val useCase = ObserveBatchConversionUseCaseImpl(
-            conversionPreferencesDataSource = createPreferencesDataSource(backgroundScope),
+            getSelectedConversionPairUseCase = FakeGetSelectedConversionPairUseCase(
+                MutableStateFlow(SelectedConversionPair.DEFAULT),
+            ),
             getCurrencyListUseCase = FakeGetCurrencyListUseCase(currencies),
         )
 
@@ -67,19 +68,6 @@ class ObserveBatchConversionUseCaseImplTest {
         currencies.value = listOf(usd, eur, jpy.copy(isFavourite = true))
 
         assertEquals(listOf("EUR", "JPY"), useCase().first().targets.map { it.currency.code })
-    }
-
-    private fun createPreferencesDataSource(
-        scope: CoroutineScope,
-    ): ConversionPreferencesDataSource {
-        return ConversionPreferencesDataSource(
-            PreferenceDataStoreFactory.createWithPath(
-                scope = scope,
-                produceFile = {
-                    "/tmp/batch_conversion_${Random.nextInt()}.preferences_pb".toPath()
-                },
-            ),
-        )
     }
 
     private fun currency(
@@ -93,6 +81,12 @@ class ObserveBatchConversionUseCaseImplTest {
         isFeatured = false,
         rates = emptyList(),
     )
+
+    private class FakeGetSelectedConversionPairUseCase(
+        private val flow: Flow<SelectedConversionPair>,
+    ) : GetSelectedConversionPairUseCase {
+        override fun invoke(): Flow<SelectedConversionPair> = flow
+    }
 
     private class FakeGetCurrencyListUseCase(
         private val flow: Flow<List<Currency>?>,

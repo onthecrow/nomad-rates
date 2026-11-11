@@ -12,7 +12,8 @@ internal class BatchConversionReducer : Reducer<BatchConversionState, BatchConve
         event: BatchConversionEvent,
     ): BatchConversionState = when (event) {
         is BatchConversionEvent.OnBatchConversionChanged -> reduceBatchConversionChanged(state, event)
-        is BatchConversionEvent.OnAmountChange -> reduceAmountChange(state, event)
+        is BatchConversionEvent.OnOpened -> reduceOpened(state, event)
+        is BatchConversionEvent.OnAmountChange -> reduceAmountChange(state, event.value.filterAmountInput())
         BatchConversionEvent.OnBackPress,
         BatchConversionEvent.OnBaseCurrencyClick,
         BatchConversionEvent.OnAddCurrencyClick -> state
@@ -22,10 +23,7 @@ internal class BatchConversionReducer : Reducer<BatchConversionState, BatchConve
         state: BatchConversionState,
         event: BatchConversionEvent.OnBatchConversionChanged,
     ): BatchConversionState.Content {
-        val amount = (state as? BatchConversionState.Content)
-            ?.baseCurrency
-            ?.conversionValue
-            ?: DEFAULT_AMOUNT
+        val amount = state.amount
         val batchConversion = event.batchConversion
 
         return BatchConversionState.Content(
@@ -42,18 +40,31 @@ internal class BatchConversionReducer : Reducer<BatchConversionState, BatchConve
         )
     }
 
+    private fun reduceOpened(
+        state: BatchConversionState,
+        event: BatchConversionEvent.OnOpened,
+    ): BatchConversionState {
+        val loadingState = state as? BatchConversionState.Loading ?: return state
+
+        return loadingState.copy(
+            amount = event.amount.filterAmountInput().ifEmpty { loadingState.amount },
+            baseCurrencyCode = event.baseCurrencyCode.ifBlank { null },
+        )
+    }
+
     private fun reduceAmountChange(
         state: BatchConversionState,
-        event: BatchConversionEvent.OnAmountChange,
+        amount: String,
     ): BatchConversionState {
-        val contentState = state as? BatchConversionState.Content ?: return state
-        val amount = event.value.filterAmountInput()
-        if (amount == contentState.baseCurrency.conversionValue) return contentState
+        if (amount == state.amount) return state
 
-        return contentState.copy(
-            baseCurrency = contentState.baseCurrency.copy(conversionValue = amount),
-            favourites = contentState.favourites.map { item -> item.withAmount(amount) },
-        )
+        return when (state) {
+            is BatchConversionState.Loading -> state.copy(amount = amount)
+            is BatchConversionState.Content -> state.copy(
+                baseCurrency = state.baseCurrency.copy(conversionValue = amount),
+                favourites = state.favourites.map { item -> item.withAmount(amount) },
+            )
+        }
     }
 
     internal companion object {

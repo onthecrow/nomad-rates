@@ -1,10 +1,12 @@
 package com.onthecrow.nomadrates.navigation
 
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -55,40 +57,44 @@ internal class NavigationProviderImpl(
             }
         }
 
-        NavDisplay(
-            modifier = modifier,
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            transitionSpec = {
-                // Slide in from right when navigating forward
-                slideInHorizontally(initialOffsetX = { it }) togetherWith
-                        slideOutHorizontally(targetOffsetX = { -it })
-            },
-            popTransitionSpec = {
-                // Slide in from left when navigating back
-                slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                        slideOutHorizontally(targetOffsetX = { it })
-            },
-            predictivePopTransitionSpec = {
-                // Slide in from left when navigating back
-                slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                        slideOutHorizontally(targetOffsetX = { it })
-            },
-        ) { key ->
-            NavEntry(
-                key = key,
-                content = @Composable {
-                    NavigationScopeProvider(
-                        controller = scopeController,
-                        key = key
-                    ) {
-                        val entry = entryMap[key::class]
-                        @Suppress("UNCHECKED_CAST")
-                        val typedEntry = entry as? FeatureEntry<NavKey>
-                        typedEntry?.content?.invoke(key, Modifier.fillMaxSize())
-                    }
-                },
-            )
+        SharedTransitionLayout(modifier = modifier) {
+            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                NavDisplay(
+                    modifier = Modifier.fillMaxSize(),
+                    backStack = backStack,
+                    onBack = { backStack.removeLastOrNull() },
+                    transitionSpec = {
+                        // Slide in from right when navigating forward
+                        slideInHorizontally(initialOffsetX = { it }) togetherWith
+                                slideOutHorizontally(targetOffsetX = { -it })
+                    },
+                    popTransitionSpec = {
+                        // Slide in from left when navigating back
+                        slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                                slideOutHorizontally(targetOffsetX = { it })
+                    },
+                    predictivePopTransitionSpec = {
+                        // Slide in from left when navigating back
+                        slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                                slideOutHorizontally(targetOffsetX = { it })
+                    },
+                ) { key ->
+                    NavEntry(
+                        key = key,
+                        content = @Composable {
+                            NavigationScopeProvider(
+                                controller = scopeController,
+                                key = key
+                            ) {
+                                val entry = entryMap[key::class]
+                                @Suppress("UNCHECKED_CAST")
+                                val typedEntry = entry as? FeatureEntry<NavKey>
+                                typedEntry?.content?.invoke(key, Modifier.fillMaxSize())
+                            }
+                        },
+                    )
+                }
+            }
         }
     }
 }

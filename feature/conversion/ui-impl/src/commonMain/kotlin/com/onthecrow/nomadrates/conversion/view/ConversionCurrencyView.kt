@@ -43,6 +43,12 @@ import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.CurrencySelectorView
 
+/**
+ * Shared element key of the amount field that the main screen ("from" field) and the batch
+ * conversion screen have in common.
+ */
+internal const val BASE_AMOUNT_FIELD_SHARED_KEY = "base_amount_field"
+
 private val ConversionCurrencySelectorLoadingWidth = 124.dp
 private val ConversionCurrencyContainerShape = RoundedCornerShape(100.dp)
 
