@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.onthecrow.nomadrates.batch.BatchConversionSharedElements
+import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionSharedElements
 import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.navigation.sharedNavElement
@@ -30,7 +30,7 @@ import com.onthecrow.nomadrates.ui.view.LikeButtonView
 internal fun ConversionView(
     state: ConversionViewState,
     modifier: Modifier = Modifier,
-    /** Scale of the swap button, so the screen can hide it before leaving for the batch screen. */
+    /** Scale of the swap button, so the screen can hide it before leaving for the favourites conversion screen. */
     swapButtonScale: () -> Float = { 1f },
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
@@ -64,7 +64,7 @@ internal fun ConversionView(
 
                 is ConversionViewState.Content -> {
                     CurrencyAmountView(
-                        modifier = Modifier.sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
+                        modifier = Modifier.sharedNavElement(FavouritesConversionSharedElements.AMOUNT_FIELD_KEY),
                         state = state.from,
                         onCurrencyClick = { onEvent(ConversionEvent.OnFromCurrencyClick) },
                         onValueChange = { onEvent(ConversionEvent.OnFromValueChange(it)) },
@@ -80,7 +80,7 @@ internal fun ConversionView(
         ConversionSwapView(
             modifier = Modifier
                 .align(Alignment.Center)
-                // The "from" field flies over this button between this and the batch conversion screen.
+                // The "from" field flies over this button between this and the favourites conversion screen.
                 .shrinkDuringSharedTransition()
                 .graphicsLayer {
                     scaleX = swapButtonScale()

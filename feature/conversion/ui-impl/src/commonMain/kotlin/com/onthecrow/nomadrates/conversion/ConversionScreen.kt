@@ -60,7 +60,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
-import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_batch_button_description
+import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_favourites_button_description
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_body
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_title
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_retry
@@ -91,7 +91,7 @@ internal fun ConversionScreen(
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
-    // The amount field flies over the swap button on the way to the batch conversion screen, so the
+    // The amount field flies over the swap button on the way to the favourites conversion screen, so the
     // button shrinks away first and the transition starts after that.
     val swapButtonScale = remember { Animatable(1f) }
     LifecycleResumeEffect(swapButtonScale) {
@@ -133,11 +133,11 @@ internal fun ConversionScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BatchConversionFab(
+            FavouritesConversionFab(
                 onClick = {
                     scope.launch {
                         swapButtonScale.animateTo(0f, tween(SWAP_BUTTON_HIDE_DURATION_MILLIS))
-                        onEvent(ConversionEvent.OnBatchConversionClick)
+                        onEvent(ConversionEvent.OnFavouritesConversionClick)
                     }
                 },
             )
@@ -149,7 +149,7 @@ internal fun ConversionScreen(
 }
 
 @Composable
-private fun BatchConversionFab(
+private fun FavouritesConversionFab(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
@@ -162,7 +162,7 @@ private fun BatchConversionFab(
         Icon(
             modifier = Modifier.size(24.dp),
             imageVector = vectorResource(Res.drawable.ic_list),
-            contentDescription = stringResource(Res.string.conversion_batch_button_description),
+            contentDescription = stringResource(Res.string.conversion_favourites_button_description),
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
         )
     }

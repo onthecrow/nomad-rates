@@ -8,7 +8,7 @@ internal sealed interface ConversionEvent : Event {
     data object OnRetryClick : ConversionEvent
     data class OnRetryStateChanged(val isRetrying: Boolean) : ConversionEvent
     data object OnSettingsClick : ConversionEvent
-    data object OnBatchConversionClick : ConversionEvent
+    data object OnFavouritesConversionClick : ConversionEvent
     data object OnFromCurrencyClick : ConversionEvent
     data object OnToCurrencyClick : ConversionEvent
     data object OnSwitchButtonPress : ConversionEvent

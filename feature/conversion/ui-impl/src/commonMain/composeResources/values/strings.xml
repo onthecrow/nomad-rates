@@ -2,5 +2,5 @@
     <string name="conversion_error_title">Couldn't load exchange rates</string>
     <string name="conversion_error_body">Check your connection and try again.</string>
     <string name="conversion_retry">Try again</string>
-    <string name="conversion_batch_button_description">Batch conversion</string>
+    <string name="conversion_favourites_button_description">Favourites conversion</string>
 </resources>

@@ -17,7 +17,7 @@ import coil3.compose.AsyncImage
 
 /**
  * Currency list row: flag, code and name, followed by [trailingContent]
- * (a like button on the currency list, a converted amount on batch conversion).
+ * (a like button on the currency list, a converted amount on favourites conversion).
  */
 @Composable
 fun CurrencyRowView(
