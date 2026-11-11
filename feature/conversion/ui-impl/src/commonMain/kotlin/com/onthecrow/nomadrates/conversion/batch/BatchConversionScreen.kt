@@ -31,10 +31,12 @@ import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.conversion.batch.model.BatchConversionListItem
 import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
+import com.onthecrow.nomadrates.conversion.view.BASE_AMOUNT_FIELD_SHARED_KEY
 import com.onthecrow.nomadrates.conversion.view.ConversionCurrencyView
-import com.onthecrow.nomadrates.conversion.view.ConversionPanelView
 import com.onthecrow.nomadrates.conversion.view.pair.ConversionListItemView
+import com.onthecrow.nomadrates.navigation.sharedNavElement
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.positiveAccent
 import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.AppBarTitleView
 import com.onthecrow.nomadrates.ui.view.CurrencyRowView
@@ -74,7 +76,7 @@ internal fun BatchConversionScreen(
                 .fillMaxWidth(),
         ) {
             when (state) {
-                BatchConversionState.Loading -> FavouritesLoading(
+                is BatchConversionState.Loading -> FavouritesLoading(
                     modifier = Modifier.fillMaxSize(),
                 )
 
@@ -99,14 +101,14 @@ internal fun BatchConversionScreen(
                     ),
             )
         }
-        ConversionPanelView {
-            ConversionCurrencyView(
-                state = (state as? BatchConversionState.Content)?.baseCurrency
-                    ?: ConversionCurrencyViewState.Loading,
-                onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
-                onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
-            )
-        }
+        ConversionCurrencyView(
+            modifier = Modifier
+                .padding(16.dp)
+                .sharedNavElement(BASE_AMOUNT_FIELD_SHARED_KEY),
+            state = state.amountField,
+            onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
+            onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
+        )
     }
 }
 
@@ -153,7 +155,7 @@ private fun FavouritesList(
                     text = item.convertedAmount,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.positiveAccent,
                     maxLines = 1,
                 )
             }
@@ -257,6 +259,6 @@ private fun BatchConversionScreenPreview() {
 @Composable
 private fun BatchConversionScreenLoadingPreview() {
     NomadRatesTheme(darkTheme = true) {
-        BatchConversionScreen(state = BatchConversionState.Loading)
+        BatchConversionScreen(state = BatchConversionState.Loading())
     }
 }

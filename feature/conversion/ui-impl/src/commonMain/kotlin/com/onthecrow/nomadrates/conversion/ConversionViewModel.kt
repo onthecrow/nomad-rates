@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.conversion
 
 import androidx.lifecycle.viewModelScope
+import com.onthecrow.nomadrates.conversion.batch.BatchConversionAmountResult
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
@@ -9,6 +10,7 @@ import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseC
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.conversion.mapper.normalizeFormattedAmount
 import com.onthecrow.nomadrates.currency.CurrencySelectionSource
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
@@ -72,7 +74,7 @@ internal class ConversionViewModel(
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnRetryClick -> onRetryClick()
                 is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
-                is ConversionEvent.OnBatchConversionClick -> navigator.navigate(BatchConversionDestination)
+                is ConversionEvent.OnBatchConversionClick -> onBatchConversionClick()
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
@@ -90,6 +92,7 @@ internal class ConversionViewModel(
             .onEach { screenResult ->
                 when (screenResult) {
                     is CurrencyListScreenResult -> onCurrencySelected(screenResult)
+                    is BatchConversionAmountResult -> onEvent(ConversionEvent.OnFromValueChange(screenResult.amount))
                 }
             }
             .launchIn(viewModelScope)
@@ -261,6 +264,16 @@ internal class ConversionViewModel(
                     // TODO add error handling
                 }
         }
+    }
+
+    private fun onBatchConversionClick() {
+        val from = (state.value as? ConversionState.Content)?.conversionViewState?.from
+        navigator.navigate(
+            BatchConversionDestination(
+                baseCurrencyCode = from?.currencyCode.orEmpty(),
+                amount = from?.conversionValue.orEmpty().normalizeFormattedAmount(),
+            )
+        )
     }
 
     private fun onFromCurrencyChangeClick() {

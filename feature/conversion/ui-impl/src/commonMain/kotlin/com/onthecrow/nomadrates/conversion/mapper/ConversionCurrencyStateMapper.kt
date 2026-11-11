@@ -10,10 +10,22 @@ internal object ConversionCurrencyStateMapper {
         currency: Currency,
         conversionValue: String,
     ): ConversionCurrencyViewState.Content {
-        return ConversionCurrencyViewState.Content(
-            currencyIcon = currency.code.toFlagAssetKey().toFlagResourceUri(),
+        return fromCurrencyCode(
             currencyCode = currency.code,
             conversionRate = currency.conversionRate,
+            conversionValue = conversionValue,
+        )
+    }
+
+    fun fromCurrencyCode(
+        currencyCode: String,
+        conversionRate: Double,
+        conversionValue: String,
+    ): ConversionCurrencyViewState.Content {
+        return ConversionCurrencyViewState.Content(
+            currencyIcon = currencyCode.toFlagAssetKey().toFlagResourceUri(),
+            currencyCode = currencyCode,
+            conversionRate = conversionRate,
             conversionValue = conversionValue,
         )
     }

@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.conversion.batch
 
 import com.onthecrow.nomadrates.conversion.domain.model.BatchConversion
 import com.onthecrow.nomadrates.conversion.domain.model.BatchConversionTarget
+import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
@@ -23,7 +24,7 @@ class BatchConversionReducerTest {
     @Test
     fun `batch conversion data maps loading to content with default amount`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur, gbp)),
         )
 
@@ -43,7 +44,7 @@ class BatchConversionReducerTest {
     @Test
     fun `amount change converts into every favourite`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur, gbp)),
         )
 
@@ -63,7 +64,7 @@ class BatchConversionReducerTest {
     @Test
     fun `amount input is filtered like on the conversion screen`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur)),
         )
 
@@ -80,7 +81,7 @@ class BatchConversionReducerTest {
     @Test
     fun `empty or unfinished amount does not break conversion`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur)),
         )
 
@@ -100,7 +101,7 @@ class BatchConversionReducerTest {
     @Test
     fun `entered amount is kept when base currency or favourites change`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur)),
         )
         val withAmount = reducer.reduce(content, BatchConversionEvent.OnAmountChange("200"))
@@ -122,7 +123,7 @@ class BatchConversionReducerTest {
     @Test
     fun `empty favourites map to empty list`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = emptyList()),
         )
 
@@ -130,19 +131,60 @@ class BatchConversionReducerTest {
     }
 
     @Test
-    fun `amount change before data arrives keeps loading`() = runTest {
-        val state = reducer.reduce(
-            state = BatchConversionState.Loading,
+    fun `amount change before data arrives is used once data arrives`() = runTest {
+        val loading = reducer.reduce(
+            state = BatchConversionState.Loading(),
             event = BatchConversionEvent.OnAmountChange("10"),
         )
 
-        assertEquals(BatchConversionState.Loading, state)
+        assertEquals(BatchConversionState.Loading(amount = "10"), loading)
+
+        val content = reduceData(
+            state = loading,
+            batchConversion = batchConversion(base = usd, targets = listOf(eur)),
+        )
+
+        assertEquals("10", content.baseCurrency.conversionValue)
+        assertEquals(formatted("5", "EUR"), content.favourites.single().convertedAmount)
+    }
+
+    @Test
+    fun `opened screen shows the given currency and amount before data arrives`() = runTest {
+        val loading = reducer.reduce(
+            state = BatchConversionState.Loading(),
+            event = BatchConversionEvent.OnOpened(baseCurrencyCode = "USD", amount = "250.5"),
+        )
+
+        assertIs<BatchConversionState.Loading>(loading)
+        val amountField = assertIs<ConversionCurrencyViewState.Content>(loading.amountField)
+        assertEquals("USD", amountField.currencyCode)
+        assertEquals("250.5", amountField.conversionValue)
+
+        val content = reduceData(
+            state = loading,
+            batchConversion = batchConversion(base = usd, targets = listOf(eur)),
+        )
+
+        assertEquals("250.5", content.baseCurrency.conversionValue)
+        assertEquals(formatted("125.25", "EUR"), content.favourites.single().convertedAmount)
+    }
+
+    @Test
+    fun `opened screen without currency or amount keeps loading field and default amount`() = runTest {
+        val loading = reducer.reduce(
+            state = BatchConversionState.Loading(),
+            event = BatchConversionEvent.OnOpened(baseCurrencyCode = "", amount = " "),
+        )
+
+        assertEquals(BatchConversionState.Loading(), loading)
+        assertEquals(ConversionCurrencyViewState.Loading, loading.amountField)
+        assertEquals(BatchConversionReducer.DEFAULT_AMOUNT, loading.amount)
     }
 
     @Test
     fun `navigation events do not change state`() = runTest {
         val content = reduceData(
-            state = BatchConversionState.Loading,
+            state = BatchConversionState.Loading(),
             batchConversion = batchConversion(base = usd, targets = listOf(eur)),
         )
 

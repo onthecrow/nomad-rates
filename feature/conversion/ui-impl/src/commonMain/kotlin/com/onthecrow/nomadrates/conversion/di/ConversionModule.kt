@@ -12,7 +12,9 @@ import com.onthecrow.nomadrates.conversion.batch.BatchConversionScreen
 import com.onthecrow.nomadrates.conversion.batch.BatchConversionViewModel
 import com.onthecrow.nomadrates.navigation.registerScreen
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
 val conversionModule = module {
@@ -20,7 +22,18 @@ val conversionModule = module {
     single { BatchConversionReducer() }
 
     viewModelOf(::ConversionViewModel)
-    viewModelOf(::BatchConversionViewModel)
+    viewModel { (destination: BatchConversionDestination) ->
+        BatchConversionViewModel(
+            navigator = get(),
+            screenResultDispatcher = get(),
+            observeBatchConversionUseCase = get(),
+            observeUseEnglishCurrencyNamesUseCase = get(),
+            setBatchConversionBaseCurrencyUseCase = get(),
+            addCurrencyToFavoritesUseCase = get(),
+            reducer = get(),
+            destination = destination,
+        )
+    }
 
     registerScreen<ConversionDestination> { _, modifier ->
         val viewModel: ConversionViewModel = koinViewModel()
@@ -36,8 +49,10 @@ val conversionModule = module {
         )
     }
 
-    registerScreen<BatchConversionDestination> { _, modifier ->
-        val viewModel: BatchConversionViewModel = koinViewModel()
+    registerScreen<BatchConversionDestination> { destination, modifier ->
+        val viewModel: BatchConversionViewModel = koinViewModel(
+            parameters = { parametersOf(destination) }
+        )
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         BatchConversionScreen(
