@@ -192,9 +192,10 @@ internal class SettingsViewModel(
     }
 
     private fun applyThemeMode(mode: com.onthecrow.nomadrates.util.theme.ThemeMode) {
+        // Closed before the theme flips, so the dialog is not repainted in the new theme on its way out.
+        onEvent(SettingsEvent.OnDialogStateChanged(null))
         viewModelScope.launch {
             setThemeModeUseCase(mode)
-            onEvent(SettingsEvent.OnDialogStateChanged(null))
         }
     }
 

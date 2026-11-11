@@ -14,6 +14,8 @@ import com.onthecrow.nomadrates.navigation.NavigationProvider
 import com.onthecrow.nomadrates.settings.domain.ObserveThemeModeUseCase
 import com.onthecrow.nomadrates.ui.AppThemeProvider
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.ThemeRevealHost
+import com.onthecrow.nomadrates.ui.rememberThemeRevealState
 import com.onthecrow.nomadrates.ui.view.SystemBarShadeView
 import com.onthecrow.nomadrates.util.theme.ThemeMode
 import org.koin.compose.getKoin
@@ -26,7 +28,9 @@ fun App() {
         .invoke()
         .collectAsState(initial = ThemeMode.SYSTEM)
     val darkTheme = AppThemeProvider.rememberDarkTheme(themeMode)
-    AppSystemBarsEffect(darkTheme)
+    val themeReveal = rememberThemeRevealState()
+    // System bar icons keep the old theme until the reveal has uncovered the whole screen.
+    AppSystemBarsEffect(themeReveal.outgoingDarkTheme ?: darkTheme)
 
     NomadRatesTheme(
         dynamicColor = false,
@@ -34,19 +38,25 @@ fun App() {
     ) {
         val navigationProvider = getKoin().get<NavigationProvider>()
 
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
+        ThemeRevealHost(
+            modifier = Modifier.fillMaxSize(),
+            darkTheme = darkTheme,
+            state = themeReveal,
         ) {
-            navigationProvider.Navigation(modifier = Modifier.fillMaxSize())
-            SystemBarShadeView(
-                modifier = Modifier.fillMaxWidth(),
-                position = com.onthecrow.nomadrates.ui.view.ShadePosition.TOP,
-            )
-            SystemBarShadeView(
-                modifier = Modifier.fillMaxWidth(),
-                position = com.onthecrow.nomadrates.ui.view.ShadePosition.BOTTOM,
-            )
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+            ) {
+                navigationProvider.Navigation(modifier = Modifier.fillMaxSize())
+                SystemBarShadeView(
+                    modifier = Modifier.fillMaxWidth(),
+                    position = com.onthecrow.nomadrates.ui.view.ShadePosition.TOP,
+                )
+                SystemBarShadeView(
+                    modifier = Modifier.fillMaxWidth(),
+                    position = com.onthecrow.nomadrates.ui.view.ShadePosition.BOTTOM,
+                )
+            }
         }
     }
 }
