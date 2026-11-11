@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,8 @@ import com.onthecrow.nomadrates.settings.view.SettingsSingleChoiceDialogView
 import com.onthecrow.nomadrates.settings.view.SettingsSwitchRowView
 import com.onthecrow.nomadrates.settings.view.SettingsValueRowView
 import com.onthecrow.nomadrates.settings.view.SignatureFooterView
+import com.onthecrow.nomadrates.ui.AppThemeProvider
+import com.onthecrow.nomadrates.ui.LocalThemeRevealState
 import com.onthecrow.nomadrates.ui.view.AppBarTitleView
 import com.onthecrow.nomadrates.util.DateUtils
 import com.onthecrow.nomadrates.util.theme.ThemeMode
@@ -205,6 +208,9 @@ private fun SettingsDialogHost(
     state: SettingsState,
     onEvent: (SettingsEvent) -> Unit,
 ) {
+    val themeReveal = LocalThemeRevealState.current
+    val isSystemDarkTheme = isSystemInDarkTheme()
+
     when (state.dialogState) {
         SettingsDialogState.LaunchPairModePicker -> {
             SettingsSingleChoiceDialogView(
@@ -220,7 +226,7 @@ private fun SettingsDialogHost(
                         label = stringResource(Res.string.settings_on_launch_use_default_pair),
                     ),
                 ),
-                onOptionSelected = { onEvent(SettingsEvent.OnLaunchPairModeSelected(it)) },
+                onOptionSelected = { mode, _ -> onEvent(SettingsEvent.OnLaunchPairModeSelected(mode)) },
                 onDismissRequest = { onEvent(SettingsEvent.OnDialogStateChanged(null)) },
             )
         }
@@ -243,7 +249,14 @@ private fun SettingsDialogHost(
                         label = stringResource(Res.string.settings_theme_dark),
                     ),
                 ),
-                onOptionSelected = { onEvent(SettingsEvent.OnThemeModeSelected(it)) },
+                onOptionSelected = { mode, pressOnScreen ->
+                    themeReveal.reveal(
+                        originOnScreen = pressOnScreen,
+                        toDarkTheme = AppThemeProvider.resolveDarkTheme(mode, isSystemDarkTheme),
+                    ) {
+                        onEvent(SettingsEvent.OnThemeModeSelected(mode))
+                    }
+                },
                 onDismissRequest = { onEvent(SettingsEvent.OnDialogStateChanged(null)) },
             )
         }
