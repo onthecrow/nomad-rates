@@ -4,9 +4,10 @@ import android.util.Log
 import java.util.Currency
 import java.util.Locale
 
-actual fun String.toCurrencyName(): String {
+internal actual fun String.toPlatformCurrencyName(useEnglishName: Boolean): String {
+    val locale = if (useEnglishName) Locale.ENGLISH else Locale.getDefault()
     return try {
-        Currency.getInstance(this).getDisplayName(Locale.getDefault())
+        Currency.getInstance(this).getDisplayName(locale)
     } catch (e: Exception) {
         Log.e(this.javaClass.simpleName, e.message, e)
         this

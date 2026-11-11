@@ -21,6 +21,7 @@ val currencyModule = module {
             screenResultDispatcher = get(),
             toggleCurrencyFavoriteUseCase = get(),
             observeShowFeaturedCurrenciesUseCase = get(),
+            observeUseEnglishCurrencyNamesUseCase = get(),
             getCurrencyListUseCase = get(),
             reducer = get(),
             selectionSource = selectionSource,

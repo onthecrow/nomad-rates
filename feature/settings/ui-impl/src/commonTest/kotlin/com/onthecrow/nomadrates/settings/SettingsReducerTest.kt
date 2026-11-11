@@ -104,6 +104,16 @@ class SettingsReducerTest {
     }
 
     @Test
+    fun onUseEnglishCurrencyNamesChanged_updatesState() = kotlinx.coroutines.test.runTest {
+        val reducedState = reducer.reduce(
+            state = SettingsState(),
+            event = SettingsEvent.OnUseEnglishCurrencyNamesChanged(false),
+        )
+
+        assertEquals(false, reducedState.useEnglishCurrencyNames)
+    }
+
+    @Test
     fun onThemeModeChanged_updatesState() = kotlinx.coroutines.test.runTest {
         val reducedState = reducer.reduce(
             state = SettingsState(),

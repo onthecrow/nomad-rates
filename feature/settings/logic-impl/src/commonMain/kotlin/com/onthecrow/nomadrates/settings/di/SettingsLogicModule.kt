@@ -7,11 +7,13 @@ import com.onthecrow.nomadrates.settings.ObserveSettingsLinksUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveShowFeaturedCurrenciesUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveShowFeaturedPairsUseCaseImpl
 import com.onthecrow.nomadrates.settings.ObserveThemeModeUseCaseImpl
+import com.onthecrow.nomadrates.settings.ObserveUseEnglishCurrencyNamesUseCaseImpl
 import com.onthecrow.nomadrates.settings.SetDefaultPairUseCaseImpl
 import com.onthecrow.nomadrates.settings.SetLaunchPairModeUseCaseImpl
 import com.onthecrow.nomadrates.settings.SetShowFeaturedCurrenciesUseCaseImpl
 import com.onthecrow.nomadrates.settings.SetShowFeaturedPairsUseCaseImpl
 import com.onthecrow.nomadrates.settings.SetThemeModeUseCaseImpl
+import com.onthecrow.nomadrates.settings.SetUseEnglishCurrencyNamesUseCaseImpl
 import com.onthecrow.nomadrates.settings.data.SettingsRepository
 import com.onthecrow.nomadrates.settings.data.SettingsRepositoryImpl
 import com.onthecrow.nomadrates.settings.data.datastore.SettingsPreferencesDataSource
@@ -21,11 +23,13 @@ import com.onthecrow.nomadrates.settings.domain.ObserveSettingsLinksUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveThemeModeUseCase
+import com.onthecrow.nomadrates.settings.domain.ObserveUseEnglishCurrencyNamesUseCase
 import com.onthecrow.nomadrates.settings.domain.SetDefaultPairUseCase
 import com.onthecrow.nomadrates.settings.domain.SetLaunchPairModeUseCase
 import com.onthecrow.nomadrates.settings.domain.SetShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.SetShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.SetThemeModeUseCase
+import com.onthecrow.nomadrates.settings.domain.SetUseEnglishCurrencyNamesUseCase
 import org.koin.dsl.module
 
 private const val SETTINGS_PREFERENCES_NAME = "settings.preferences_pb"
@@ -41,6 +45,8 @@ val settingsLogicModule = module {
     single<SetShowFeaturedPairsUseCase> { SetShowFeaturedPairsUseCaseImpl(get()) }
     single<ObserveShowFeaturedCurrenciesUseCase> { ObserveShowFeaturedCurrenciesUseCaseImpl(get()) }
     single<SetShowFeaturedCurrenciesUseCase> { SetShowFeaturedCurrenciesUseCaseImpl(get()) }
+    single<ObserveUseEnglishCurrencyNamesUseCase> { ObserveUseEnglishCurrencyNamesUseCaseImpl(get()) }
+    single<SetUseEnglishCurrencyNamesUseCase> { SetUseEnglishCurrencyNamesUseCaseImpl(get()) }
     single<ObserveThemeModeUseCase> { ObserveThemeModeUseCaseImpl(get()) }
     single<SetThemeModeUseCase> { SetThemeModeUseCaseImpl(get()) }
     single {

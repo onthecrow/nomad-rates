@@ -8,8 +8,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import nomadrates.feature.conversion.ui_impl.generated.resources.Res
-import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_internet_required
 
 class ConversionReducerTest {
 
@@ -42,11 +40,53 @@ class ConversionReducerTest {
         )
 
         assertEquals(ConversionState.Loading, loadingState)
-        assertEquals(ConversionState.Error(Res.string.conversion_internet_required), errorState)
+        assertEquals(ConversionState.Error(), errorState)
         assertIs<ConversionState.Content>(contentState)
         val conversionViewState = assertIs<ConversionViewState.Content>(contentState.conversionViewState)
         assertEquals("USD", conversionViewState.from.currencyCode)
         assertEquals(2, contentState.conversionListItems.size)
+    }
+
+    @Test
+    fun `retry state is preserved while loading and reset on error`() = runTest {
+        val retryingErrorState = reducer.reduce(
+            state = ConversionState.Error(),
+            event = ConversionEvent.OnRetryStateChanged(isRetrying = true),
+        )
+
+        val loadingState = reducer.reduce(
+            state = retryingErrorState,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Loading,
+            ),
+        )
+        val errorState = reducer.reduce(
+            state = retryingErrorState,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Error,
+            ),
+        )
+
+        assertEquals(ConversionState.Error(isRetrying = true), retryingErrorState)
+        assertEquals(ConversionState.Error(isRetrying = true), loadingState)
+        assertEquals(ConversionState.Error(isRetrying = false), errorState)
+    }
+
+    @Test
+    fun `content after retry exits error state`() = runTest {
+        val pair = samplePair()
+
+        val contentState = reducer.reduce(
+            state = ConversionState.Error(isRetrying = true),
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(
+                    activePair = pair,
+                    conversionPairs = listOf(pair),
+                ),
+            ),
+        )
+
+        assertIs<ConversionState.Content>(contentState)
     }
 
     @Test

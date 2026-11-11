@@ -18,6 +18,7 @@ internal data class SettingsState(
     val defaultPair: SelectedConversionPair = SelectedConversionPair.DEFAULT,
     val showFeaturedPairs: Boolean = true,
     val showFeaturedCurrencies: Boolean = true,
+    val useEnglishCurrencyNames: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dialogState: SettingsDialogState? = null,
     val isRefreshing: Boolean = false,

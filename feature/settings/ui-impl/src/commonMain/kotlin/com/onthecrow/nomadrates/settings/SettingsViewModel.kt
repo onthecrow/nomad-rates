@@ -15,11 +15,13 @@ import com.onthecrow.nomadrates.settings.domain.ObserveSettingsLinksUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveThemeModeUseCase
+import com.onthecrow.nomadrates.settings.domain.ObserveUseEnglishCurrencyNamesUseCase
 import com.onthecrow.nomadrates.settings.domain.SetDefaultPairUseCase
 import com.onthecrow.nomadrates.settings.domain.SetLaunchPairModeUseCase
 import com.onthecrow.nomadrates.settings.domain.SetShowFeaturedCurrenciesUseCase
 import com.onthecrow.nomadrates.settings.domain.SetShowFeaturedPairsUseCase
 import com.onthecrow.nomadrates.settings.domain.SetThemeModeUseCase
+import com.onthecrow.nomadrates.settings.domain.SetUseEnglishCurrencyNamesUseCase
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import com.onthecrow.nomadrates.util.ApplicationUtils
 import kotlinx.coroutines.flow.launchIn
@@ -36,12 +38,14 @@ internal class SettingsViewModel(
     private val observeSettingsLinksUseCase: ObserveSettingsLinksUseCase,
     private val observeShowFeaturedPairsUseCase: ObserveShowFeaturedPairsUseCase,
     private val observeShowFeaturedCurrenciesUseCase: ObserveShowFeaturedCurrenciesUseCase,
+    private val observeUseEnglishCurrencyNamesUseCase: ObserveUseEnglishCurrencyNamesUseCase,
     private val observeThemeModeUseCase: ObserveThemeModeUseCase,
     private val refreshRatesManuallyUseCase: RefreshRatesManuallyUseCase,
     private val setDefaultPairUseCase: SetDefaultPairUseCase,
     private val setLaunchPairModeUseCase: SetLaunchPairModeUseCase,
     private val setShowFeaturedPairsUseCase: SetShowFeaturedPairsUseCase,
     private val setShowFeaturedCurrenciesUseCase: SetShowFeaturedCurrenciesUseCase,
+    private val setUseEnglishCurrencyNamesUseCase: SetUseEnglishCurrencyNamesUseCase,
     private val setThemeModeUseCase: SetThemeModeUseCase,
     reducer: SettingsReducer,
 ) : BaseViewModel<SettingsEvent, SettingsState, SettingsReducer>(reducer) {
@@ -74,11 +78,13 @@ internal class SettingsViewModel(
             is SettingsEvent.OnThemeModeSelected -> applyThemeMode(event.mode)
             is SettingsEvent.OnShowFeaturedPairsToggle -> applyShowFeaturedPairs(event.isEnabled)
             is SettingsEvent.OnShowFeaturedCurrenciesToggle -> applyShowFeaturedCurrencies(event.isEnabled)
+            is SettingsEvent.OnUseEnglishCurrencyNamesToggle -> applyUseEnglishCurrencyNames(event.isEnabled)
             is SettingsEvent.OnAppVersionLoaded,
             is SettingsEvent.OnLaunchPairModeChanged,
             is SettingsEvent.OnDefaultPairChanged,
             is SettingsEvent.OnShowFeaturedPairsChanged,
             is SettingsEvent.OnShowFeaturedCurrenciesChanged,
+            is SettingsEvent.OnUseEnglishCurrencyNamesChanged,
             is SettingsEvent.OnThemeModeChanged,
             is SettingsEvent.OnDialogStateChanged,
             is SettingsEvent.OnLastRatesFreshnessChanged,
@@ -115,6 +121,9 @@ internal class SettingsViewModel(
             .launchIn(viewModelScope)
         observeShowFeaturedCurrenciesUseCase()
             .onEach { isEnabled -> onEvent(SettingsEvent.OnShowFeaturedCurrenciesChanged(isEnabled)) }
+            .launchIn(viewModelScope)
+        observeUseEnglishCurrencyNamesUseCase()
+            .onEach { isEnabled -> onEvent(SettingsEvent.OnUseEnglishCurrencyNamesChanged(isEnabled)) }
             .launchIn(viewModelScope)
         observeThemeModeUseCase()
             .onEach { mode -> onEvent(SettingsEvent.OnThemeModeChanged(mode)) }
@@ -198,6 +207,12 @@ internal class SettingsViewModel(
     private fun applyShowFeaturedCurrencies(isEnabled: Boolean) {
         viewModelScope.launch {
             setShowFeaturedCurrenciesUseCase(isEnabled)
+        }
+    }
+
+    private fun applyUseEnglishCurrencyNames(isEnabled: Boolean) {
+        viewModelScope.launch {
+            setUseEnglishCurrencyNamesUseCase(isEnabled)
         }
     }
 

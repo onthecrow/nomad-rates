@@ -6,6 +6,7 @@ import com.onthecrow.nomadrates.currency.domain.ToggleCurrencyFavoriteUseCase
 import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.settings.domain.ObserveShowFeaturedCurrenciesUseCase
+import com.onthecrow.nomadrates.settings.domain.ObserveUseEnglishCurrencyNamesUseCase
 import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -18,25 +19,25 @@ internal class CurrencyListViewModel(
     private val screenResultDispatcher: ScreenResultDispatcher,
     private val toggleCurrencyFavoriteUseCase: ToggleCurrencyFavoriteUseCase,
     observeShowFeaturedCurrenciesUseCase: ObserveShowFeaturedCurrenciesUseCase,
+    observeUseEnglishCurrencyNamesUseCase: ObserveUseEnglishCurrencyNamesUseCase,
     getCurrencyListUseCase: GetCurrencyListUseCase,
     reducer: CurrencyListReducer,
     private val selectionSource: CurrencySelectionSource,
 ) : BaseViewModel<CurrencyListEvent, CurrencyListState, CurrencyListReducer>(reducer) {
 
     init {
-        getCurrencyListUseCase()
-            .filterNotNull()
-            .combine(observeShowFeaturedCurrenciesUseCase()) { currencies, showFeaturedCurrencies ->
-                currencies to showFeaturedCurrencies
-            }
-            .onEach { (currencies, showFeaturedCurrencies) ->
-                onEvent(
-                    CurrencyListEvent.OnCurrencyListUpdate(
-                        currencies = currencies,
-                        showFeaturedCurrencies = showFeaturedCurrencies,
-                    )
-                )
-            }
+        combine(
+            getCurrencyListUseCase().filterNotNull(),
+            observeShowFeaturedCurrenciesUseCase(),
+            observeUseEnglishCurrencyNamesUseCase(),
+        ) { currencies, showFeaturedCurrencies, useEnglishCurrencyNames ->
+            CurrencyListEvent.OnCurrencyListUpdate(
+                currencies = currencies,
+                showFeaturedCurrencies = showFeaturedCurrencies,
+                useEnglishCurrencyNames = useEnglishCurrencyNames,
+            )
+        }
+            .onEach(::onEvent)
             .launchIn(viewModelScope)
         eventFlow.onEach { event ->
             when (event) {

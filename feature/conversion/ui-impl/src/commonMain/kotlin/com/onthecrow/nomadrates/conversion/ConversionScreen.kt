@@ -19,12 +19,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,12 +45,17 @@ import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.conversion.view.ConversionView
 import com.onthecrow.nomadrates.conversion.view.pair.ConversionListItemView
+import com.onthecrow.nomadrates.conversion.view.toColor
 import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
+import com.onthecrow.nomadrates.ui.view.RefreshButtonView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import nomadrates.feature.conversion.ui_impl.generated.resources.Res
+import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_body
+import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_error_title
 import nomadrates.feature.conversion.ui_impl.generated.resources.conversion_retry
+import nomadrates.feature.conversion.ui_impl.generated.resources.ic_cloud_off
 import nomadrates.feature.conversion.ui_impl.generated.resources.ic_settings
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -86,7 +92,7 @@ internal fun ConversionScreen(
 
             is ConversionState.Error -> ErrorState(
                 modifier = Modifier.fillMaxSize(),
-                message = stringResource(state.messageRes),
+                isRetrying = state.isRetrying,
                 onRetryClick = { onEvent(ConversionEvent.OnRetryClick) },
             )
 
@@ -254,21 +260,59 @@ private fun FeaturedLoadingSection(
 
 @Composable
 private fun ErrorState(
-    message: String,
+    isRetrying: Boolean,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Button(onClick = onRetryClick) {
-            Text(stringResource(Res.string.conversion_retry))
+        Column(
+            modifier = Modifier.widthIn(max = 360.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    modifier = Modifier.size(32.dp),
+                    imageVector = vectorResource(Res.drawable.ic_cloud_off),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(Res.string.conversion_error_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(Res.string.conversion_error_body),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            RefreshButtonView(
+                text = stringResource(Res.string.conversion_retry),
+                isLoading = isRetrying,
+                onClick = onRetryClick,
+            )
         }
     }
 }
@@ -358,7 +402,7 @@ private fun ContentState(
                     .fillMaxWidth()
                     .height(100.dp),
                 data = state.chartData,
-                graphColor = state.chartColor,
+                graphColor = state.chartTrend.toColor(),
             )
         }
     }
@@ -393,6 +437,17 @@ private fun ConversionLoadingScreenPreview() {
     MaterialTheme {
         ConversionScreen(
             state = ConversionState.Loading,
+            showFeaturedPairs = true,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ConversionErrorScreenPreview() {
+    MaterialTheme {
+        ConversionScreen(
+            state = ConversionState.Error(),
             showFeaturedPairs = true,
         )
     }

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -37,7 +38,12 @@ fun BoxScope.SystemBarShadeView(
     position: ShadePosition,
     modifier: Modifier = Modifier,
 ) {
-    val shadeColor = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val shadeColor = if (isDarkTheme) {
+        MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.65f)
+    }
     val systemBarsPaddings = WindowInsets.systemBars.asPaddingValues()
     var state by remember { mutableStateOf(SystemBarShadeViewState(Alignment.TopCenter, height = 0.dp, colors = emptyList())) }
     LaunchedEffect(position, systemBarsPaddings, shadeColor) {

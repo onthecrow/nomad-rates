@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.onthecrow.nomadrates.ui.StrongPastelRed
+import com.onthecrow.nomadrates.ui.favouriteAccent
 import nomadrates.core.ui.generated.resources.Res
 import nomadrates.core.ui.generated.resources.ic_like
 import nomadrates.core.ui.generated.resources.ic_like_filled
@@ -49,8 +49,7 @@ fun LikeButtonView(
             imageVector = vector,
             contentDescription = null,
             tint = when {
-                // todo use custom theme instead eg. NomadRatesTheme.colorScheme.StrongPastelRed
-                isFavourite -> StrongPastelRed
+                isFavourite -> MaterialTheme.colorScheme.favouriteAccent
                 else -> MaterialTheme.colorScheme.onBackground.copy(alpha = .5f)
             },
         )

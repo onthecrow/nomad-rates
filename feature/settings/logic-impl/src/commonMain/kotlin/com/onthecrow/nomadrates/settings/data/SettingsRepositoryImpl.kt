@@ -41,6 +41,14 @@ internal class SettingsRepositoryImpl(
         settingsPreferencesDataSource.saveShowFeaturedCurrencies(isEnabled)
     }
 
+    override fun observeUseEnglishCurrencyNames(): Flow<Boolean> {
+        return settingsPreferencesDataSource.observeUseEnglishCurrencyNames()
+    }
+
+    override suspend fun setUseEnglishCurrencyNames(isEnabled: Boolean) {
+        settingsPreferencesDataSource.saveUseEnglishCurrencyNames(isEnabled)
+    }
+
     override fun observeThemeMode(): Flow<ThemeMode> {
         return settingsPreferencesDataSource.observeThemeMode()
     }

@@ -37,7 +37,10 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
         state: CurrencyListState,
         event: CurrencyListEvent.OnCurrencyListUpdate
     ): CurrencyListState {
-        val mappedCurrencies = event.currencies.toUi(event.showFeaturedCurrencies)
+        val mappedCurrencies = event.currencies.toUi(
+            showFeaturedCurrencies = event.showFeaturedCurrencies,
+            useEnglishCurrencyNames = event.useEnglishCurrencyNames,
+        )
         return state.copy(
             currencies = mappedCurrencies,
             currenciesFiltered = mappedCurrencies.filterCurrencies(state.searchValue),
@@ -63,6 +66,9 @@ internal class CurrencyListReducer : Reducer<CurrencyListState, CurrencyListEven
                     if (currencyListItem !is CurrencyListItem.Data) return@filter false
                     if (currencyListItem.listGroup != ListGroup.ALL) return@filter false
                     currencyListItem.currencyName.contains(
+                        other = query,
+                        ignoreCase = true,
+                    ) || currencyListItem.alternateCurrencyName.contains(
                         other = query,
                         ignoreCase = true,
                     )

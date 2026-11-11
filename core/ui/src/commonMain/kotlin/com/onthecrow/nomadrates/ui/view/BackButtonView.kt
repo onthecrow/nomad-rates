@@ -24,7 +24,8 @@ fun BackButtonView(
     onClick: () -> Unit = {},
 ) {
     val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
-    val radialBrush = remember {
+    // Keyed on the colour: an unkeyed remember kept the first theme's background after a theme switch.
+    val radialBrush = remember(gradientBaseColor) {
         Brush.radialGradient(
             colors = listOf(
                 gradientBaseColor,

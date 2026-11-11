@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 @androidx.compose.runtime.Composable
@@ -21,9 +22,12 @@ actual fun NomadRatesTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    val semanticColors = if (darkTheme) DarkSemanticColors else LightSemanticColors
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalNomadRatesSemanticColors provides semanticColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

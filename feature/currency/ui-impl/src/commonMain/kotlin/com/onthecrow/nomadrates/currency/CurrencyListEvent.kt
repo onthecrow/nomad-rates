@@ -12,6 +12,7 @@ internal sealed interface CurrencyListEvent: Event {
     data class OnCurrencyListUpdate(
         val currencies: List<Currency>,
         val showFeaturedCurrencies: Boolean,
+        val useEnglishCurrencyNames: Boolean,
     ) : CurrencyListEvent
     data class OnSearchValueChange(val value: String) : CurrencyListEvent
 }

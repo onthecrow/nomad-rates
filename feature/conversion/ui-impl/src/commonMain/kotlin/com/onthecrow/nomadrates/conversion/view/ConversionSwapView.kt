@@ -13,7 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,17 @@ internal fun ConversionSwapView(
 ) {
     val scale = remember { Animatable(1f) }
     val scope = rememberCoroutineScope()
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val innerBackgroundColor = if (isDarkTheme) {
+        MaterialTheme.colorScheme.secondary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHighest
+    }
+    val iconTint = if (isDarkTheme) {
+        MaterialTheme.colorScheme.onSecondary
+    } else {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    }
 
     val clickWithPop = {
         scope.launch {
@@ -50,11 +62,12 @@ internal fun ConversionSwapView(
             .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
             .padding(4.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondary)
+            .background(innerBackgroundColor)
             .clickable(enabled = enabled, onClick = clickWithPop)
             .padding(8.dp),
         imageVector = vectorResource(Res.drawable.ic_swap),
         contentDescription = null,
+        tint = iconTint,
     )
 }
 

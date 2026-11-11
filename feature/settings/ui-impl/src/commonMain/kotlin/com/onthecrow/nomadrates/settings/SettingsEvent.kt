@@ -18,9 +18,11 @@ internal sealed interface SettingsEvent : Event {
     data class OnThemeModeSelected(val mode: ThemeMode) : SettingsEvent
     data class OnShowFeaturedPairsToggle(val isEnabled: Boolean) : SettingsEvent
     data class OnShowFeaturedCurrenciesToggle(val isEnabled: Boolean) : SettingsEvent
+    data class OnUseEnglishCurrencyNamesToggle(val isEnabled: Boolean) : SettingsEvent
     data class OnLaunchPairModeChanged(val mode: LaunchPairMode) : SettingsEvent
     data class OnShowFeaturedPairsChanged(val isEnabled: Boolean) : SettingsEvent
     data class OnShowFeaturedCurrenciesChanged(val isEnabled: Boolean) : SettingsEvent
+    data class OnUseEnglishCurrencyNamesChanged(val isEnabled: Boolean) : SettingsEvent
     data class OnThemeModeChanged(val mode: ThemeMode) : SettingsEvent
     data class OnDialogStateChanged(val dialogState: SettingsDialogState?) : SettingsEvent
     data class OnLastRatesTimestampChanged(val timestamp: Long?) : SettingsEvent

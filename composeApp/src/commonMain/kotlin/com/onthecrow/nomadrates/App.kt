@@ -26,6 +26,7 @@ fun App() {
         .invoke()
         .collectAsState(initial = ThemeMode.SYSTEM)
     val darkTheme = AppThemeProvider.rememberDarkTheme(themeMode)
+    AppSystemBarsEffect(darkTheme)
 
     NomadRatesTheme(
         dynamicColor = false,

@@ -21,6 +21,7 @@ import com.onthecrow.nomadrates.uicore.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -69,7 +70,7 @@ internal class ConversionViewModel(
         eventFlow.onEach { event ->
             when (event) {
                 is ConversionEvent.OnBackPress -> onBackPress()
-                is ConversionEvent.OnRetryClick -> retryTrigger.tryEmit(Unit)
+                is ConversionEvent.OnRetryClick -> onRetryClick()
                 is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
@@ -120,8 +121,11 @@ internal class ConversionViewModel(
 
     override fun getInitialState(): ConversionState = ConversionState.Content()
 
+    private val isRetryingStateFlow = MutableStateFlow(false)
+
     private fun handleConversionDataTransition(transition: ConversionDataTransition) {
         val currentState = transition.current ?: return
+        resetRetryStateIfNeeded(currentState)
         val fromValue = (state.value as? ConversionState.Content)
             ?.conversionViewState
             ?.from
@@ -142,6 +146,23 @@ internal class ConversionViewModel(
             !fromValue.isNullOrBlank()
         ) {
             onEvent(ConversionEvent.OnFromValueChange(fromValue))
+        }
+    }
+
+    private fun resetRetryStateIfNeeded(currentState: ConversionDataState) {
+        if (!isRetryingStateFlow.value) return
+
+        when (currentState) {
+            is ConversionDataState.Content -> {
+                isRetryingStateFlow.value = false
+            }
+
+            ConversionDataState.Error -> {
+                isRetryingStateFlow.value = false
+                onEvent(ConversionEvent.OnRetryStateChanged(isRetrying = false))
+            }
+
+            ConversionDataState.Loading -> Unit
         }
     }
 
@@ -276,6 +297,14 @@ internal class ConversionViewModel(
 
     private fun onBackPress() {
         navigator.navigateBack()
+    }
+
+    private fun onRetryClick() {
+        if (isRetryingStateFlow.value) return
+
+        isRetryingStateFlow.value = true
+        onEvent(ConversionEvent.OnRetryStateChanged(isRetrying = true))
+        retryTrigger.tryEmit(Unit)
     }
 
     private fun updateSelectedConversionPair(selectedConversionPair: SelectedConversionPair) {

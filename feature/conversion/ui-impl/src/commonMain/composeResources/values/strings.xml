@@ -1,4 +1,5 @@
 <resources>
-    <string name="conversion_internet_required">Internet connection is required to load currency data.</string>
-    <string name="conversion_retry">Retry</string>
+    <string name="conversion_error_title">Couldn't load exchange rates</string>
+    <string name="conversion_error_body">Check your connection and try again.</string>
+    <string name="conversion_retry">Try again</string>
 </resources>

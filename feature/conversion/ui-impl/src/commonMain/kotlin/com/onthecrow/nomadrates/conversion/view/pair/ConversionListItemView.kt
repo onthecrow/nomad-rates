@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
+import com.onthecrow.nomadrates.conversion.view.toColor
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.highlightOverlay
 import com.onthecrow.nomadrates.ui.view.CurrencyChart
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
@@ -76,12 +78,14 @@ private fun ConversionListItemDataView(
     onClick: (ConversionListItem.Data) -> Unit = {},
     onAddToFavouritesClick: (ConversionListItem.Data) -> Unit = {},
 ) {
+    val highlightOverlay = MaterialTheme.colorScheme.highlightOverlay
+
     Row(
         modifier = modifier.clickable(enabled = true, onClick = { onClick(state) })
             .drawWithContent {
                 drawContent()
                 if (state.highlighted) {
-                    drawRect(Color.White.copy(alpha = 0.1f))
+                    drawRect(highlightOverlay)
                 }
             }
             .padding(start = 16.dp),
@@ -135,7 +139,7 @@ private fun ConversionListItemDataView(
                 modifier = Modifier.fillMaxSize()
                     .padding(vertical = 16.dp),
                 data = state.chartData,
-                graphColor = state.chartColor,
+                graphColor = state.chartTrend.toColor(),
                 strokeWidth = 1.dp,
             )
             Box(
@@ -152,7 +156,8 @@ private fun ConversionListItemDataView(
             )
 
             val gradientBaseColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
-            val radialBrush = remember {
+            // Keyed on the colour, or a theme switch leaves the old background behind the like button.
+            val radialBrush = remember(gradientBaseColor) {
                 Brush.radialGradient(
                     colors = listOf(
                         gradientBaseColor,

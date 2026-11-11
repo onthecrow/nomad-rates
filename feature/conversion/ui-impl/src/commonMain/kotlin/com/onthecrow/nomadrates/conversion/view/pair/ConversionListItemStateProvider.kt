@@ -1,9 +1,9 @@
 package com.onthecrow.nomadrates.conversion.view.pair
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.onthecrow.nomadrates.conversion.model.ChartTrend
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
 import com.onthecrow.nomadrates.conversion.model.ListGroup
-import com.onthecrow.nomadrates.ui.SageGreen
 
 internal class ConversionListItemStateProvider : PreviewParameterProvider<ConversionListItem> {
     override val values: Sequence<ConversionListItem> = sequenceOf(
@@ -21,7 +21,7 @@ internal class ConversionListItemStateProvider : PreviewParameterProvider<Conver
                 917f, 917f, 914.643f, 915.428667f, 915.02f,
                 915.428667f, 915.428667f, 917f, 917f, 915.4287f
             ).map { value -> value.toDouble() },
-            chartColor = SageGreen,
+            chartTrend = ChartTrend.POSITIVE,
             isFavourite = false,
             currencyPair = "EUR" to "USD",
             listGroup = ListGroup.FEATURED,

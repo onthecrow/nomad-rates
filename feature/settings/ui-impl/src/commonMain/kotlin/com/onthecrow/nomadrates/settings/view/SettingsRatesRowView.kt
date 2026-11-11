@@ -12,13 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.settings.SettingsRatesFreshness
-import com.onthecrow.nomadrates.ui.PaleEmerald
-import com.onthecrow.nomadrates.ui.SageGreen
+import com.onthecrow.nomadrates.ui.positiveAccent
 import com.onthecrow.nomadrates.ui.view.RefreshButtonView
 
 @Composable
@@ -75,14 +73,7 @@ internal fun SettingsRatesRowView(
 
 @Composable
 private fun SettingsRatesFreshness.toDateColor() = when (this) {
-    SettingsRatesFreshness.Fresh -> {
-        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-            PaleEmerald
-        } else {
-            SageGreen
-        }
-    }
-
+    SettingsRatesFreshness.Fresh -> MaterialTheme.colorScheme.positiveAccent
     SettingsRatesFreshness.Stale -> MaterialTheme.colorScheme.error
     SettingsRatesFreshness.Unknown -> MaterialTheme.colorScheme.onBackground
 }

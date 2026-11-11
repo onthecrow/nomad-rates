@@ -1,7 +1,5 @@
 package com.onthecrow.nomadrates.conversion.model
 
-import androidx.compose.ui.graphics.Color
-
 internal sealed interface ConversionListItem {
 
     val listKey: String
@@ -18,7 +16,7 @@ internal sealed interface ConversionListItem {
         val title: String,
         val subtitle: String,
         val chartData: List<Double>,
-        val chartColor: Color,
+        val chartTrend: ChartTrend,
         val currencyPair: Pair<String, String>,
         val isFavourite: Boolean,
         val listGroup: ListGroup,
