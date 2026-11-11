@@ -3,8 +3,4 @@
     <string name="conversion_error_body">Check your connection and try again.</string>
     <string name="conversion_retry">Try again</string>
     <string name="conversion_batch_button_description">Batch conversion</string>
-    <string name="batch_conversion_title">Batch conversion</string>
-    <string name="batch_conversion_favourites_header">Favourites</string>
-    <string name="batch_conversion_add_currency">Add currency</string>
-    <string name="batch_conversion_empty_favourites">Add favourite currencies to convert one amount into all of them at once.</string>
 </resources>

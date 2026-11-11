@@ -13,20 +13,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.onthecrow.nomadrates.batch.BatchConversionSharedElements
 import com.onthecrow.nomadrates.conversion.ConversionEvent
-import com.onthecrow.nomadrates.conversion.model.ConversionCurrencyViewState
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.navigation.sharedNavElement
 import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
+import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
+import com.onthecrow.nomadrates.ui.view.CurrencyAmountView
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
 
 @Composable
 internal fun ConversionView(
     state: ConversionViewState,
     modifier: Modifier = Modifier,
+    /** Scale of the swap button, so the screen can hide it before leaving for the batch screen. */
+    swapButtonScale: () -> Float = { 1f },
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
     Box(
@@ -49,22 +54,22 @@ internal fun ConversionView(
         ) {
             when (state) {
                 ConversionViewState.Loading -> {
-                    ConversionCurrencyView(
-                        state = ConversionCurrencyViewState.Loading,
+                    CurrencyAmountView(
+                        state = CurrencyAmountViewState.Loading,
                     )
-                    ConversionCurrencyView(
-                        state = ConversionCurrencyViewState.Loading,
+                    CurrencyAmountView(
+                        state = CurrencyAmountViewState.Loading,
                     )
                 }
 
                 is ConversionViewState.Content -> {
-                    ConversionCurrencyView(
-                        modifier = Modifier.sharedNavElement(BASE_AMOUNT_FIELD_SHARED_KEY),
+                    CurrencyAmountView(
+                        modifier = Modifier.sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
                         state = state.from,
                         onCurrencyClick = { onEvent(ConversionEvent.OnFromCurrencyClick) },
                         onValueChange = { onEvent(ConversionEvent.OnFromValueChange(it)) },
                     )
-                    ConversionCurrencyView(
+                    CurrencyAmountView(
                         state = state.to,
                         onCurrencyClick = { onEvent(ConversionEvent.OnToCurrencyClick) },
                         onValueChange = { onEvent(ConversionEvent.OnToValueChange(it)) },
@@ -75,8 +80,12 @@ internal fun ConversionView(
         ConversionSwapView(
             modifier = Modifier
                 .align(Alignment.Center)
-                // The "from" field flies over this button on the way to the batch conversion screen.
-                .shrinkDuringSharedTransition(),
+                // The "from" field flies over this button between this and the batch conversion screen.
+                .shrinkDuringSharedTransition()
+                .graphicsLayer {
+                    scaleX = swapButtonScale()
+                    scaleY = swapButtonScale()
+                },
             enabled = state is ConversionViewState.Content,
             onClick = { onEvent(ConversionEvent.OnSwitchButtonPress) },
         )
@@ -101,8 +110,8 @@ private fun ConversionViewPreview() {
     NomadRatesTheme(darkTheme = true) {
         ConversionView(
             state = ConversionViewState.Content(
-                from = ConversionCurrencyViewState.Content("", "EUR", .0, ""),
-                to = ConversionCurrencyViewState.Content("", "USD", .0, ""),
+                from = CurrencyAmountViewState.Content("", "EUR", ""),
+                to = CurrencyAmountViewState.Content("", "USD", ""),
             ),
             modifier = Modifier.fillMaxWidth(),
         )
