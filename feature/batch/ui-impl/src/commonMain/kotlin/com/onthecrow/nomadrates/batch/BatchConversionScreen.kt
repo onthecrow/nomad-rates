@@ -68,6 +68,7 @@ import com.onthecrow.nomadrates.navigation.sharedNavElement
 import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
+import com.onthecrow.nomadrates.ui.negativeAccent
 import com.onthecrow.nomadrates.ui.positiveAccent
 import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.AppBarTitleView
@@ -155,18 +156,10 @@ internal fun BatchConversionScreen(
                 .onSizeChanged { size -> bodyHeight = size.height }
                 .onPlaced(listBounce::onBodyPlaced),
         ) {
-            CurrencyAmountView(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .onSizeChanged { size -> fieldAreaHeight = size.height }
-                    .padding(AmountFieldPadding)
-                    .sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
-                state = state.amountField,
-                onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
-                onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
-            )
             // Moves with the list when it bounces at its start or end. Everything in it that must
-            // stay in place (the edge of the list, the pinned button) is moved back by the bounce.
+            // stay in place (the amount field, the edge of the list, the pinned button) is moved
+            // back by the bounce. The field is inside too: the layer takes the touches of the whole
+            // area, so a field next to it would not get any.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -217,6 +210,17 @@ internal fun BatchConversionScreen(
                             ),
                     )
                 }
+                CurrencyAmountView(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .graphicsLayer { translationY = -listBounce.offset() }
+                        .onSizeChanged { size -> fieldAreaHeight = size.height }
+                        .padding(AmountFieldPadding)
+                        .sharedNavElement(BatchConversionSharedElements.AMOUNT_FIELD_KEY),
+                    state = state.amountField,
+                    onCurrencyClick = { onEvent(BatchConversionEvent.OnBaseCurrencyClick) },
+                    onValueChange = { onEvent(BatchConversionEvent.OnAmountChange(it)) },
+                )
                 if (state is BatchConversionState.Content && bodyHeight > 0 && fieldAreaHeight > 0) {
                     val addButton = rememberAddButtonPlacement(
                         listState = listState,
@@ -426,14 +430,14 @@ private fun SwipeToRemoveItem(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .background(MaterialTheme.colorScheme.negativeAccent)
                         .padding(horizontal = 24.dp),
                     contentAlignment = Alignment.CenterEnd,
                 ) {
                     Icon(
                         imageVector = vectorResource(Res.drawable.ic_delete),
                         contentDescription = stringResource(Res.string.batch_conversion_remove_currency),
-                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        tint = MaterialTheme.colorScheme.background,
                     )
                 }
             }
