@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.conversion
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,7 +72,7 @@ import nomadrates.feature.conversion.ui_impl.generated.resources.ic_settings
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
-private const val SWAP_BUTTON_HIDE_DURATION_MILLIS = 150
+private const val SWAP_BUTTON_HIDE_DURATION_MILLIS = 80
 
 private val FeaturedSkeletonTitleShape = RoundedCornerShape(14.dp)
 private val FeaturedSkeletonSubtitleShape = RoundedCornerShape(10.dp)
@@ -136,7 +138,7 @@ internal fun ConversionScreen(
             FavouritesConversionFab(
                 onClick = {
                     scope.launch {
-                        swapButtonScale.animateTo(0f, tween(SWAP_BUTTON_HIDE_DURATION_MILLIS))
+                        swapButtonScale.animateTo(0f, tween(SWAP_BUTTON_HIDE_DURATION_MILLIS, easing = LinearEasing))
                         onEvent(ConversionEvent.OnFavouritesConversionClick)
                     }
                 },
@@ -245,6 +247,8 @@ private fun FeaturedLoadingSection(
             text = "Featured",
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Column {
             repeat(4) { index ->
@@ -355,12 +359,16 @@ private fun ErrorState(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = stringResource(Res.string.conversion_error_body),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             RefreshButtonView(

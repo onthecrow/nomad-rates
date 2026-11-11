@@ -120,6 +120,8 @@ private fun ConversionListItemDataView(
                 text = state.title,
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = state.subtitle,

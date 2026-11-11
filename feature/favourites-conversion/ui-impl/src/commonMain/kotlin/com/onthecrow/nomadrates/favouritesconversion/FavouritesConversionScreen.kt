@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.favouritesconversion
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -59,18 +60,17 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.onthecrow.nomadrates.favouritesconversion.model.FavouritesConversionListItem
 import com.onthecrow.nomadrates.favouritesconversion.view.AddCurrencyButtonView
+import com.onthecrow.nomadrates.favouritesconversion.view.ConvertedAmountView
 import com.onthecrow.nomadrates.navigation.sharedNavElement
 import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.ui.negativeAccent
-import com.onthecrow.nomadrates.ui.positiveAccent
 import com.onthecrow.nomadrates.ui.util.shimmer
 import com.onthecrow.nomadrates.ui.view.AppBarTitleView
 import com.onthecrow.nomadrates.ui.view.CurrencyAmountView
@@ -91,7 +91,7 @@ private const val LOADING_ROWS_COUNT = 3
 private const val EMPTY_KEY = "favourites_empty"
 private const val ADD_BUTTON_KEY = "favourites_add"
 
-private const val ADD_BUTTON_HIDE_DURATION_MILLIS = 150
+private const val ADD_BUTTON_HIDE_DURATION_MILLIS = 80
 
 /** Space between the app bar and the first row of the list. */
 private val ListTopPadding = 8.dp
@@ -132,7 +132,7 @@ internal fun FavouritesConversionScreen(
     val addButtonScale = remember { Animatable(1f) }
     val onBackPress: () -> Unit = {
         scope.launch {
-            addButtonScale.animateTo(0f, tween(ADD_BUTTON_HIDE_DURATION_MILLIS))
+            addButtonScale.animateTo(0f, tween(ADD_BUTTON_HIDE_DURATION_MILLIS, easing = LinearEasing))
             onEvent(FavouritesConversionEvent.OnBackPress)
         }
     }
@@ -386,13 +386,10 @@ private fun FavouritesList(
                     currencyCode = item.currencyCode,
                     currencyName = item.currencyName,
                 ) {
-                    Text(
+                    ConvertedAmountView(
                         modifier = Modifier.padding(end = 16.dp),
-                        text = item.convertedAmount,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.positiveAccent,
-                        maxLines = 1,
+                        amount = item.convertedAmount,
+                        compactAmount = item.compactAmount,
                     )
                 }
             }

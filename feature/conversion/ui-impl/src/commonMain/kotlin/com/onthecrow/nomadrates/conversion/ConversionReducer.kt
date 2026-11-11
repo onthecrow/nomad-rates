@@ -2,7 +2,6 @@ package com.onthecrow.nomadrates.conversion
 
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.mapper.ConversionCurrencyStateMapper
-import com.onthecrow.nomadrates.util.filterAmountInput
 import com.onthecrow.nomadrates.conversion.mapper.toConversionListItems
 import com.onthecrow.nomadrates.conversion.model.toChartTrend
 import com.onthecrow.nomadrates.conversion.model.ConversionListItem
@@ -11,6 +10,8 @@ import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
 import com.onthecrow.nomadrates.uicore.Reducer
+import com.onthecrow.nomadrates.util.normalizeFormattedAmount
+import com.onthecrow.nomadrates.util.toAmountFieldValue
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     override suspend fun reduce(
@@ -63,11 +64,12 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             conversionViewState = ConversionViewState.Content(
                 from = ConversionCurrencyStateMapper.fromCurrency(
                     activePair.fromCurrency,
-                    previousViewState?.from?.conversionValue ?: "",
+                    previousViewState?.from?.conversionValue ?: INITIAL_FROM_AMOUNT,
                 ),
                 to = ConversionCurrencyStateMapper.fromCurrency(
                     activePair.toCurrency,
-                    previousViewState?.to?.conversionValue ?: "",
+                    previousViewState?.to?.conversionValue
+                        ?: MoneyAmount(activePair.conversionRate).toConvertedFieldValue(activePair.toCurrency.code),
                 ),
                 isFavourite = activePair.isFavourite,
             ),
@@ -108,7 +110,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         val newConversionViewState = conversionViewState.copy(
             from = conversionCurrencyState.copy(
                 conversionValue = MoneyAmount(event.newValue)
-                    .formatAdaptive(conversionCurrencyState.currencyCode)
+                    .toConvertedFieldValue(conversionCurrencyState.currencyCode)
             )
         )
         return contentState.copy(conversionViewState = newConversionViewState)
@@ -124,7 +126,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
         val newConversionViewState = conversionViewState.copy(
             to = conversionCurrencyState.copy(
                 conversionValue = MoneyAmount(event.newValue)
-                    .formatAdaptive(conversionCurrencyState.currencyCode)
+                    .toConvertedFieldValue(conversionCurrencyState.currencyCode)
             )
         )
         return contentState.copy(conversionViewState = newConversionViewState)
@@ -136,7 +138,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
         val conversionViewState = contentState.conversionViewState ?: return state
-        val newValue = event.value.filterAmountInput()
+        val newValue = event.value.toAmountFieldValue(previous = conversionViewState.from.conversionValue)
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
                 from = conversionViewState.from.copy(conversionValue = newValue)
@@ -150,11 +152,23 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
         val conversionViewState = contentState.conversionViewState ?: return state
-        val newValue = event.value.filterAmountInput()
+        val newValue = event.value.toAmountFieldValue(previous = conversionViewState.to.conversionValue)
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
                 to = conversionViewState.to.copy(conversionValue = newValue)
             ),
         )
+    }
+
+    /**
+     * A converted amount as the amount field holds it: raw input like "1234.50", rounded the same
+     * way as amounts are shown elsewhere.
+     */
+    private fun MoneyAmount.toConvertedFieldValue(currencyCode: String): String =
+        formatAdaptive(currencyCode).normalizeFormattedAmount()
+
+    internal companion object {
+        /** The amount in the "from" field before the user typed anything. */
+        const val INITIAL_FROM_AMOUNT = "1"
     }
 }

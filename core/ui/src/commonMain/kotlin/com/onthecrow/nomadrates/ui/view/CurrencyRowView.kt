@@ -45,6 +45,8 @@ fun CurrencyRowView(
         Text(
             text = currencyCode,
             color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            softWrap = false,
         )
         Text(
             modifier = Modifier.weight(1f),

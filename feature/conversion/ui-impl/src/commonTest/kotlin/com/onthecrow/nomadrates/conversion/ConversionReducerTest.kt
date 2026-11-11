@@ -4,6 +4,9 @@ import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
 import com.onthecrow.nomadrates.currency.model.Currency
+import com.onthecrow.nomadrates.entity.MoneyAmount
+import com.onthecrow.nomadrates.entity.formatAdaptive
+import com.onthecrow.nomadrates.util.normalizeFormattedAmount
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -120,6 +123,57 @@ class ConversionReducerTest {
         ) as ConversionState.Content
 
         assertEquals("123.45", updatedContent.conversionViewState?.from?.conversionValue)
+    }
+
+    @Test
+    fun `fields start with one unit of the from currency converted at the pair rate`() = runTest {
+        val pair = samplePair()
+
+        val content = reducer.reduce(
+            state = ConversionState.Loading,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(
+                    activePair = pair,
+                    conversionPairs = listOf(pair),
+                ),
+            ),
+        ) as ConversionState.Content
+
+        val conversionViewState = assertIs<ConversionViewState.Content>(content.conversionViewState)
+        assertEquals(ConversionReducer.INITIAL_FROM_AMOUNT, conversionViewState.from.conversionValue)
+        assertEquals(
+            MoneyAmount(0.9).formatAdaptive("EUR").normalizeFormattedAmount(),
+            conversionViewState.to.conversionValue,
+        )
+    }
+
+    @Test
+    fun `fields are never empty and converted values are raw input`() = runTest {
+        val pair = samplePair()
+        val content = reducer.reduce(
+            state = ConversionState.Loading,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(
+                    activePair = pair,
+                    conversionPairs = listOf(pair),
+                ),
+            ),
+        ) as ConversionState.Content
+
+        val cleared = reducer.reduce(content, ConversionEvent.OnFromValueChange("")) as ConversionState.Content
+        val typed = reducer.reduce(cleared, ConversionEvent.OnFromValueChange("70")) as ConversionState.Content
+        val converted = reducer.reduce(
+            typed,
+            ConversionEvent.OnToValueConverted("1234567.891"),
+        ) as ConversionState.Content
+
+        assertEquals("0", cleared.conversionViewState?.from?.conversionValue)
+        assertEquals("7", typed.conversionViewState?.from?.conversionValue)
+        assertEquals(
+            MoneyAmount("1234567.891").formatAdaptive("EUR").normalizeFormattedAmount(),
+            converted.conversionViewState?.to?.conversionValue,
+        )
+        assertEquals(false, converted.conversionViewState?.to?.conversionValue.orEmpty().contains(' '))
     }
 
     private fun samplePair(

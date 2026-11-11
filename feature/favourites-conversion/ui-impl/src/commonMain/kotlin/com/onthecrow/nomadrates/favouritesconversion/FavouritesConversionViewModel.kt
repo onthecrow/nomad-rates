@@ -12,9 +12,11 @@ import com.onthecrow.nomadrates.navigation.Navigator
 import com.onthecrow.nomadrates.navigation.ScreenResultDispatcher
 import com.onthecrow.nomadrates.settings.domain.ObserveUseEnglishCurrencyNamesUseCase
 import com.onthecrow.nomadrates.uicore.BaseViewModel
-import com.onthecrow.nomadrates.util.filterAmountInput
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -34,6 +36,7 @@ internal class FavouritesConversionViewModel(
         bindEventHandlers()
         observeFavouritesConversion()
         observeScreenResults()
+        syncAmountWithConversionScreen()
     }
 
     override fun getInitialState(): FavouritesConversionState = FavouritesConversionState.Loading()
@@ -51,13 +54,11 @@ internal class FavouritesConversionViewModel(
             FavouritesConversionEvent.OnAddCurrencyClick -> openCurrencySelector(
                 CurrencySelectionSource.FavouritesConversionAddFavourite,
             )
-            // Keeps the "from" field of the main screen in sync with this amount.
-            is FavouritesConversionEvent.OnAmountChange -> screenResultDispatcher.dispatch(
-                FavouritesConversionAmountResult(amount = event.value.filterAmountInput()),
-            )
             is FavouritesConversionEvent.OnRemoveCurrency -> viewModelScope.launch {
                 setCurrencyFavoriteUseCase(event.currencyCode, isFavourite = false)
             }
+            // The amount is sent to the conversion screen from the state, see syncAmountWithConversionScreen.
+            is FavouritesConversionEvent.OnAmountChange,
             is FavouritesConversionEvent.OnOpened,
             is FavouritesConversionEvent.OnFavouritesConversionChanged -> Unit
         }
@@ -83,6 +84,19 @@ internal class FavouritesConversionViewModel(
                 )
             }
             .onEach(::onEvent)
+            .launchIn(viewModelScope)
+    }
+
+    /**
+     * Keeps the "from" field of the conversion screen at the same amount as this screen, whatever
+     * changed it (typing, the input rules, the amount the screen was opened with).
+     */
+    private fun syncAmountWithConversionScreen() {
+        state
+            .map { state -> state.amount }
+            .distinctUntilChanged()
+            .drop(1)
+            .onEach { amount -> screenResultDispatcher.dispatch(FavouritesConversionAmountResult(amount)) }
             .launchIn(viewModelScope)
     }
 
