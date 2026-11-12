@@ -10,12 +10,14 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        var isThemeLoaded = false
+        // App draws nothing until the stored theme is read; the splash covers that instead of a blank window.
+        installSplashScreen().setKeepOnScreenCondition { !isThemeLoaded }
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            App()
+            App(onThemeLoaded = { isThemeLoaded = true })
         }
     }
 }
