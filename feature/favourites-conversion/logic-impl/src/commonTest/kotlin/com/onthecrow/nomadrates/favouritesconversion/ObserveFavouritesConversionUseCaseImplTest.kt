@@ -2,6 +2,7 @@ package com.onthecrow.nomadrates.favouritesconversion
 
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.favouritesconversion.domain.model.ConversionPairSide
 import com.onthecrow.nomadrates.currency.domain.GetCurrencyListUseCase
 import com.onthecrow.nomadrates.currency.model.Currency
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,7 @@ class ObserveFavouritesConversionUseCaseImplTest {
             ),
         )
 
-        val favouritesConversion = useCase().first()
+        val favouritesConversion = useCase(ConversionPairSide.FROM).first()
 
         assertEquals(usd, favouritesConversion.baseCurrency)
         assertEquals(listOf("EUR", "GBP"), favouritesConversion.targets.map { it.currency.code })
@@ -47,7 +48,7 @@ class ObserveFavouritesConversionUseCaseImplTest {
         )
 
         selectedPair.value = SelectedConversionPair(fromCurrencyCode = "EUR", toCurrencyCode = "GBP")
-        val favouritesConversion = useCase().first()
+        val favouritesConversion = useCase(ConversionPairSide.FROM).first()
 
         assertEquals(eur, favouritesConversion.baseCurrency)
         assertEquals(listOf(1.0, 0.5), favouritesConversion.targets.map { it.conversionRate })
@@ -63,11 +64,28 @@ class ObserveFavouritesConversionUseCaseImplTest {
             getCurrencyListUseCase = FakeGetCurrencyListUseCase(currencies),
         )
 
-        assertEquals(listOf("EUR"), useCase().first().targets.map { it.currency.code })
+        assertEquals(listOf("EUR"), useCase(ConversionPairSide.FROM).first().targets.map { it.currency.code })
 
         currencies.value = listOf(usd, eur, jpy.copy(isFavourite = true))
 
-        assertEquals(listOf("EUR", "JPY"), useCase().first().targets.map { it.currency.code })
+        assertEquals(listOf("EUR", "JPY"), useCase(ConversionPairSide.FROM).first().targets.map { it.currency.code })
+    }
+
+    @Test
+    fun `to side uses the to currency as base`() = runTest {
+        val useCase = ObserveFavouritesConversionUseCaseImpl(
+            getSelectedConversionPairUseCase = FakeGetSelectedConversionPairUseCase(
+                MutableStateFlow(SelectedConversionPair(fromCurrencyCode = "USD", toCurrencyCode = "EUR")),
+            ),
+            getCurrencyListUseCase = FakeGetCurrencyListUseCase(
+                MutableStateFlow(listOf(usd, eur, gbp)),
+            ),
+        )
+
+        val favouritesConversion = useCase(ConversionPairSide.TO).first()
+
+        assertEquals(eur, favouritesConversion.baseCurrency)
+        assertEquals(listOf(1.0, 0.5), favouritesConversion.targets.map { it.conversionRate })
     }
 
     private fun currency(

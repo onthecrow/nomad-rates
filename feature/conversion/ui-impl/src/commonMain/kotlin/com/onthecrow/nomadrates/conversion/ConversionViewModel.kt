@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.conversion
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionAmountResult
 import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionDestination
+import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionSide
 import com.onthecrow.nomadrates.conversion.domain.ConversionDataState
 import com.onthecrow.nomadrates.conversion.domain.ConvertCurrenciesUseCase
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
@@ -69,18 +70,37 @@ internal class ConversionViewModel(
 
     private val retryTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+    /**
+     * The field the user changed last. When the pair changes, the other field is converted from it,
+     * so what the user typed stays as it is.
+     */
+    private var lastEditedSide = EditedSide.FROM
+
+    /**
+     * Set by the swap button until the swapped pair comes back from the data. The fields already
+     * changed places together with their amounts, so that pair change needs no conversion. Any
+     * other change to the reversed pair (e.g. picking it in the list) does.
+     */
+    private var isSwapPending = false
+
     init {
         eventFlow.onEach { event ->
             when (event) {
                 is ConversionEvent.OnBackPress -> onBackPress()
                 is ConversionEvent.OnRetryClick -> onRetryClick()
                 is ConversionEvent.OnSettingsClick -> navigator.navigate(SettingsDestination)
-                is ConversionEvent.OnFavouritesConversionClick -> onFavouritesConversionClick()
+                is ConversionEvent.OnFavouritesConversionClick -> onFavouritesConversionClick(event.fromBottomField)
                 is ConversionEvent.OnToCurrencyClick -> onToCurrencyChangeClick()
                 is ConversionEvent.OnFromCurrencyClick -> onFromCurrencyChangeClick()
                 is ConversionEvent.OnSwitchButtonPress -> onSwitchButtonClick()
-                is ConversionEvent.OnFromValueChange -> onFromCurrencyValueChange(event.value)
-                is ConversionEvent.OnToValueChange -> onToCurrencyValueChange(event.value)
+                is ConversionEvent.OnFromValueChange -> {
+                    lastEditedSide = EditedSide.FROM
+                    onFromCurrencyValueChange(event.value)
+                }
+                is ConversionEvent.OnToValueChange -> {
+                    lastEditedSide = EditedSide.TO
+                    onToCurrencyValueChange(event.value)
+                }
                 is ConversionEvent.OnActiveConversionPairFavouritesClick -> toggleFavourites()
                 is ConversionEvent.OnConversionPairFavouritesClick -> toggleFavourites(event.currencyPair)
                 is ConversionEvent.OnConversionViewClick -> onListItemClick(event.conversionPair)
@@ -93,7 +113,12 @@ internal class ConversionViewModel(
             .onEach { screenResult ->
                 when (screenResult) {
                     is CurrencyListScreenResult -> onCurrencySelected(screenResult)
-                    is FavouritesConversionAmountResult -> onEvent(ConversionEvent.OnFromValueChange(screenResult.amount))
+                    is FavouritesConversionAmountResult -> onEvent(
+                        when (screenResult.side) {
+                            FavouritesConversionSide.FROM -> ConversionEvent.OnFromValueChange(screenResult.amount)
+                            FavouritesConversionSide.TO -> ConversionEvent.OnToValueChange(screenResult.amount)
+                        }
+                    )
                 }
             }
             .launchIn(viewModelScope)
@@ -131,10 +156,7 @@ internal class ConversionViewModel(
     private fun handleConversionDataTransition(transition: ConversionDataTransition) {
         val currentState = transition.current ?: return
         resetRetryStateIfNeeded(currentState)
-        val fromValue = (state.value as? ConversionState.Content)
-            ?.conversionViewState
-            ?.from
-            ?.conversionValue
+        val conversionViewState = (state.value as? ConversionState.Content)?.conversionViewState
 
         onEvent(
             ConversionEvent.OnConversionDataChanged(
@@ -147,10 +169,16 @@ internal class ConversionViewModel(
 
         maybeHighlightNewFavourite(previousContentState, currentContentState)
 
-        if (previousContentState.activePair.identity() != currentContentState.activePair.identity() &&
-            !fromValue.isNullOrBlank()
-        ) {
-            onEvent(ConversionEvent.OnFromValueChange(fromValue))
+        val previousPair = previousContentState.activePair.identity()
+        val currentPair = currentContentState.activePair.identity()
+        if (previousPair == currentPair || conversionViewState == null) return
+        val isSwap = isSwapPending && currentPair == previousPair.second to previousPair.first
+        isSwapPending = false
+        if (isSwap) return
+
+        when (lastEditedSide) {
+            EditedSide.FROM -> onEvent(ConversionEvent.OnFromValueChange(conversionViewState.from.conversionValue))
+            EditedSide.TO -> onEvent(ConversionEvent.OnToValueChange(conversionViewState.to.conversionValue))
         }
     }
 
@@ -267,12 +295,14 @@ internal class ConversionViewModel(
         }
     }
 
-    private fun onFavouritesConversionClick() {
-        val from = (state.value as? ConversionState.Content)?.conversionViewState?.from
+    private fun onFavouritesConversionClick(fromBottomField: Boolean) {
+        val conversionViewState = (state.value as? ConversionState.Content)?.conversionViewState
+        val field = if (fromBottomField) conversionViewState?.to else conversionViewState?.from
         navigator.navigate(
             FavouritesConversionDestination(
-                baseCurrencyCode = from?.currencyCode.orEmpty(),
-                amount = from?.conversionValue.orEmpty().normalizeFormattedAmount(),
+                baseCurrencyCode = field?.currencyCode.orEmpty(),
+                amount = field?.conversionValue.orEmpty().normalizeFormattedAmount(),
+                side = if (fromBottomField) FavouritesConversionSide.TO else FavouritesConversionSide.FROM,
             )
         )
     }
@@ -282,7 +312,13 @@ internal class ConversionViewModel(
     }
 
     private fun onSwitchButtonClick() {
+        // The edited amount moves to the other field together with its currency.
+        lastEditedSide = when (lastEditedSide) {
+            EditedSide.FROM -> EditedSide.TO
+            EditedSide.TO -> EditedSide.FROM
+        }
         val selectedConversionPair = selectedConversionPairStateFlow.value
+        isSwapPending = selectedConversionPair.fromCurrencyCode != selectedConversionPair.toCurrencyCode
         updateSelectedConversionPair(
             SelectedConversionPair(
                 fromCurrencyCode = selectedConversionPair.toCurrencyCode,
@@ -350,6 +386,8 @@ internal class ConversionViewModel(
             ConversionDataState.Loading -> this
         }
     }
+
+    private enum class EditedSide { FROM, TO }
 
     private data class ConversionDataTransition(
         val previous: ConversionDataState? = null,

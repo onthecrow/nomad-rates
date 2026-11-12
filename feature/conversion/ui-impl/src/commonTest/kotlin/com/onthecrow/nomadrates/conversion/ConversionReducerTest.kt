@@ -208,6 +208,21 @@ class ConversionReducerTest {
         assertEquals(after.swapCount, afterData.swapCount)
     }
 
+    @Test
+    fun `converted zero is a plain zero`() = runTest {
+        val pair = samplePair()
+        val content = reducer.reduce(
+            state = ConversionState.Loading,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(activePair = pair, conversionPairs = listOf(pair)),
+            ),
+        ) as ConversionState.Content
+
+        val converted = reducer.reduce(content, ConversionEvent.OnToValueConverted("0.0")) as ConversionState.Content
+
+        assertEquals("0", converted.conversionViewState?.to?.conversionValue)
+    }
+
     private fun samplePair(
         fromCode: String = "USD",
         toCode: String = "EUR",

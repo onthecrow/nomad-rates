@@ -1,6 +1,7 @@
 package com.onthecrow.nomadrates.favouritesconversion
 
 import com.onthecrow.nomadrates.favouritesconversion.domain.ObserveFavouritesConversionUseCase
+import com.onthecrow.nomadrates.favouritesconversion.domain.model.ConversionPairSide
 import com.onthecrow.nomadrates.favouritesconversion.domain.model.FavouritesConversion
 import com.onthecrow.nomadrates.favouritesconversion.domain.model.FavouritesConversionTarget
 import com.onthecrow.nomadrates.conversion.domain.GetSelectedConversionPairUseCase
@@ -16,10 +17,15 @@ internal class ObserveFavouritesConversionUseCaseImpl(
     private val getCurrencyListUseCase: GetCurrencyListUseCase,
 ) : ObserveFavouritesConversionUseCase {
 
-    override fun invoke(): Flow<FavouritesConversion> {
-        // The favourites conversion shares its base currency with the "from" side of the main screen.
+    override fun invoke(side: ConversionPairSide): Flow<FavouritesConversion> {
+        // The favourites conversion shares its base currency with one side of the conversion screen.
         val baseCurrencyCodeFlow = getSelectedConversionPairUseCase()
-            .map { selectedConversionPair -> selectedConversionPair.fromCurrencyCode }
+            .map { selectedConversionPair ->
+                when (side) {
+                    ConversionPairSide.FROM -> selectedConversionPair.fromCurrencyCode
+                    ConversionPairSide.TO -> selectedConversionPair.toCurrencyCode
+                }
+            }
             .distinctUntilChanged()
 
         return combine(

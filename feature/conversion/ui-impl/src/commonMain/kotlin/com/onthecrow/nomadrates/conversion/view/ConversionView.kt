@@ -17,13 +17,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +51,10 @@ private const val SWAP_DURATION_MILLIS = 450
 private const val SWAP_RISING_SCALE = 0.04f
 private const val SWAP_SINKING_SCALE = 0.06f
 
+/** Shadow the field moving up casts on the one moving down, halfway through a swap. */
+private val SwapShadowElevation = 12.dp
+private val FieldShape = RoundedCornerShape(100.dp)
+
 private const val SLOT_FIRST = "first"
 private const val SLOT_SECOND = "second"
 
@@ -56,8 +64,13 @@ internal fun ConversionView(
     modifier: Modifier = Modifier,
     /** Scale of the swap button, so the screen can hide it before leaving for the favourites conversion screen. */
     swapButtonScale: () -> Float = { 1f },
+    /** The bottom field, not the top one, flies to the favourites conversion screen and back. */
+    sharedFieldIsBottom: Boolean = false,
+    /** Whether the user is typing in the bottom field. */
+    onBottomFieldFocusChange: (Boolean) -> Unit = {},
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
+    var focusedSlot by remember { mutableStateOf<String?>(null) }
     val swapCount = (state as? ConversionViewState.Content)?.swapCount ?: 0
     val swapProgress = rememberSwapProgress(swapCount)
     val swapButtonRotation by animateFloatAsState(
@@ -100,9 +113,12 @@ internal fun ConversionView(
                         // changes which of them is on top, and they move to their new places.
                         val topSlot = if (state.swapCount % 2 == 0) SLOT_FIRST else SLOT_SECOND
                         val bottomSlot = if (topSlot == SLOT_FIRST) SLOT_SECOND else SLOT_FIRST
+                        val bottomFieldFocused = focusedSlot == bottomSlot
+                        SideEffect { onBottomFieldFocusChange(bottomFieldFocused) }
                         listOf(topSlot, bottomSlot).forEach { slot ->
                             key(slot) {
                                 val isTop = slot == topSlot
+                                val isShared = isTop != sharedFieldIsBottom
                                 CurrencyAmountView(
                                     modifier = Modifier
                                         .animateBounds(
@@ -112,13 +128,25 @@ internal fun ConversionView(
                                         // The field moving up passes over the one moving down.
                                         .zIndex(if (isTop) 1f else 0f)
                                         .graphicsLayer {
-                                            val depth = sin(PI.toFloat() * swapProgress()) *
+                                            val swapPeak = sin(PI.toFloat() * swapProgress())
+                                            val depth = swapPeak *
                                                 if (isTop) SWAP_RISING_SCALE else -SWAP_SINKING_SCALE
                                             scaleX = 1f + depth
                                             scaleY = 1f + depth
+                                            if (isTop) {
+                                                shadowElevation = swapPeak * SwapShadowElevation.toPx()
+                                                shape = FieldShape
+                                            }
+                                        }
+                                        .onFocusChanged { focusState ->
+                                            if (focusState.hasFocus) {
+                                                focusedSlot = slot
+                                            } else if (focusedSlot == slot) {
+                                                focusedSlot = null
+                                            }
                                         }
                                         .then(
-                                            if (isTop) {
+                                            if (isShared) {
                                                 Modifier.sharedNavElement(FavouritesConversionSharedElements.AMOUNT_FIELD_KEY)
                                             } else {
                                                 Modifier
