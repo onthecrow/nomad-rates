@@ -14,8 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,12 +28,22 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import okio.Path.Companion.toPath
 import kotlin.random.Random
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CurrencyRepositoryImplTest {
+
+    // The repository syncs in the background and DataStore works on its own threads, so the test
+    // runs them on real threads, waits in real time and cancels them when it ends.
+    private val syncScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    @AfterTest
+    fun cancelSync() {
+        syncScope.cancel()
+    }
 
     @Test
     fun `currencies are saved even when remote config has not emitted yet`() = runTest {
@@ -41,9 +55,10 @@ class CurrencyRepositoryImplTest {
                 currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
                 currencyRatesMetadataDataSource = createMetadataDataSource(),
                 remoteConfigProvider = TestRemoteConfigProvider(),
+                syncScope = syncScope,
             )
 
-            val currencies = withTimeout(5_000) {
+            val currencies = awaitInRealTime {
                 repository.getCurrencyList()
                     .map { it.orEmpty() }
                     .first { it.isNotEmpty() }
@@ -67,9 +82,10 @@ class CurrencyRepositoryImplTest {
                 currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
                 currencyRatesMetadataDataSource = createMetadataDataSource(),
                 remoteConfigProvider = TestRemoteConfigProvider(remoteConfigFlow),
+                syncScope = syncScope,
             )
 
-            withTimeout(5_000) {
+            awaitInRealTime {
                 repository.getCurrencyList()
                     .map { it.orEmpty() }
                     .first { it.isNotEmpty() }
@@ -80,7 +96,7 @@ class CurrencyRepositoryImplTest {
                 featuredConversions = emptyList(),
             )
 
-            val updatedCurrencies = withTimeout(5_000) {
+            val updatedCurrencies = awaitInRealTime {
                 repository.getCurrencyList()
                     .map { it.orEmpty() }
                     .first { currencies ->
@@ -105,17 +121,28 @@ class CurrencyRepositoryImplTest {
                 currencyDatabaseDataSource = CurrencyDatabaseDataSource(FakeCurrencyDao()),
                 currencyRatesMetadataDataSource = metadataDataSource,
                 remoteConfigProvider = TestRemoteConfigProvider(),
+                syncScope = syncScope,
             )
 
-            withTimeout(5_000) {
+            awaitInRealTime {
                 repository.getCurrencyList()
                     .map { it.orEmpty() }
                     .first { it.isNotEmpty() }
             }
 
-            assertEquals(1_000L, metadataDataSource.observeLastRatesTimestamp().first())
+            val timestamp = awaitInRealTime {
+                metadataDataSource.observeLastRatesTimestamp().first { it != null }
+            }
+
+            assertEquals(1_000L, timestamp)
         } finally {
             stopKoin()
+        }
+    }
+
+    private suspend fun <T> awaitInRealTime(block: suspend () -> T): T {
+        return withContext(Dispatchers.Default.limitedParallelism(1)) {
+            withTimeout(5_000) { block() }
         }
     }
 
@@ -137,7 +164,7 @@ class CurrencyRepositoryImplTest {
     private fun createMetadataDataSource(): CurrencyRatesMetadataDataSource {
         return CurrencyRatesMetadataDataSource(
             PreferenceDataStoreFactory.createWithPath(
-                scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.Default),
+                scope = syncScope,
                 produceFile = { "/tmp/currency_repo_${Random.nextInt()}.preferences_pb".toPath() },
             )
         )

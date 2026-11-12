@@ -11,6 +11,7 @@ kotlin {
         namespace = "com.onthecrow.nomadrates.currency"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
+        withHostTest {}
     }
     iosArm64()
     iosSimulatorArm64()
@@ -43,3 +44,8 @@ room {
 dependencies {
     add("ksp", libs.androidx.room.compiler)
 }
+
+// The iOS test binary can't link the Firebase frameworks, so the tests of this module run on the
+// Android host instead (testAndroidHostTest).
+tasks.matching { it.name == "linkDebugTestIosSimulatorArm64" || it.name == "iosSimulatorArm64Test" }
+    .configureEach { enabled = false }

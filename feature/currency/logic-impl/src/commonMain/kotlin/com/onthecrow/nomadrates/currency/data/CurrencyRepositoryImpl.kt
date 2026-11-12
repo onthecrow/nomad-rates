@@ -5,6 +5,7 @@ import com.onthecrow.nomadrates.currency.data.datastore.CurrencyRatesMetadataDat
 import com.onthecrow.nomadrates.currency.model.Currency
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfig
 import com.onthecrow.nomadrates.remoteconfig.RemoteConfigProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -19,6 +20,8 @@ internal class CurrencyRepositoryImpl(
     private val currencyDatabaseDataSource: CurrencyDatabaseDataSource,
     private val currencyRatesMetadataDataSource: CurrencyRatesMetadataDataSource,
     remoteConfigProvider: RemoteConfigProvider,
+    // Keeps the saved currencies in sync with the backend and the remote config for the app's lifetime.
+    syncScope: CoroutineScope = MainScope(),
 ) : CurrencyRepository {
 
     init {
@@ -50,7 +53,7 @@ internal class CurrencyRepositoryImpl(
                 }
             }
         }
-            .launchIn(MainScope())
+            .launchIn(syncScope)
     }
 
 

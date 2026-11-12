@@ -1,11 +1,13 @@
 package com.onthecrow.nomadrates.currency
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.onthecrow.nomadrates.currency.data.CurrencyConfigPayload
 import com.onthecrow.nomadrates.currency.data.CurrencyRemoteDataSource
 import com.onthecrow.nomadrates.currency.data.datastore.CurrencyRatesMetadataDataSource
 import com.onthecrow.nomadrates.currency.domain.RefreshCurrenciesUseCase
 import com.onthecrow.nomadrates.currency.model.CurrenciesResponse
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
@@ -86,7 +88,7 @@ class RefreshRatesManuallyUseCaseImplTest {
         assertEquals(null, metadataDataSource.getLastManualRefreshAt())
     }
 
-    private fun createMetadataDataSource(): CurrencyRatesMetadataDataSource {
+    private fun TestScope.createMetadataDataSource(): CurrencyRatesMetadataDataSource {
         return CurrencyRatesMetadataDataSource(
             PreferenceDataStoreFactory.createWithPath(
                 scope = backgroundScope,
@@ -116,17 +118,17 @@ class RefreshRatesManuallyUseCaseImplTest {
 
         override suspend fun fetchAndActivate(): Boolean = true
     }
+}
 
-    private fun createPayload(): com.onthecrow.nomadrates.currency.data.CurrencyConfigPayload {
-        return com.onthecrow.nomadrates.currency.data.CurrencyConfigPayload(
-            config = CurrenciesResponse(
-                disclaimer = "test",
-                license = "test",
-                timestamp = 1L,
-                base = "USD",
-                rates = mapOf("USD" to 1.0),
-            ),
-            historical = mapOf("USD" to listOf(1.0)),
-        )
-    }
+private fun createPayload(): CurrencyConfigPayload {
+    return CurrencyConfigPayload(
+        config = CurrenciesResponse(
+            disclaimer = "test",
+            license = "test",
+            timestamp = 1L,
+            base = "USD",
+            rates = mapOf("USD" to 1.0),
+        ),
+        historical = mapOf("USD" to listOf(1.0)),
+    )
 }
