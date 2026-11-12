@@ -1,0 +1,54 @@
+name: Unit tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  jvm:
+    name: JVM and Android host
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup
+
+      # Shared code tests of the modules that can't link Firebase on iOS run here (testAndroidHostTest).
+      - name: Run the tests
+        run: ./gradlew jvmTest testAndroidHostTest --continue
+
+      - name: Upload the test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-test-reports
+          path: '**/build/reports/tests/'
+          retention-days: 7
+
+  ios:
+    name: iOS simulator
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup
+
+      - name: Run the tests
+        run: ./gradlew iosSimulatorArm64Test --continue
+
+      - name: Upload the test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-reports
+          path: '**/build/reports/tests/'
+          retention-days: 7
