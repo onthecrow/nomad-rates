@@ -12,6 +12,7 @@ import com.onthecrow.nomadrates.conversion.domain.SaveSelectedConversionPairUseC
 import com.onthecrow.nomadrates.conversion.domain.ToggleConversionPairFavouriteUseCase
 import com.onthecrow.nomadrates.conversion.domain.model.ConversionPair
 import com.onthecrow.nomadrates.conversion.domain.model.SelectedConversionPair
+import com.onthecrow.nomadrates.conversion.mapper.visiblePairs
 import com.onthecrow.nomadrates.util.normalizeFormattedAmount
 import com.onthecrow.nomadrates.currency.CurrencySelectionSource
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
@@ -375,11 +376,7 @@ internal class ConversionViewModel(
     private fun ConversionDataState.filtered(showFeaturedPairs: Boolean): ConversionDataState {
         return when (this) {
             is ConversionDataState.Content -> copy(
-                conversionPairs = if (showFeaturedPairs) {
-                    conversionPairs
-                } else {
-                    conversionPairs.filterNot { conversionPair -> conversionPair.isFeatured }
-                }
+                conversionPairs = conversionPairs.visiblePairs(showFeaturedPairs),
             )
 
             ConversionDataState.Error,
