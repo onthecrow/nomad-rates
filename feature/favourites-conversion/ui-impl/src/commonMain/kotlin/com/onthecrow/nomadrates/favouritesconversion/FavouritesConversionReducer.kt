@@ -5,7 +5,7 @@ import com.onthecrow.nomadrates.favouritesconversion.mapper.withAmount
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.uicore.Reducer
 import com.onthecrow.nomadrates.util.filterAmountInput
-import com.onthecrow.nomadrates.util.toAmountFieldValue
+import com.onthecrow.nomadrates.util.normalizeAmountInput
 
 internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, FavouritesConversionEvent> {
     override suspend fun reduce(
@@ -16,7 +16,7 @@ internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, 
         is FavouritesConversionEvent.OnOpened -> reduceOpened(state, event)
         is FavouritesConversionEvent.OnAmountChange -> reduceAmountChange(
             state = state,
-            amount = event.value.toAmountFieldValue(previous = state.amount),
+            amount = event.value.normalizeAmountInput(),
         )
         is FavouritesConversionEvent.OnRemoveCurrency -> reduceRemoveCurrency(state, event)
         FavouritesConversionEvent.OnBackPress,
@@ -55,7 +55,7 @@ internal class FavouritesConversionReducer : Reducer<FavouritesConversionState, 
             amount = if (event.amount.filterAmountInput().isEmpty()) {
                 loadingState.amount
             } else {
-                event.amount.toAmountFieldValue(previous = "")
+                event.amount.normalizeAmountInput()
             },
             baseCurrencyCode = event.baseCurrencyCode.ifBlank { null },
         )
