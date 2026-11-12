@@ -37,9 +37,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -74,6 +79,8 @@ import org.jetbrains.compose.resources.vectorResource
 
 private const val SWAP_BUTTON_HIDE_DURATION_MILLIS = 80
 
+private val FAB_SHADOW_ELEVATION = 12.dp
+
 private val FeaturedSkeletonTitleShape = RoundedCornerShape(14.dp)
 private val FeaturedSkeletonSubtitleShape = RoundedCornerShape(10.dp)
 private val FeaturedSkeletonTitleWidth = 132.dp
@@ -96,6 +103,11 @@ internal fun ConversionScreen(
     // The amount field flies over the swap button on the way to the favourites conversion screen, so the
     // button shrinks away first and the transition starts after that.
     val swapButtonScale = remember { Animatable(1f) }
+    // The field the user is typing in flies to the favourites conversion screen; the top one if none.
+    var bottomFieldFocused by remember { mutableStateOf(false) }
+    // Saveable: this screen leaves the composition while the other one is shown, and the same
+    // field has to fly back when the user returns.
+    var sharedFieldIsBottom by rememberSaveable { mutableStateOf(false) }
     LifecycleResumeEffect(swapButtonScale) {
         scope.launch { swapButtonScale.snapTo(1f) }
         onPauseOrDispose { }
@@ -123,6 +135,8 @@ internal fun ConversionScreen(
                 state = state,
                 modifier = Modifier.fillMaxSize(),
                 swapButtonScale = { swapButtonScale.value },
+                sharedFieldIsBottom = sharedFieldIsBottom,
+                onBottomFieldFocusChange = { focused -> bottomFieldFocused = focused },
                 eventFlow = eventFlow,
                 onEvent = onEvent,
             )
@@ -137,9 +151,11 @@ internal fun ConversionScreen(
         ) {
             FavouritesConversionFab(
                 onClick = {
+                    val fromBottomField = bottomFieldFocused
+                    sharedFieldIsBottom = fromBottomField
                     scope.launch {
                         swapButtonScale.animateTo(0f, tween(SWAP_BUTTON_HIDE_DURATION_MILLIS, easing = LinearEasing))
-                        onEvent(ConversionEvent.OnFavouritesConversionClick)
+                        onEvent(ConversionEvent.OnFavouritesConversionClick(fromBottomField))
                     }
                 },
             )
@@ -150,13 +166,27 @@ internal fun ConversionScreen(
     }
 }
 
+/**
+ * A dark shadow around the buttons, so they stand out from the chart drawn behind them.
+ */
+@Composable
+private fun Modifier.fabShadow(): Modifier {
+    val shadowColor = MaterialTheme.colorScheme.scrim
+    return shadow(
+        elevation = FAB_SHADOW_ELEVATION,
+        shape = CircleShape,
+        ambientColor = shadowColor,
+        spotColor = shadowColor,
+    )
+}
+
 @Composable
 private fun FavouritesConversionFab(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
     SmallFloatingActionButton(
-        modifier = modifier,
+        modifier = modifier.fabShadow(),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         shape = CircleShape,
         onClick = onClick,
@@ -176,7 +206,7 @@ private fun SettingsFab(
     onClick: () -> Unit = {},
 ) {
     FloatingActionButton(
-        modifier = modifier,
+        modifier = modifier.fabShadow(),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         shape = CircleShape,
         onClick = onClick,
@@ -385,6 +415,8 @@ private fun ContentState(
     state: ConversionState.Content,
     modifier: Modifier = Modifier,
     swapButtonScale: () -> Float = { 1f },
+    sharedFieldIsBottom: Boolean = false,
+    onBottomFieldFocusChange: (Boolean) -> Unit = {},
     eventFlow: Flow<ConversionEvent> = emptyFlow(),
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
@@ -459,6 +491,8 @@ private fun ContentState(
             ConversionView(
                 state = conversionViewState,
                 swapButtonScale = swapButtonScale,
+                sharedFieldIsBottom = sharedFieldIsBottom,
+                onBottomFieldFocusChange = onBottomFieldFocusChange,
                 onEvent = onEvent,
             )
             Spacer(modifier = Modifier.size(16.dp))

@@ -10,6 +10,7 @@ import com.onthecrow.nomadrates.conversion.model.ListGroup
 import com.onthecrow.nomadrates.entity.MoneyAmount
 import com.onthecrow.nomadrates.entity.formatAdaptive
 import com.onthecrow.nomadrates.uicore.Reducer
+import com.onthecrow.nomadrates.util.EMPTY_AMOUNT_FIELD_VALUE
 import com.onthecrow.nomadrates.util.normalizeFormattedAmount
 import com.onthecrow.nomadrates.util.toAmountFieldValue
 
@@ -183,7 +184,12 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
      * way as amounts are shown elsewhere.
      */
     private fun MoneyAmount.toConvertedFieldValue(currencyCode: String): String =
-        formatAdaptive(currencyCode).normalizeFormattedAmount()
+        if (isZero()) {
+            // A plain "0", so typing into this field later replaces it instead of making "0.001".
+            EMPTY_AMOUNT_FIELD_VALUE
+        } else {
+            formatAdaptive(currencyCode).normalizeFormattedAmount()
+        }
 
     internal companion object {
         /** The amount in the "from" field before the user typed anything. */

@@ -8,7 +8,8 @@ internal sealed interface ConversionEvent : Event {
     data object OnRetryClick : ConversionEvent
     data class OnRetryStateChanged(val isRetrying: Boolean) : ConversionEvent
     data object OnSettingsClick : ConversionEvent
-    data object OnFavouritesConversionClick : ConversionEvent
+    /** @param fromBottomField the user is typing in the bottom ("to") field, so that one goes along. */
+    data class OnFavouritesConversionClick(val fromBottomField: Boolean) : ConversionEvent
     data object OnFromCurrencyClick : ConversionEvent
     data object OnToCurrencyClick : ConversionEvent
     data object OnSwitchButtonPress : ConversionEvent

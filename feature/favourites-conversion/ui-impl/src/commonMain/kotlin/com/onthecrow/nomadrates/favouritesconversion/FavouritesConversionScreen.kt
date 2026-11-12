@@ -286,11 +286,11 @@ private class ListBounce(
 }
 
 /**
- * Where the "Add currency" button is. It follows its place at the end of the list, and when the
- * list is scrolled to the end, that place is right on top of the amount field: the button reaches
- * into the field there. When the list is scrolled up from the end, the place moves down below the
- * field, so the button stays on the field ("pinned") as a round plus button. Scrolling back to the
- * end, the list "picks the button up" again and it turns back into the pill.
+ * Where the "Add currency" button is. It follows its place at the end of the list; when the list
+ * is scrolled to the end, the button is right above the amount field. Scrolling up from the end
+ * moves that place down until the button reaches into the field; from there it stays on the field
+ * ("pinned") as a round plus button. Scrolling back to the end, the list "picks the button up"
+ * again and it turns back into the pill.
  */
 @Stable
 private class AddButtonPlacement(
@@ -394,13 +394,13 @@ private fun FavouritesList(
                 }
             }
         }
-        // The button itself is drawn above the list (see AddButtonPlacement); this keeps its place.
-        // Only the part of the button above the field area takes space, the rest hangs over the field.
+        // The button itself is drawn above the list (see AddButtonPlacement); this keeps its place,
+        // so at the end of the list the whole button is above the amount field.
         item(key = ADD_BUTTON_KEY) {
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(AddButtonGap + AddButtonAboveFieldArea),
+                    .height(AddButtonGap + RoundIconButtonDefaults.Size),
             )
         }
     }

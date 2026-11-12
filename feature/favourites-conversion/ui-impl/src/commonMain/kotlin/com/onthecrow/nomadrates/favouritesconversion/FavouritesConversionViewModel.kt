@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.favouritesconversion
 import androidx.lifecycle.viewModelScope
 import com.onthecrow.nomadrates.favouritesconversion.domain.ObserveFavouritesConversionUseCase
 import com.onthecrow.nomadrates.favouritesconversion.domain.SetFavouritesConversionBaseCurrencyUseCase
+import com.onthecrow.nomadrates.favouritesconversion.domain.model.ConversionPairSide
 import com.onthecrow.nomadrates.favouritesconversion.domain.model.FavouritesConversion
 import com.onthecrow.nomadrates.currency.CurrencyListDestination
 import com.onthecrow.nomadrates.currency.CurrencyListScreenResult
@@ -31,6 +32,11 @@ internal class FavouritesConversionViewModel(
     reducer: FavouritesConversionReducer,
     private val destination: FavouritesConversionDestination,
 ) : BaseViewModel<FavouritesConversionEvent, FavouritesConversionState, FavouritesConversionReducer>(reducer) {
+
+    private val side: ConversionPairSide = when (destination.side) {
+        FavouritesConversionSide.FROM -> ConversionPairSide.FROM
+        FavouritesConversionSide.TO -> ConversionPairSide.TO
+    }
 
     init {
         bindEventHandlers()
@@ -66,7 +72,7 @@ internal class FavouritesConversionViewModel(
 
     private fun observeFavouritesConversion() {
         combine<FavouritesConversion, Boolean, FavouritesConversionEvent>(
-            observeFavouritesConversionUseCase(),
+            observeFavouritesConversionUseCase(side),
             observeUseEnglishCurrencyNamesUseCase(),
         ) { favouritesConversion, useEnglishCurrencyNames ->
             FavouritesConversionEvent.OnFavouritesConversionChanged(
@@ -96,7 +102,9 @@ internal class FavouritesConversionViewModel(
             .map { state -> state.amount }
             .distinctUntilChanged()
             .drop(1)
-            .onEach { amount -> screenResultDispatcher.dispatch(FavouritesConversionAmountResult(amount)) }
+            .onEach { amount ->
+                screenResultDispatcher.dispatch(FavouritesConversionAmountResult(amount, destination.side))
+            }
             .launchIn(viewModelScope)
     }
 
@@ -117,7 +125,7 @@ internal class FavouritesConversionViewModel(
     private fun onCurrencySelected(result: CurrencyListScreenResult) {
         when (result.source) {
             CurrencySelectionSource.FavouritesConversionBase -> viewModelScope.launch {
-                setFavouritesConversionBaseCurrencyUseCase(result.selectedCurrencyCode)
+                setFavouritesConversionBaseCurrencyUseCase(result.selectedCurrencyCode, side)
             }
 
             CurrencySelectionSource.FavouritesConversionAddFavourite -> viewModelScope.launch {
