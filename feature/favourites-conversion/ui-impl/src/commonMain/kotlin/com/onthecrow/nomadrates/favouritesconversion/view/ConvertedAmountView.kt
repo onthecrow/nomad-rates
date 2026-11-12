@@ -4,8 +4,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -50,7 +51,7 @@ internal fun ConvertedAmountView(
     val color = MaterialTheme.colorScheme.positiveAccent
 
     Layout(
-        modifier = modifier.clipToBounds(),
+        modifier = modifier.clipHorizontally(),
         content = {
             RollingText(
                 text = amount,
@@ -82,6 +83,16 @@ internal fun ConvertedAmountView(
             // Aligned to the end; what does not fit is cut off at the start.
             shown.placeRelative(x = width - shown.width, y = 0)
         }
+    }
+}
+
+/**
+ * Cuts off what is drawn past the start or the end of the view, but not above or below it: the
+ * raised exponent of a compact amount goes above the view's top.
+ */
+private fun Modifier.clipHorizontally(): Modifier = drawWithContent {
+    clipRect(top = -size.height, bottom = size.height * 2) {
+        this@drawWithContent.drawContent()
     }
 }
 
