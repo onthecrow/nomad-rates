@@ -102,20 +102,17 @@ class FavouritesConversionReducerTest {
     }
 
     @Test
-    fun `typing next to the lone zero replaces it`() = runTest {
+    fun `amount is kept without leading zeros`() = runTest {
         val content = reduceData(
             state = FavouritesConversionState.Loading(),
             favouritesConversion = favouritesConversion(base = usd, targets = listOf(eur)),
         )
-        val zero = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange(""))
 
-        val typedAfter = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("05"))
-        val typedBefore = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("50"))
-        val typedZero = reducer.reduce(zero, FavouritesConversionEvent.OnAmountChange("00"))
+        val typed = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange("05"))
+        val zeros = reducer.reduce(content, FavouritesConversionEvent.OnAmountChange("00"))
 
-        assertEquals("5", typedAfter.amount)
-        assertEquals("5", typedBefore.amount)
-        assertEquals("0", typedZero.amount)
+        assertEquals("5", typed.amount)
+        assertEquals("0", zeros.amount)
     }
 
     @Test

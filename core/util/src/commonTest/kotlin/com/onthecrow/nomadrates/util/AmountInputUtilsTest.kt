@@ -35,36 +35,77 @@ class AmountInputUtilsTest {
     }
 
     @Test
-    fun `deleting everything leaves zero`() {
-        assertEquals("0", "".toAmountFieldValue(previous = "5"))
-        assertEquals("0", "".toAmountFieldValue(previous = "0"))
+    fun `deleting everything leaves zero with the cursor after it`() {
+        assertEquals(AmountFieldEdit("0", 1, 1), editAmountField(previous = "5", edited = "", 0, 0))
     }
 
     @Test
     fun `typing next to a lone zero replaces it`() {
-        assertEquals("5", "05".toAmountFieldValue(previous = "0"))
-        assertEquals("5", "50".toAmountFieldValue(previous = "0"))
-        assertEquals("0", "00".toAmountFieldValue(previous = "0"))
-        assertEquals("0.", "0.".toAmountFieldValue(previous = "0"))
-        assertEquals("0.", ".0".toAmountFieldValue(previous = "0"))
-        assertEquals("0.", "0,".toAmountFieldValue(previous = "0"))
+        assertEquals(AmountFieldEdit("5", 1, 1), editAmountField(previous = "0", edited = "05", 2, 2))
+        assertEquals(AmountFieldEdit("5", 1, 1), editAmountField(previous = "0", edited = "50", 1, 1))
+        assertEquals(AmountFieldEdit("0", 1, 1), editAmountField(previous = "0", edited = "00", 2, 2))
+        assertEquals(AmountFieldEdit("0.", 2, 2), editAmountField(previous = "0", edited = "0.", 2, 2))
+        assertEquals(AmountFieldEdit("0.", 2, 2), editAmountField(previous = "0", edited = "0,", 2, 2))
     }
 
     @Test
-    fun `leading zeros are dropped and a missing one is added`() {
-        assertEquals("7", "007".toAmountFieldValue(previous = "07"))
-        assertEquals("0", "00".toAmountFieldValue(previous = "100"))
-        assertEquals("5", "05".toAmountFieldValue(previous = "105"))
-        assertEquals("0.5", ".5".toAmountFieldValue(previous = "0.5"))
-        assertEquals("0.50", "000.50".toAmountFieldValue(previous = "1"))
+    fun `typing before a leading zero keeps the cursor after the typed digit`() {
+        // "0.004" with the cursor before "." and "3" typed.
+        assertEquals(
+            AmountFieldEdit("3.004", 1, 1),
+            editAmountField(previous = "0.004", edited = "03.004", 2, 2),
+        )
     }
 
     @Test
-    fun `ordinary edits are kept`() {
-        assertEquals("10", "10".toAmountFieldValue(previous = "1"))
-        assertEquals("100", "100".toAmountFieldValue(previous = "10"))
-        assertEquals("12.", "12.".toAmountFieldValue(previous = "12"))
-        assertEquals("1.05", "1.05".toAmountFieldValue(previous = "1.0"))
-        assertEquals("1", "1a".toAmountFieldValue(previous = "1"))
+    fun `deleting the only integer digit leaves a zero with the cursor after it`() {
+        // "3.004" with the cursor before "." and the "3" deleted.
+        assertEquals(
+            AmountFieldEdit("0.004", 1, 1),
+            editAmountField(previous = "3.004", edited = ".004", 0, 0),
+        )
+    }
+
+    @Test
+    fun `edits in the middle keep the cursor in place`() {
+        assertEquals(
+            AmountFieldEdit("3.0074", 4, 4),
+            editAmountField(previous = "3.004", edited = "3.0074", 4, 4),
+        )
+        assertEquals(
+            AmountFieldEdit("1234", 2, 2),
+            editAmountField(previous = "134", edited = "1234", 2, 2),
+        )
+        assertEquals(
+            AmountFieldEdit("14", 1, 1),
+            editAmountField(previous = "134", edited = "14", 1, 1),
+        )
+    }
+
+    @Test
+    fun `deleting the first digit drops the zeros after it`() {
+        // "1005" with the "1" deleted: "005" becomes "5", the cursor stays at the start.
+        assertEquals(AmountFieldEdit("5", 0, 0), editAmountField(previous = "1005", edited = "005", 0, 0))
+        assertEquals(AmountFieldEdit("0", 0, 0), editAmountField(previous = "100", edited = "00", 0, 0))
+    }
+
+    @Test
+    fun `selection moves with the text`() {
+        assertEquals(
+            AmountFieldEdit("12.5", 0, 4),
+            editAmountField(previous = "12.5", edited = "12.5", 0, 4),
+        )
+    }
+
+    @Test
+    fun `amount input is normalized`() {
+        assertEquals("7", "007".normalizeAmountInput())
+        assertEquals("0", "".normalizeAmountInput())
+        assertEquals("0", "00".normalizeAmountInput())
+        assertEquals("0.5", ".5".normalizeAmountInput())
+        assertEquals("0.50", "000,50".normalizeAmountInput())
+        assertEquals("10", "10".normalizeAmountInput())
+        assertEquals("12.", "12.".normalizeAmountInput())
+        assertEquals("1", "1a".normalizeAmountInput())
     }
 }

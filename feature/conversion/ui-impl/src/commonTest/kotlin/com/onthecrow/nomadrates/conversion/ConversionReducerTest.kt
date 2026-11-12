@@ -161,7 +161,7 @@ class ConversionReducerTest {
         ) as ConversionState.Content
 
         val cleared = reducer.reduce(content, ConversionEvent.OnFromValueChange("")) as ConversionState.Content
-        val typed = reducer.reduce(cleared, ConversionEvent.OnFromValueChange("70")) as ConversionState.Content
+        val typed = reducer.reduce(cleared, ConversionEvent.OnFromValueChange("07")) as ConversionState.Content
         val converted = reducer.reduce(
             typed,
             ConversionEvent.OnToValueConverted("1234567.891"),

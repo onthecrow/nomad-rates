@@ -12,7 +12,7 @@ import com.onthecrow.nomadrates.entity.formatAdaptive
 import com.onthecrow.nomadrates.uicore.Reducer
 import com.onthecrow.nomadrates.util.EMPTY_AMOUNT_FIELD_VALUE
 import com.onthecrow.nomadrates.util.normalizeFormattedAmount
-import com.onthecrow.nomadrates.util.toAmountFieldValue
+import com.onthecrow.nomadrates.util.normalizeAmountInput
 
 internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     override suspend fun reduce(
@@ -157,7 +157,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
         val conversionViewState = contentState.conversionViewState ?: return state
-        val newValue = event.value.toAmountFieldValue(previous = conversionViewState.from.conversionValue)
+        val newValue = event.value.normalizeAmountInput()
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
                 from = conversionViewState.from.copy(conversionValue = newValue)
@@ -171,7 +171,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
     ): ConversionState {
         val contentState = state as? ConversionState.Content ?: return state
         val conversionViewState = contentState.conversionViewState ?: return state
-        val newValue = event.value.toAmountFieldValue(previous = conversionViewState.to.conversionValue)
+        val newValue = event.value.normalizeAmountInput()
         return contentState.copy(
             conversionViewState = conversionViewState.copy(
                 to = conversionViewState.to.copy(conversionValue = newValue)

@@ -46,7 +46,7 @@ internal fun ConvertedAmountView(
     compactAmount: CompactAmount?,
     modifier: Modifier = Modifier,
 ) {
-    val style: TextStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+    val style: TextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
     val color = MaterialTheme.colorScheme.positiveAccent
 
     Layout(
