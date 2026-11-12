@@ -1,5 +1,11 @@
 package com.onthecrow.nomadrates.conversion.view
 
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,21 +16,39 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionSharedElements
+import androidx.compose.ui.zIndex
 import com.onthecrow.nomadrates.conversion.ConversionEvent
 import com.onthecrow.nomadrates.conversion.model.ConversionViewState
+import com.onthecrow.nomadrates.favouritesconversion.FavouritesConversionSharedElements
 import com.onthecrow.nomadrates.navigation.sharedNavElement
 import com.onthecrow.nomadrates.navigation.shrinkDuringSharedTransition
 import com.onthecrow.nomadrates.ui.NomadRatesTheme
 import com.onthecrow.nomadrates.ui.model.CurrencyAmountViewState
 import com.onthecrow.nomadrates.ui.view.CurrencyAmountView
 import com.onthecrow.nomadrates.ui.view.LikeButtonView
+import kotlin.math.PI
+import kotlin.math.sin
+
+private const val SWAP_DURATION_MILLIS = 450
+
+/** How much the field moving up grows and the one moving down shrinks halfway through a swap. */
+private const val SWAP_RISING_SCALE = 0.04f
+private const val SWAP_SINKING_SCALE = 0.06f
+
+private const val SLOT_FIRST = "first"
+private const val SLOT_SECOND = "second"
 
 @Composable
 internal fun ConversionView(
@@ -34,46 +58,87 @@ internal fun ConversionView(
     swapButtonScale: () -> Float = { 1f },
     onEvent: (ConversionEvent) -> Unit = {},
 ) {
+    val swapCount = (state as? ConversionViewState.Content)?.swapCount ?: 0
+    val swapProgress = rememberSwapProgress(swapCount)
+    val swapButtonRotation by animateFloatAsState(
+        targetValue = swapCount * 180f,
+        animationSpec = tween(SWAP_DURATION_MILLIS, easing = FastOutSlowInEasing),
+        label = "swap_button_rotation",
+    )
+
     Box(
         modifier = modifier,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = RoundedCornerShape(32.dp),
-                )
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(32.dp),
-                )
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            when (state) {
-                ConversionViewState.Loading -> {
-                    CurrencyAmountView(
-                        state = CurrencyAmountViewState.Loading,
+        LookaheadScope {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = RoundedCornerShape(32.dp),
                     )
-                    CurrencyAmountView(
-                        state = CurrencyAmountViewState.Loading,
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(32.dp),
                     )
-                }
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                when (state) {
+                    ConversionViewState.Loading -> {
+                        CurrencyAmountView(
+                            state = CurrencyAmountViewState.Loading,
+                        )
+                        CurrencyAmountView(
+                            state = CurrencyAmountViewState.Loading,
+                        )
+                    }
 
-                is ConversionViewState.Content -> {
-                    CurrencyAmountView(
-                        modifier = Modifier.sharedNavElement(FavouritesConversionSharedElements.AMOUNT_FIELD_KEY),
-                        state = state.from,
-                        onCurrencyClick = { onEvent(ConversionEvent.OnFromCurrencyClick) },
-                        onValueChange = { onEvent(ConversionEvent.OnFromValueChange(it)) },
-                    )
-                    CurrencyAmountView(
-                        state = state.to,
-                        onCurrencyClick = { onEvent(ConversionEvent.OnToCurrencyClick) },
-                        onValueChange = { onEvent(ConversionEvent.OnToValueChange(it)) },
-                    )
+                    is ConversionViewState.Content -> {
+                        // Each field is one element that keeps its currency and amount; a swap
+                        // changes which of them is on top, and they move to their new places.
+                        val topSlot = if (state.swapCount % 2 == 0) SLOT_FIRST else SLOT_SECOND
+                        val bottomSlot = if (topSlot == SLOT_FIRST) SLOT_SECOND else SLOT_FIRST
+                        listOf(topSlot, bottomSlot).forEach { slot ->
+                            key(slot) {
+                                val isTop = slot == topSlot
+                                CurrencyAmountView(
+                                    modifier = Modifier
+                                        .animateBounds(
+                                            lookaheadScope = this@LookaheadScope,
+                                            boundsTransform = SwapBoundsTransform,
+                                        )
+                                        // The field moving up passes over the one moving down.
+                                        .zIndex(if (isTop) 1f else 0f)
+                                        .graphicsLayer {
+                                            val depth = sin(PI.toFloat() * swapProgress()) *
+                                                if (isTop) SWAP_RISING_SCALE else -SWAP_SINKING_SCALE
+                                            scaleX = 1f + depth
+                                            scaleY = 1f + depth
+                                        }
+                                        .then(
+                                            if (isTop) {
+                                                Modifier.sharedNavElement(FavouritesConversionSharedElements.AMOUNT_FIELD_KEY)
+                                            } else {
+                                                Modifier
+                                            }
+                                        ),
+                                    state = if (isTop) state.from else state.to,
+                                    onCurrencyClick = {
+                                        onEvent(
+                                            if (isTop) ConversionEvent.OnFromCurrencyClick else ConversionEvent.OnToCurrencyClick
+                                        )
+                                    },
+                                    onValueChange = {
+                                        onEvent(
+                                            if (isTop) ConversionEvent.OnFromValueChange(it) else ConversionEvent.OnToValueChange(it)
+                                        )
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -85,6 +150,7 @@ internal fun ConversionView(
                 .graphicsLayer {
                     scaleX = swapButtonScale()
                     scaleY = swapButtonScale()
+                    rotationZ = swapButtonRotation
                 },
             enabled = state is ConversionViewState.Content,
             onClick = { onEvent(ConversionEvent.OnSwitchButtonPress) },
@@ -99,6 +165,28 @@ internal fun ConversionView(
             onClick = { onEvent(ConversionEvent.OnActiveConversionPairFavouritesClick) },
         )
     }
+}
+
+private val SwapBoundsTransform = BoundsTransform { _, _ ->
+    tween(SWAP_DURATION_MILLIS, easing = FastOutSlowInEasing)
+}
+
+/**
+ * Progress of the latest swap, from 0 to 1, going in step with the fields moving. It is 1 when
+ * no swap is running, including when the screen is first shown.
+ */
+@Composable
+private fun rememberSwapProgress(swapCount: Int): () -> Float {
+    val progress = remember { Animatable(1f) }
+    val lastSwapCount = remember { mutableIntStateOf(swapCount) }
+    LaunchedEffect(swapCount) {
+        if (swapCount != lastSwapCount.intValue) {
+            lastSwapCount.intValue = swapCount
+            progress.snapTo(0f)
+            progress.animateTo(1f, tween(SWAP_DURATION_MILLIS, easing = FastOutSlowInEasing))
+        }
+    }
+    return { progress.value }
 }
 
 @Preview(

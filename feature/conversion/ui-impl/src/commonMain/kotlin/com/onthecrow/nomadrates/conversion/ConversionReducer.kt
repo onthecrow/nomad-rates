@@ -26,6 +26,7 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
             is ConversionEvent.OnToValueConverted -> reduceToValueConverted(state, event)
             is ConversionEvent.OnFromValueConverted -> reduceFromValueConverted(state, event)
             is ConversionEvent.HighlightConversionPair -> reduceHighlightConversionPair(state, event)
+            ConversionEvent.OnSwitchButtonPress -> reduceSwitch(state)
             else -> state
         }
     }
@@ -72,10 +73,27 @@ internal class ConversionReducer : Reducer<ConversionState, ConversionEvent> {
                         ?: MoneyAmount(activePair.conversionRate).toConvertedFieldValue(activePair.toCurrency.code),
                 ),
                 isFavourite = activePair.isFavourite,
+                swapCount = previousViewState?.swapCount ?: 0,
             ),
             chartTrend = historicalRates.toChartTrend(),
             chartData = historicalRates,
             conversionListItems = dataState.conversionPairs.toConversionListItems(),
+        )
+    }
+
+    /**
+     * The fields change places right away, before the swapped pair comes back from the data, so
+     * they start moving on the tap. The values go with their fields.
+     */
+    private fun reduceSwitch(state: ConversionState): ConversionState {
+        val contentState = state as? ConversionState.Content ?: return state
+        val conversionViewState = contentState.conversionViewState ?: return state
+        return contentState.copy(
+            conversionViewState = conversionViewState.copy(
+                from = conversionViewState.to,
+                to = conversionViewState.from,
+                swapCount = conversionViewState.swapCount + 1,
+            ),
         )
     }
 
