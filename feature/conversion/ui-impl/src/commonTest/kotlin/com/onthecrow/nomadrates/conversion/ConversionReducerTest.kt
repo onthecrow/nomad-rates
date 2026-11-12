@@ -176,6 +176,38 @@ class ConversionReducerTest {
         assertEquals(false, converted.conversionViewState?.to?.conversionValue.orEmpty().contains(' '))
     }
 
+    @Test
+    fun `swap changes fields right away and the swapped data keeps the amounts`() = runTest {
+        val pair = samplePair()
+        val content = reducer.reduce(
+            state = ConversionState.Loading,
+            event = ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(activePair = pair, conversionPairs = listOf(pair)),
+            ),
+        ) as ConversionState.Content
+        val withInput = reducer.reduce(content, ConversionEvent.OnFromValueChange("10")) as ConversionState.Content
+
+        val swapped = reducer.reduce(withInput, ConversionEvent.OnSwitchButtonPress) as ConversionState.Content
+        val swappedPair = samplePair(fromCode = "EUR", toCode = "USD")
+        val swappedData = reducer.reduce(
+            swapped,
+            ConversionEvent.OnConversionDataChanged(
+                dataState = ConversionDataState.Content(activePair = swappedPair, conversionPairs = listOf(swappedPair)),
+            ),
+        ) as ConversionState.Content
+
+        val before = assertIs<ConversionViewState.Content>(withInput.conversionViewState)
+        val after = assertIs<ConversionViewState.Content>(swapped.conversionViewState)
+        assertEquals(before.to, after.from)
+        assertEquals(before.from, after.to)
+        assertEquals(before.swapCount + 1, after.swapCount)
+        val afterData = assertIs<ConversionViewState.Content>(swappedData.conversionViewState)
+        assertEquals("EUR", afterData.from.currencyCode)
+        assertEquals(before.to.conversionValue, afterData.from.conversionValue)
+        assertEquals("10", afterData.to.conversionValue)
+        assertEquals(after.swapCount, afterData.swapCount)
+    }
+
     private fun samplePair(
         fromCode: String = "USD",
         toCode: String = "EUR",
