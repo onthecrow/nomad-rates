@@ -3,6 +3,7 @@ package com.onthecrow.nomadrates.currency
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.onthecrow.nomadrates.currency.data.datastore.CurrencyRatesMetadataDataSource
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
@@ -32,7 +33,7 @@ class ObserveLastRatesTimestampUseCaseImplTest {
         assertEquals(456_000L, useCase().first())
     }
 
-    private fun createMetadataDataSource(): CurrencyRatesMetadataDataSource {
+    private fun TestScope.createMetadataDataSource(): CurrencyRatesMetadataDataSource {
         return CurrencyRatesMetadataDataSource(
             PreferenceDataStoreFactory.createWithPath(
                 scope = backgroundScope,

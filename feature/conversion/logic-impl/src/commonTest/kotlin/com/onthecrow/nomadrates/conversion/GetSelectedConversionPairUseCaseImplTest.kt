@@ -9,16 +9,19 @@ import com.onthecrow.nomadrates.settings.domain.ObserveDefaultPairUseCase
 import com.onthecrow.nomadrates.settings.domain.ObserveLaunchPairModeUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import okio.Path.Companion.toPath
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -68,23 +71,15 @@ class GetSelectedConversionPairUseCaseImplTest {
             observeLaunchPairModeUseCase = FakeObserveLaunchPairModeUseCase(launchModeFlow),
         )
 
-        val emissions = mutableListOf<SelectedConversionPair>()
-        val collectionJob = backgroundScope.launch {
-            useCase().collect { emissions.add(it) }
-        }
-
-        advanceUntilIdle()
-        assertEquals(listOf(savedPair), emissions)
+        val emissions = collectEmissions(useCase)
+        assertEquals(savedPair, emissions.receive())
 
         launchModeFlow.value = LaunchPairMode.USE_DEFAULT_PAIR
         advanceUntilIdle()
-        assertEquals(listOf(savedPair), emissions)
+        assertTrue(emissions.isEmpty)
 
         repository.saveSelectedConversionPair(updatedPair)
-        advanceUntilIdle()
-        assertEquals(listOf(savedPair, updatedPair), emissions)
-
-        collectionJob.cancel()
+        assertEquals(updatedPair, emissions.receive())
     }
 
     @Test
@@ -121,21 +116,13 @@ class GetSelectedConversionPairUseCaseImplTest {
             ),
         )
 
-        val emissions = mutableListOf<SelectedConversionPair>()
-        val collectionJob = backgroundScope.launch {
-            useCase().collect { emissions.add(it) }
-        }
-
-        advanceUntilIdle()
-        assertEquals(listOf(SelectedConversionPair.DEFAULT), emissions)
+        val emissions = collectEmissions(useCase)
+        assertEquals(SelectedConversionPair.DEFAULT, emissions.receive())
 
         defaultPairFlow.value = newDefaultPair
-        advanceUntilIdle()
 
-        assertEquals(listOf(SelectedConversionPair.DEFAULT, newDefaultPair), emissions)
+        assertEquals(newDefaultPair, emissions.receive())
         assertEquals(newDefaultPair, repository.getSavedSelectedConversionPair())
-
-        collectionJob.cancel()
     }
 
     @Test
@@ -154,22 +141,32 @@ class GetSelectedConversionPairUseCaseImplTest {
             ),
         )
 
-        val emissions = mutableListOf<SelectedConversionPair>()
-        val collectionJob = backgroundScope.launch {
-            useCase().collect { emissions.add(it) }
-        }
+        val emissions = collectEmissions(useCase)
+        assertEquals(SelectedConversionPair.DEFAULT, emissions.receive())
 
-        advanceUntilIdle()
         repository.saveSelectedConversionPair(currentSessionPair)
-        advanceUntilIdle()
+        assertEquals(currentSessionPair, emissions.receive())
 
         defaultPairFlow.value = newDefaultPair
         advanceUntilIdle()
 
-        assertEquals(listOf(SelectedConversionPair.DEFAULT, currentSessionPair), emissions)
+        assertTrue(emissions.isEmpty)
         assertEquals(currentSessionPair, repository.getSavedSelectedConversionPair())
+    }
 
-        collectionJob.cancel()
+    /**
+     * Everything [useCase] emits. DataStore reads and writes files on its own threads, outside the
+     * test's virtual time, so emissions are awaited with [Channel.receive] rather than expected right
+     * after [advanceUntilIdle].
+     */
+    private fun TestScope.collectEmissions(
+        useCase: GetSelectedConversionPairUseCaseImpl,
+    ): ReceiveChannel<SelectedConversionPair> {
+        val emissions = Channel<SelectedConversionPair>(Channel.UNLIMITED)
+        backgroundScope.launch {
+            useCase().collect { emissions.send(it) }
+        }
+        return emissions
     }
 
     private fun createPreferencesDataSource(
