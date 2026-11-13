@@ -170,12 +170,17 @@ internal class ConversionViewModel(
 
         maybeHighlightNewFavourite(previousContentState, currentContentState)
 
+        if (conversionViewState == null) return
         val previousPair = previousContentState.activePair.identity()
         val currentPair = currentContentState.activePair.identity()
-        if (previousPair == currentPair || conversionViewState == null) return
-        val isSwap = isSwapPending && currentPair == previousPair.second to previousPair.first
-        isSwapPending = false
-        if (isSwap) return
+        if (previousPair == currentPair) {
+            // Same pair with new rates (e.g. after a refresh): the converted field follows them.
+            if (previousContentState.activePair.conversionRate == currentContentState.activePair.conversionRate) return
+        } else {
+            val isSwap = isSwapPending && currentPair == previousPair.second to previousPair.first
+            isSwapPending = false
+            if (isSwap) return
+        }
 
         when (lastEditedSide) {
             EditedSide.FROM -> onEvent(ConversionEvent.OnFromValueChange(conversionViewState.from.conversionValue))
@@ -289,7 +294,9 @@ internal class ConversionViewModel(
                     amount = value.toDouble(),
                 )
             }
-                .onSuccess { onEvent(ConversionEvent.OnToValueConverted(it.toString())) }
+                .onSuccess { converted ->
+                    converted?.let { onEvent(ConversionEvent.OnToValueConverted(it.toString())) }
+                }
                 .onFailure {
                     // TODO add error handling
                 }
@@ -338,7 +345,9 @@ internal class ConversionViewModel(
                     amount = value.toDouble(),
                 )
             }
-                .onSuccess { onEvent(ConversionEvent.OnFromValueConverted(it.toString())) }
+                .onSuccess { converted ->
+                    converted?.let { onEvent(ConversionEvent.OnFromValueConverted(it.toString())) }
+                }
                 .onFailure {
                     // TODO add error handling
                 }

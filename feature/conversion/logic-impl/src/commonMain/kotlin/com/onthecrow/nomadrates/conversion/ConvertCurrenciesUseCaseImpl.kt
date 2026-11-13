@@ -11,13 +11,12 @@ class ConvertCurrenciesUseCaseImpl(
         fromCurrencyCode: String,
         toCurrencyCode: String,
         amount: Double
-    ): Double {
-        // TODO implement error handling
-        val base = currencyRepository.getBaseCurrency().first() ?: return amount
-        val from = currencyRepository.getCurrencyFlow(fromCurrencyCode).first() ?: return amount
-        val to = currencyRepository.getCurrencyFlow(toCurrencyCode).first() ?: return amount
+    ): Double? {
+        // Only the saved rates are used, like everywhere else on the screen: the fresh remote
+        // response is missing while rates are being fetched and when the fetch fails.
+        val from = currencyRepository.getCurrencyFlow(fromCurrencyCode).first() ?: return null
+        val to = currencyRepository.getCurrencyFlow(toCurrencyCode).first() ?: return null
 
-        val inBaseCurrency = amount / from.conversionRate
-        return inBaseCurrency * to.conversionRate
+        return amount / from.conversionRate * to.conversionRate
     }
 }
